@@ -5091,3 +5091,14 @@ DISCUSSION_MODERATION_CLOSE_REASON_CODES = {
     "duplicate": _("Post is a duplicate"),
     "off-topic": _("Post is off-topic"),
 }
+
+
+######################## CAS authentication ###########################
+
+if FEATURES.get('AUTH_USE_CAS'):
+    AUTHENTICATION_BACKENDS = (
+        'django.contrib.auth.backends.ModelBackend',
+        'django_cas.backends.CASBackend',
+    )
+    INSTALLED_APPS += ('django_cas',)
+    MIDDLEWARE_CLASSES += ('django_cas.middleware.CASMiddleware',)
