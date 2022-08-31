@@ -1043,6 +1043,9 @@ urlpatterns += [
 
 
 if settings.FEATURES.get('AUTH_USE_CAS'):
-    urlpatterns += (
-        url(r'^cas-auth/login/$', 'django_cas.views.login', name="cas-login"),
-        url(r'^cas-auth/logout/$', 'django_cas.views.logout', {'next_page': '/'}, name="cas-logout"),
+    from django_cas.views import login as cas_login_views
+    from django_cas.views import logout as cas_logout_views
+    urlpatterns += [
+        re_path(r'^cas-auth/login/$', cas_login_views, name="cas-login"),
+        re_path(r'^cas-auth/logout/$', cas_logout_views, name="cas-logout")
+    ]
