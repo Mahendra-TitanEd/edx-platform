@@ -78,6 +78,7 @@ IDA_LOGOUT_URI_LIST = []
 
 # Features
 FEATURES = {
+    'AUTH_USE_CAS': True,
     # .. toggle_name: FEATURES['DISPLAY_DEBUG_INFO_TO_STAFF']
     # .. toggle_implementation: DjangoSetting
     # .. toggle_default: True
@@ -5096,9 +5097,10 @@ DISCUSSION_MODERATION_CLOSE_REASON_CODES = {
 ######################## CAS authentication ###########################
 
 if FEATURES.get('AUTH_USE_CAS'):
-    AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
-        'django_cas.backends.CASBackend',
-    )
-    INSTALLED_APPS += ('django_cas',)
-    MIDDLEWARE_CLASSES += ('django_cas.middleware.CASMiddleware',)
+   CAS_SERVER_URL = "http://ebctest.ebcwebstore.com"
+   AUTHENTICATION_BACKENDS = (
+     'django.contrib.auth.backends.ModelBackend',
+     'django_cas_ng.backends.CASBackend',
+   )
+   INSTALLED_APPS += ('django_cas_ng',)
+   MIDDLEWARE += ('django_cas_ng.middleware.CASMiddleware',)
