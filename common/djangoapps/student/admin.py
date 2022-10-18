@@ -47,10 +47,13 @@ from common.djangoapps.student.models import (
     UserCelebration,
     UserProfile,
     UserTestGroup,
-    State, Country
+    State,
+    Country,
 )
 from common.djangoapps.student.roles import REGISTERED_ACCESS_ROLES
-from xmodule.modulestore.django import modulestore  # lint-amnesty, pylint: disable=wrong-import-order
+from xmodule.modulestore.django import (
+    modulestore,
+)  # lint-amnesty, pylint: disable=wrong-import-order
 
 User = get_user_model()  # pylint:disable=invalid-name
 
@@ -63,7 +66,9 @@ User = get_user_model()  # pylint:disable=invalid-name
 # .. toggle_use_cases: opt_in, open_edx
 # .. toggle_creation_date: 2018-08-01
 # .. toggle_tickets: https://github.com/edx/edx-platform/pull/18638
-COURSE_ENROLLMENT_ADMIN_SWITCH = WaffleSwitch('student.courseenrollment_admin', __name__)
+COURSE_ENROLLMENT_ADMIN_SWITCH = WaffleSwitch(
+    "student.courseenrollment_admin", __name__
+)
 
 
 class _Check:
@@ -77,23 +82,28 @@ class _Check:
     Example:
     @_Check.is_enabled(FEATURE_TOGGLE.is_enabled)
     """
+
     @classmethod
     def is_enabled(cls, is_enabled_func):
         """
         See above docstring.
         """
+
         def inner(func):
             @wraps(func)
             def decorator(*args, **kwargs):
                 if not is_enabled_func():
                     return False
                 return func(*args, **kwargs)
+
             return decorator
+
         return inner
 
 
 class DisableEnrollmentAdminMixin:
-    """ Disables admin access to an admin page that scales with enrollments, as performance is poor at that size. """
+    """Disables admin access to an admin page that scales with enrollments, as performance is poor at that size."""
+
     @_Check.is_enabled(COURSE_ENROLLMENT_ADMIN_SWITCH.is_enabled)
     def has_view_permission(self, request, obj=None):
         """
@@ -135,40 +145,40 @@ class CourseAccessRoleForm(forms.ModelForm):
 
     class Meta:
         model = CourseAccessRole
-        fields = '__all__'
+        fields = "__all__"
 
     email = forms.EmailField(required=True)
-    COURSE_ACCESS_ROLES = [(role_name, role_name) for role_name in REGISTERED_ACCESS_ROLES.keys()]  # lint-amnesty, pylint: disable=consider-iterating-dictionary
+    COURSE_ACCESS_ROLES = [
+        (role_name, role_name) for role_name in REGISTERED_ACCESS_ROLES.keys()
+    ]  # lint-amnesty, pylint: disable=consider-iterating-dictionary
     role = forms.ChoiceField(choices=COURSE_ACCESS_ROLES)
 
     def clean_course_id(self):
         """
         Validate the course id
         """
-        if self.cleaned_data['course_id']:
+        if self.cleaned_data["course_id"]:
             return clean_course_id(self)
 
     def clean_org(self):
         """If org and course-id exists then Check organization name
         against the given course.
         """
-        if self.cleaned_data.get('course_id') and self.cleaned_data['org']:
-            org = self.cleaned_data['org']
-            org_name = self.cleaned_data.get('course_id').org
+        if self.cleaned_data.get("course_id") and self.cleaned_data["org"]:
+            org = self.cleaned_data["org"]
+            org_name = self.cleaned_data.get("course_id").org
             if org.lower() != org_name.lower():
                 raise forms.ValidationError(
-                    "Org name {} is not valid. Valid name is {}.".format(
-                        org, org_name
-                    )
+                    "Org name {} is not valid. Valid name is {}.".format(org, org_name)
                 )
 
-        return self.cleaned_data['org']
+        return self.cleaned_data["org"]
 
     def clean_email(self):
         """
         Checking user object against given email id.
         """
-        email = self.cleaned_data['email']
+        email = self.cleaned_data["email"]
         try:
             user = User.objects.get(email=email)
         except Exception:
@@ -187,10 +197,10 @@ class CourseAccessRoleForm(forms.ModelForm):
         cleaned_data = super().clean()
         if not self.errors:
             if CourseAccessRole.objects.filter(
-                    user=cleaned_data.get("email"),
-                    org=cleaned_data.get("org"),
-                    course_id=cleaned_data.get("course_id"),
-                    role=cleaned_data.get("role")
+                user=cleaned_data.get("email"),
+                org=cleaned_data.get("org"),
+                course_id=cleaned_data.get("course_id"),
+                role=cleaned_data.get("role"),
             ).exists():
                 raise forms.ValidationError("Duplicate Record.")
 
@@ -199,82 +209,113 @@ class CourseAccessRoleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.user_id:
-            self.fields['email'].initial = self.instance.user.email
+            self.fields["email"].initial = self.instance.user.email
 
 
 @admin.register(CourseAccessRole)
 class CourseAccessRoleAdmin(admin.ModelAdmin):
-    """Admin panel for the Course Access Role. """
+    """Admin panel for the Course Access Role."""
+
     form = CourseAccessRoleForm
     raw_id_fields = ("user",)
     exclude = ("user",)
 
     fieldsets = (
-        (None, {
-            'fields': ('email', 'course_id', 'org', 'role',)
-        }),
+        (
+            None,
+            {
+                "fields": (
+                    "email",
+                    "course_id",
+                    "org",
+                    "role",
+                )
+            },
+        ),
     )
 
     list_display = (
-        'id', 'user', 'org', 'course_id', 'role',
+        "id",
+        "user",
+        "org",
+        "course_id",
+        "role",
     )
     search_fields = (
-        'id', 'user__username', 'user__email', 'org', 'course_id', 'role',
+        "id",
+        "user__username",
+        "user__email",
+        "org",
+        "course_id",
+        "role",
     )
 
     def save_model(self, request, obj, form, change):
-        obj.user = form.cleaned_data['email']
+        obj.user = form.cleaned_data["email"]
         super().save_model(request, obj, form, change)
 
 
 @admin.register(LinkedInAddToProfileConfiguration)
 class LinkedInAddToProfileConfigurationAdmin(admin.ModelAdmin):
-    """Admin interface for the LinkedIn Add to Profile configuration. """
+    """Admin interface for the LinkedIn Add to Profile configuration."""
 
     class Meta:
         model = LinkedInAddToProfileConfiguration
 
 
 class CourseEnrollmentForm(forms.ModelForm):
-    """ Form for Course Enrollments in the Django Admin Panel. """
+    """Form for Course Enrollments in the Django Admin Panel."""
+
     def __init__(self, *args, **kwargs):
         # If args is a QueryDict, then the ModelForm addition request came in as a POST with a course ID string.
         # Change the course ID string to a CourseLocator object by copying the QueryDict to make it mutable.
-        if args and 'course' in args[0] and isinstance(args[0], QueryDict):
+        if args and "course" in args[0] and isinstance(args[0], QueryDict):
             args_copy = args[0].copy()
             try:
-                args_copy['course'] = CourseKey.from_string(args_copy['course'])
+                args_copy["course"] = CourseKey.from_string(args_copy["course"])
             except InvalidKeyError:
-                raise forms.ValidationError("Cannot make a valid CourseKey from id {}!".format(args_copy['course']))  # lint-amnesty, pylint: disable=raise-missing-from
+                raise forms.ValidationError(
+                    "Cannot make a valid CourseKey from id {}!".format(
+                        args_copy["course"]
+                    )
+                )  # lint-amnesty, pylint: disable=raise-missing-from
             args = [args_copy]
 
         super().__init__(*args, **kwargs)
 
-        if self.data.get('course'):
+        if self.data.get("course"):
             try:
-                self.data['course'] = CourseKey.from_string(self.data['course'])
+                self.data["course"] = CourseKey.from_string(self.data["course"])
             except AttributeError:
                 # Change the course ID string to a CourseLocator.
                 # On a POST request, self.data is a QueryDict and is immutable - so this code will fail.
                 # However, the args copy above before the super() call handles this case.
                 pass
 
-    def clean_course_id(self):  # lint-amnesty, pylint: disable=missing-function-docstring
-        course_id = self.cleaned_data['course']
+    def clean_course_id(
+        self,
+    ):  # lint-amnesty, pylint: disable=missing-function-docstring
+        course_id = self.cleaned_data["course"]
         try:
             course_key = CourseKey.from_string(course_id)
         except InvalidKeyError:
-            raise forms.ValidationError(f"Cannot make a valid CourseKey from id {course_id}!")  # lint-amnesty, pylint: disable=raise-missing-from
+            raise forms.ValidationError(
+                f"Cannot make a valid CourseKey from id {course_id}!"
+            )  # lint-amnesty, pylint: disable=raise-missing-from
 
         if not modulestore().has_course(course_key):
-            raise forms.ValidationError(f"Cannot find course with id {course_id} in the modulestore")
+            raise forms.ValidationError(
+                f"Cannot find course with id {course_id} in the modulestore"
+            )
 
         return course_key
 
-    def save(self, *args, **kwargs):  # lint-amnesty, pylint: disable=signature-differs, unused-argument
+    def save(
+        self, *args, **kwargs
+    ):  # lint-amnesty, pylint: disable=signature-differs, unused-argument
         course_enrollment = super().save(commit=False)
-        user = self.cleaned_data['user']
-        course_overview = self.cleaned_data['course']
+        user = self.cleaned_data["user"]
+        course_overview = self.cleaned_data["course"]
         enrollment = CourseEnrollment.get_or_create_enrollment(user, course_overview.id)
         course_enrollment.id = enrollment.id
         course_enrollment.created = enrollment.created
@@ -282,37 +323,53 @@ class CourseEnrollmentForm(forms.ModelForm):
 
     class Meta:
         model = CourseEnrollment
-        fields = '__all__'
+        fields = "__all__"
 
 
 @admin.register(CourseEnrollment)
 class CourseEnrollmentAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
-    """ Admin interface for the CourseEnrollment model. """
-    list_display = ('id', 'course_id', 'mode', 'user', 'is_active', 'is_purchased', 'created','purchase_start_date', 'purchase_end_date')
-    list_filter = ('mode', 'is_active',)
-    raw_id_fields = ('user', 'course')
-    search_fields = ('course_id', 'mode', 'user__username',)
-    actions = (
-        'export_as_csv',
+    """Admin interface for the CourseEnrollment model."""
+
+    list_display = (
+        "id",
+        "course_id",
+        "mode",
+        "user",
+        "is_active",
+        "is_purchased",
+        "created",
+        "purchase_start_date",
+        "purchase_end_date",
     )
+    list_filter = (
+        "mode",
+        "is_active",
+    )
+    raw_id_fields = ("user", "course")
+    search_fields = (
+        "course_id",
+        "mode",
+        "user__username",
+    )
+    actions = ("export_as_csv",)
     form = CourseEnrollmentForm
 
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
-        field_names = [u'id', 'user', 'course_id', 'created', 'is_active', 'mode']
-        #field_names = [field.name for field in meta.get_fields()]
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        field_names = ["id", "user", "course_id", "created", "is_active", "mode"]
+        # field_names = [field.name for field in meta.get_fields()]
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename={}.csv".format(meta)
         writer = csv.writer(response)
         writer.writerow(field_names)
         for obj in queryset:
-                data = [];
-                for field in field_names:
-                   if field == 'user':
-                        data.append(obj.user.username)
-                   else:
-                        data.append(getattr(obj, field))
-                row = writer.writerow(data)
+            data = []
+            for field in field_names:
+                if field == "user":
+                    data.append(obj.user.username)
+                else:
+                    data.append(getattr(obj, field))
+            row = writer.writerow(data)
 
         return response
 
@@ -321,58 +378,68 @@ class CourseEnrollmentAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
 
         # annotate each enrollment with whether the username was an
         # exact match for the search term
-        qs = qs.annotate(exact_username_match=models.Case(
-            models.When(user__username=search_term, then=models.Value(True)),
-            default=models.Value(False),
-            output_field=models.BooleanField()))
+        qs = qs.annotate(
+            exact_username_match=models.Case(
+                models.When(user__username=search_term, then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField(),
+            )
+        )
 
         # present exact matches first
-        qs = qs.order_by('-exact_username_match', 'user__username', 'course_id')
+        qs = qs.order_by("-exact_username_match", "user__username", "course_id")
 
         return qs, use_distinct
 
     def queryset(self, request):
-        return super().queryset(request).select_related('user')  # lint-amnesty, pylint: disable=no-member, super-with-arguments
+        return (
+            super().queryset(request).select_related("user")
+        )  # lint-amnesty, pylint: disable=no-member, super-with-arguments
+
 
 class StateinlineAdmin(admin.ModelAdmin):
     model = State
-    list_display = ['zone_id', 'zone_country_id','zone_code','zone_name']
+    list_display = ["zone_id", "zone_country_id", "zone_code", "zone_name"]
+
 
 class UserProfileForm(forms.ModelForm):
     """
     Dynamic UserProfile Form For the changing required field from settings
     """
+
     class Meta:
         model = UserProfile
-        fields = '__all__'                          
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
-        super(UserProfileForm,self).__init__(*args, **kwargs)
+        super(UserProfileForm, self).__init__(*args, **kwargs)
 
         extra_fields = settings.REGISTRATION_EXTRA_FIELDS
 
         for extra_field in extra_fields.keys():
-            if extra_fields[extra_field] == 'required':
+            if extra_fields[extra_field] == "required":
                 if extra_field in self.base_fields:
                     self.fields[extra_field].required = True
 
 
 class UserProfileInline(admin.StackedInline):
-    """ Inline admin interface for UserProfile model. """
+    """Inline admin interface for UserProfile model."""
+
     model = UserProfile
     form = UserProfileForm
     inlines = [StateinlineAdmin]
     can_delete = False
-    verbose_name_plural = _('User profile')
-    exclude = ('college_id',)
+    verbose_name_plural = _("User profile")
+    exclude = ("college_id",)
 
 
 class AccountRecoveryInline(admin.StackedInline):
-    """ Inline admin interface for AccountRecovery model. """
+    """Inline admin interface for AccountRecovery model."""
+
     model = AccountRecovery
     can_delete = False
-    verbose_name = _('Account recovery')
-    verbose_name_plural = _('Account recovery')
+    verbose_name = _("Account recovery")
+    verbose_name_plural = _("Account recovery")
 
 
 class UserChangeForm(BaseUserChangeForm):
@@ -380,12 +447,13 @@ class UserChangeForm(BaseUserChangeForm):
     Override the default UserChangeForm such that the password field
     does not contain a link to a 'change password' form.
     """
+
     last_name = forms.CharField(max_length=30, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if not settings.FEATURES.get('ENABLE_CHANGE_USER_PASSWORD_ADMIN'):
+        if not settings.FEATURES.get("ENABLE_CHANGE_USER_PASSWORD_ADMIN"):
             self.fields["password"] = ReadOnlyPasswordHashField(
                 label=_("Password"),
                 help_text=_(
@@ -396,31 +464,28 @@ class UserChangeForm(BaseUserChangeForm):
 
 
 class UserAdmin(BaseUserAdmin):
-    """ Admin interface for the User model. """
+    """Admin interface for the User model."""
+
     inlines = (UserProfileInline, AccountRecoveryInline)
-    readonly_fields = ('username',)
-    actions = (
-         'export_as_csv',
-    )
+    readonly_fields = ("username",)
+    actions = ("export_as_csv",)
     form = UserChangeForm
     add_form = BaseUserCreationForm
 
     def export_as_csv(self, request, queryset):
-        meta = self.model._meta 
+        meta = self.model._meta
         field_names = [field.name for field in meta.fields]
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename={}.csv".format(meta)
         writer = csv.writer(response)
         writer.writerow(field_names)
-        for obj in queryset: 
-           row = writer.writerow([getattr(obj, field) for field in field_names])
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
         return response
 
     class Media:
-        css = {
-            'all': ('ebc-theme/css/custom_admin.css',)
-        }
-        js = ('ebc-theme/js/items.js',)
+        css = {"all": ("ebc-theme/css/custom_admin.css",)}
+        js = ("ebc-theme/js/items.js",)
 
     def save_model(self, request, obj, form, change):
         """
@@ -430,7 +495,7 @@ class UserAdmin(BaseUserAdmin):
         instance.username = instance.email
         try:
             with transaction.atomic():
-                    instance.save()
+                instance.save()
         except IntegrityError:
             user = User.objects.get(email=instance.email)
             user_profile, created = UserProfile.objects.get_or_create(user=user)
@@ -450,8 +515,8 @@ class UserAdmin(BaseUserAdmin):
         """
         Email Filed default is false so it required the email field
         """
-        form = super(UserAdmin,self).get_form(request, obj, **kwargs)
-        form.base_fields['email'].required = True
+        form = super(UserAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields["email"].required = True
         return form
 
     def get_readonly_fields(self, request, obj=None):
@@ -461,25 +526,37 @@ class UserAdmin(BaseUserAdmin):
         """
         django_readonly = super().get_readonly_fields(request, obj)
         if obj:
-            return django_readonly + ('username',)
+            return django_readonly + ("username",)
         return django_readonly
 
 
 UserAdmin.add_fieldsets = (
-    (None, {
-        'classes': ('wide',),
-        'fields': ('username', 'password1', 'password2','email')
-    }),
+    (
+        None,
+        {
+            "classes": ("wide",),
+            "fields": ("username", "password1", "password2", "email"),
+        },
+    ),
 )
 
 
 @admin.register(UserAttribute)
 class UserAttributeAdmin(admin.ModelAdmin):
-    """ Admin interface for the UserAttribute model. """
-    list_display = ('user', 'name', 'value',)
-    list_filter = ('name',)
-    raw_id_fields = ('user',)
-    search_fields = ('name', 'value', 'user__username',)
+    """Admin interface for the UserAttribute model."""
+
+    list_display = (
+        "user",
+        "name",
+        "value",
+    )
+    list_filter = ("name",)
+    raw_id_fields = ("user",)
+    search_fields = (
+        "name",
+        "value",
+        "user__username",
+    )
 
     class Meta:
         model = UserAttribute
@@ -487,9 +564,17 @@ class UserAttributeAdmin(admin.ModelAdmin):
 
 @admin.register(CourseEnrollmentAllowed)
 class CourseEnrollmentAllowedAdmin(admin.ModelAdmin):
-    """ Admin interface for the CourseEnrollmentAllowed model. """
-    list_display = ('email', 'course_id', 'auto_enroll',)
-    search_fields = ('email', 'course_id',)
+    """Admin interface for the CourseEnrollmentAllowed model."""
+
+    list_display = (
+        "email",
+        "course_id",
+        "auto_enroll",
+    )
+    search_fields = (
+        "email",
+        "course_id",
+    )
 
     class Meta:
         model = CourseEnrollmentAllowed
@@ -497,12 +582,18 @@ class CourseEnrollmentAllowedAdmin(admin.ModelAdmin):
 
 @admin.register(LoginFailures)
 class LoginFailuresAdmin(admin.ModelAdmin):
-    """Admin interface for the LoginFailures model. """
-    list_display = ('user', 'failure_count', 'lockout_until')
-    raw_id_fields = ('user',)
-    search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name')
-    actions = ['unlock_student_accounts']
-    change_form_template = 'admin/student/loginfailures/change_form_template.html'
+    """Admin interface for the LoginFailures model."""
+
+    list_display = ("user", "failure_count", "lockout_until")
+    raw_id_fields = ("user",)
+    search_fields = (
+        "user__username",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+    )
+    actions = ["unlock_student_accounts"]
+    change_form_template = "admin/student/loginfailures/change_form_template.html"
 
     @_Check.is_enabled(LoginFailures.is_feature_enabled)
     def has_module_permission(self, request):
@@ -551,24 +642,26 @@ class LoginFailuresAdmin(admin.ModelAdmin):
         self.message_user(
             request,
             ngettext(
-                '%(count)d student account was unlocked.',
-                '%(count)d student accounts were unlocked.',
-                count
-            ) % {
-                'count': count
-            }
+                "%(count)d student account was unlocked.",
+                "%(count)d student accounts were unlocked.",
+                count,
+            )
+            % {"count": count},
         )
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         """
         Change View.
 
         This is overridden so we can add a custom button to unlock an account in the record's details.
         """
-        if '_unlock' in request.POST:
+        if "_unlock" in request.POST:
             with transaction.atomic(using=router.db_for_write(self.model)):
                 self.unlock_student(request, object_id=object_id)
-                url = reverse('admin:student_loginfailures_changelist', current_app=self.admin_site.name)
+                url = reverse(
+                    "admin:student_loginfailures_changelist",
+                    current_app=self.admin_site.name,
+                )
                 return HttpResponseRedirect(url)
         return super().change_view(request, object_id, form_url, extra_context)
 
@@ -577,8 +670,8 @@ class LoginFailuresAdmin(admin.ModelAdmin):
         Get actions for model admin and remove delete action.
         """
         actions = super().get_actions(request)
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
         return actions
 
     def unlock_student(self, request, object_id=None, obj=None):
@@ -596,38 +689,53 @@ class AllowedAuthUserForm(forms.ModelForm):
 
     class Meta:
         model = AllowedAuthUser
-        fields = ('site', 'email', )
+        fields = (
+            "site",
+            "email",
+        )
 
     def clean_email(self):
         """
         Validate the email field.
         """
-        email = self.cleaned_data['email']
-        email_domain = email.split('@')[-1]
-        allowed_site_email_domain = self.cleaned_data['site'].configuration.get_value('THIRD_PARTY_AUTH_ONLY_DOMAIN')
+        email = self.cleaned_data["email"]
+        email_domain = email.split("@")[-1]
+        allowed_site_email_domain = self.cleaned_data["site"].configuration.get_value(
+            "THIRD_PARTY_AUTH_ONLY_DOMAIN"
+        )
 
         if not allowed_site_email_domain:  # lint-amnesty, pylint: disable=no-else-raise
             raise forms.ValidationError(
-                _("Please add a key/value 'THIRD_PARTY_AUTH_ONLY_DOMAIN/{site_email_domain}' in SiteConfiguration "
-                  "model's site_values field.")
+                _(
+                    "Please add a key/value 'THIRD_PARTY_AUTH_ONLY_DOMAIN/{site_email_domain}' in SiteConfiguration "
+                    "model's site_values field."
+                )
             )
         elif email_domain != allowed_site_email_domain:
             raise forms.ValidationError(
-                _(f"Email doesn't have {allowed_site_email_domain} domain name.")  # lint-amnesty, pylint: disable=translation-of-non-string
+                _(
+                    f"Email doesn't have {allowed_site_email_domain} domain name."
+                )  # lint-amnesty, pylint: disable=translation-of-non-string
             )
         elif not User.objects.filter(email=email).exists():
-            raise forms.ValidationError(_("User with this email doesn't exist in system."))
+            raise forms.ValidationError(
+                _("User with this email doesn't exist in system.")
+            )
         else:
             return email
 
 
 @admin.register(AllowedAuthUser)
 class AllowedAuthUserAdmin(admin.ModelAdmin):
-    """ Admin interface for the AllowedAuthUser model. """
+    """Admin interface for the AllowedAuthUser model."""
+
     form = AllowedAuthUserForm
-    list_display = ('email', 'site',)
-    search_fields = ('email',)
-    ordering = ('-created',)
+    list_display = (
+        "email",
+        "site",
+    )
+    search_fields = ("email",)
+    ordering = ("-created",)
 
     class Meta:
         model = AllowedAuthUser
@@ -635,27 +743,37 @@ class AllowedAuthUserAdmin(admin.ModelAdmin):
 
 @admin.register(CourseEnrollmentCelebration)
 class CourseEnrollmentCelebrationAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
-    """Admin interface for the CourseEnrollmentCelebration model. """
-    raw_id_fields = ('enrollment',)
-    list_display = ('id', 'course', 'user', 'celebrate_first_section', 'celebrate_weekly_goal',)
-    search_fields = ('enrollment__course__id', 'enrollment__user__username')
+    """Admin interface for the CourseEnrollmentCelebration model."""
+
+    raw_id_fields = ("enrollment",)
+    list_display = (
+        "id",
+        "course",
+        "user",
+        "celebrate_first_section",
+        "celebrate_weekly_goal",
+    )
+    search_fields = ("enrollment__course__id", "enrollment__user__username")
 
     class Meta:
         model = CourseEnrollmentCelebration
 
     def course(self, obj):
         return obj.enrollment.course.id
-    course.short_description = 'Course'
+
+    course.short_description = "Course"
 
     def user(self, obj):
         return obj.enrollment.user.username
-    user.short_description = 'User'
+
+    user.short_description = "User"
 
 
 @admin.register(UserCelebration)
 class UserCelebrationAdmin(admin.ModelAdmin):
     """Admin interface for the UserCelebration model."""
-    readonly_fields = ('user', )
+
+    readonly_fields = ("user",)
 
     class Meta:
         model = UserCelebration
@@ -669,9 +787,10 @@ class UserCelebrationAdmin(admin.ModelAdmin):
 @admin.register(PendingNameChange)
 class PendingNameChangeAdmin(admin.ModelAdmin):
     """Admin interface for the Pending Name Change model"""
-    readonly_fields = ('user', )
-    list_display = ('user', 'new_name', 'rationale')
-    search_fields = ('user', 'new_name')
+
+    readonly_fields = ("user",)
+    list_display = ("user", "new_name", "rationale")
+    search_fields = ("user", "new_name")
 
     class Meta:
         model = PendingNameChange
