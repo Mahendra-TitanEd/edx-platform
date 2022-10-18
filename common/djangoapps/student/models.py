@@ -34,6 +34,7 @@ from django.core.cache import cache
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import IntegrityError, models
+from django.db import transaction
 from django.db.models import Count, Index, Q
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import ProgrammingError
@@ -479,6 +480,42 @@ class UserStanding(models.Model):
     standing_last_changed_at = models.DateTimeField(auto_now=True)
 
 
+class Country(TimeStampedModel):
+    """
+    Model for store country details
+    """
+    country_id = models.IntegerField(_('Country Id'), blank=True, null=True)
+    country_name = models.CharField(_('Country Name'), max_length=50)
+    countries_iso_code_2 = models.CharField(_('ISO2'), max_length=50)
+    countries_iso_code_3 = models.CharField(_('ISO3'), max_length=50)
+    address_format_id = models.IntegerField(_('Address ID'), blank=True, null=True)
+
+    def __str__(self):
+        return self.country_name
+
+    class Meta:
+        verbose_name = "Country"
+        verbose_name_plural = "Country"
+
+
+class State(TimeStampedModel):
+    """
+    Model for state country details
+    """
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    zone_id = models.IntegerField(_('Zone Id'), blank=True, null=True)
+    zone_country_id = models.IntegerField(_('Zone_Country Id'), blank=True, null=True)
+    zone_code = models.CharField(_('Zone Code'), max_length=50)
+    zone_name = models.CharField(_('Zone Name'), max_length=50)
+
+    def __str__(self):
+        return self.zone_name
+
+    class Meta:
+        verbose_name = "State"
+        verbose_name_plural = "State"
+
+
 class UserProfile(models.Model):
     """This is where we store all the user demographic fields. We have a
     separate table for this rather than extending the built-in Django auth_user.
@@ -565,7 +602,7 @@ class UserProfile(models.Model):
     )
     mailing_address = models.TextField(blank=True, null=True)
     city = models.TextField(blank=True, null=True)
-    country = CountryField(blank=True, null=True)
+    # country = CountryField(blank=True, null=True)
     COUNTRY_WITH_STATES = 'US'
     STATE_CHOICES = (
         ('AL', 'Alabama'),
@@ -627,8 +664,24 @@ class UserProfile(models.Model):
     goals = models.TextField(blank=True, null=True)
     bio = models.CharField(blank=True, null=True, max_length=3000, db_index=False)
     profile_image_uploaded_at = models.DateTimeField(null=True, blank=True)
-    phone_regex = RegexValidator(regex=r'^\+?1?\d*$', message="Phone number can only contain numbers.")
-    phone_number = models.CharField(validators=[phone_regex], blank=True, null=True, max_length=50)
+    # phone_regex = RegexValidator(regex=r'^\+?1?\d*$', message="Phone number can only contain numbers.")
+    # phone_number = models.CharField(validators=[phone_regex], blank=True, null=True, max_length=50)
+
+    user_state = models.TextField(blank=True, null=True)
+    is_college_admin = models.BooleanField("organization Admin", default=False)
+    is_college_subadmin = models.BooleanField("Group Admin", default=False)
+    is_archive = models.BooleanField("Archived User", default=False)
+    # phone_regex = RegexValidator(
+    #     regex=r'^\+?1?\d{10}$', message='Mobile number must be entered in the format: "9999999999". Up to 10 digits allowed.')
+    mobile_number = models.CharField(validators=[
+                              phone_regex], max_length=10,blank=True, null=True, db_index=True)
+
+    college_id = models.IntegerField(blank=True,null=True)
+    # clg_id = models.ForeignKey(College, on_delete=models.CASCADE,related_name='college')
+    new_country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True,related_name="new_country")
+    state = models.ForeignKey(State, on_delete=models.CASCADE, null=True, blank=True)
+    mail_active = models.BooleanField(default=True)
+
 
     @property
     def has_profile_image(self):
@@ -1249,7 +1302,7 @@ class CourseEnrollment(models.Model):
 
     .. no_pii:
     """
-    MODEL_TAGS = ['course', 'is_active', 'mode']
+    MODEL_TAGS = ['course_id', 'is_active', 'is_purchased', 'mode']
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -1269,9 +1322,14 @@ class CourseEnrollment(models.Model):
     # in the course (is_enrolled() will return False)
     is_active = models.BooleanField(default=True)
 
+    is_purchased = models.BooleanField('Single Course Purchase', default=False)
     # Represents the modes that are possible. We'll update this later with a
     # list of possible values.
     mode = models.CharField(default=CourseMode.get_default_mode_slug, max_length=100)
+
+    purchase_start_date = models.DateField(blank=True,null=True)
+
+    purchase_end_date = models.DateField(blank=True,null=True)
 
     # An audit row will be created for every change to a CourseEnrollment. This
     # will create a new model behind the scenes - HistoricalCourseEnrollment and a
@@ -1361,6 +1419,29 @@ class CourseEnrollment(models.Model):
         ).update(user=user)
 
         return enrollment
+
+
+    @classmethod
+    @transaction.atomic
+    def get_or_create_enrollment_purchase(cls, user, course_key, course_mode, purchase_start_date, purchase_end_date):
+        assert isinstance(course_key, CourseKey)
+
+        if user.id is None:
+            user.save()
+
+        enrollment, __ = cls.objects.update_or_create(
+            user=user,
+            course_id=course_key,
+            defaults={
+                'mode': course_mode,
+                'is_active': True,
+                'is_purchased': True,
+                'purchase_start_date': purchase_start_date,
+                'purchase_end_date': purchase_end_date,
+            }
+        )
+        return enrollment
+
 
     @classmethod
     def get_enrollment(cls, user, course_key, select_related=None):
@@ -1824,6 +1905,30 @@ class CourseEnrollment(models.Model):
         """
         enrollment_state = cls._get_enrollment_state(user, course_key)
         return enrollment_state.is_active or False
+
+
+    @classmethod
+    def is_purchase(cls, user, course_key):
+        """
+        Returns True if the user is enrolled in the course and purchased that course(the entry must exist
+        and it must have `is_active=True` and `is_purchased=True`). Otherwise, returns False.
+
+        `user` is a Django User object. If it hasn't been saved yet (no `.id`
+               attribute), this method will automatically save it before
+               adding an enrollment for it.
+
+        `course_id` is our usual course_id string (e.g. "edX/Test101/2013_Fall)
+        """
+        if not user.is_authenticated():
+            return False
+
+        try:
+            record = cls.objects.get(user=user, course_id=course_key)
+            can_record_access = record.is_active and record.is_purchased
+            return can_record_access
+        except cls.DoesNotExist:
+            return False
+
 
     @classmethod
     def is_enrolled_by_partial(cls, user, course_id_partial):

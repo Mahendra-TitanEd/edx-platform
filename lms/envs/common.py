@@ -2187,8 +2187,12 @@ MIDDLEWARE = [
     # Handles automatically storing user ids in django-simple-history tables when possible.
     'simple_history.middleware.HistoryRequestMiddleware',
 
+    #Added by Mahendra
+    'common.djangoapps.student.get_username.RequestMiddleware',
+
     # This must be last
     'openedx.core.djangoapps.site_configuration.middleware.SessionCookieDomainOverrideMiddleware',
+
 ]
 
 # Clickjacking protection can be disbaled by setting this to 'ALLOW'

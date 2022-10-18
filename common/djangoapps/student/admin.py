@@ -1,6 +1,7 @@
 """ Django admin pages for student app """
 
 
+import csv
 from functools import wraps
 
 from config_models.admin import ConfigurationModelAdmin
@@ -13,8 +14,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
+from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
+from django.db.utils import IntegrityError
 from django.db import models, router, transaction
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.http.request import QueryDict
 from django.urls import reverse
 from django.utils.translation import ngettext
@@ -43,7 +46,8 @@ from common.djangoapps.student.models import (
     UserAttribute,
     UserCelebration,
     UserProfile,
-    UserTestGroup
+    UserTestGroup,
+    State, Country
 )
 from common.djangoapps.student.roles import REGISTERED_ACCESS_ROLES
 from xmodule.modulestore.django import modulestore  # lint-amnesty, pylint: disable=wrong-import-order
@@ -284,11 +288,33 @@ class CourseEnrollmentForm(forms.ModelForm):
 @admin.register(CourseEnrollment)
 class CourseEnrollmentAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
     """ Admin interface for the CourseEnrollment model. """
-    list_display = ('id', 'course_id', 'mode', 'user', 'is_active',)
+    list_display = ('id', 'course_id', 'mode', 'user', 'is_active', 'is_purchased', 'created','purchase_start_date', 'purchase_end_date')
     list_filter = ('mode', 'is_active',)
     raw_id_fields = ('user', 'course')
-    search_fields = ('course__id', 'mode', 'user__username',)
+    search_fields = ('course_id', 'mode', 'user__username',)
+    actions = (
+        'export_as_csv',
+    )
     form = CourseEnrollmentForm
+
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = [u'id', 'user', 'course_id', 'created', 'is_active', 'mode']
+        #field_names = [field.name for field in meta.get_fields()]
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for obj in queryset:
+                data = [];
+                for field in field_names:
+                   if field == 'user':
+                        data.append(obj.user.username)
+                   else:
+                        data.append(getattr(obj, field))
+                row = writer.writerow(data)
+
+        return response
 
     def get_search_results(self, request, queryset, search_term):
         qs, use_distinct = super().get_search_results(request, queryset, search_term)
@@ -308,12 +334,37 @@ class CourseEnrollmentAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
     def queryset(self, request):
         return super().queryset(request).select_related('user')  # lint-amnesty, pylint: disable=no-member, super-with-arguments
 
+class StateinlineAdmin(admin.ModelAdmin):
+    model = State
+    list_display = ['zone_id', 'zone_country_id','zone_code','zone_name']
+
+class UserProfileForm(forms.ModelForm):
+    """
+    Dynamic UserProfile Form For the changing required field from settings
+    """
+    class Meta:
+        model = UserProfile
+        fields = '__all__'                          
+
+    def __init__(self, *args, **kwargs):
+        super(UserProfileForm,self).__init__(*args, **kwargs)
+
+        extra_fields = settings.REGISTRATION_EXTRA_FIELDS
+
+        for extra_field in extra_fields.keys():
+            if extra_fields[extra_field] == 'required':
+                if extra_field in self.base_fields:
+                    self.fields[extra_field].required = True
+
 
 class UserProfileInline(admin.StackedInline):
     """ Inline admin interface for UserProfile model. """
     model = UserProfile
+    form = UserProfileForm
+    inlines = [StateinlineAdmin]
     can_delete = False
     verbose_name_plural = _('User profile')
+    exclude = ('college_id',)
 
 
 class AccountRecoveryInline(admin.StackedInline):
@@ -347,7 +398,61 @@ class UserChangeForm(BaseUserChangeForm):
 class UserAdmin(BaseUserAdmin):
     """ Admin interface for the User model. """
     inlines = (UserProfileInline, AccountRecoveryInline)
+    readonly_fields = ('username',)
+    actions = (
+         'export_as_csv',
+    )
     form = UserChangeForm
+    add_form = BaseUserCreationForm
+
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta 
+        field_names = [field.name for field in meta.fields]
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for obj in queryset: 
+           row = writer.writerow([getattr(obj, field) for field in field_names])
+        return response
+
+    class Media:
+        css = {
+            'all': ('ebc-theme/css/custom_admin.css',)
+        }
+        js = ('ebc-theme/js/items.js',)
+
+    def save_model(self, request, obj, form, change):
+        """
+        instance is old object with username = null and then changing username = email
+        """
+        instance = form.save(commit=False)
+        instance.username = instance.email
+        try:
+            with transaction.atomic():
+                    instance.save()
+        except IntegrityError:
+            user = User.objects.get(email=instance.email)
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            user_profile.name = instance.profile.name
+            user_profile.gender = instance.profile.gender
+            user_profile.year_of_birth = instance.profile.year_of_birth
+            user_profile.level_of_education = instance.profile.level_of_education
+            user_profile.mobile_number = instance.profile.mobile_number
+            user_profile.city = instance.profile.city
+            # user_profile.new_country = instance.profile.new_country
+            # user_profile.state = instance.profile.state
+            user_profile.save()
+
+        return instance
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Email Filed default is false so it required the email field
+        """
+        form = super(UserAdmin,self).get_form(request, obj, **kwargs)
+        form.base_fields['email'].required = True
+        return form
 
     def get_readonly_fields(self, request, obj=None):
         """
@@ -358,6 +463,14 @@ class UserAdmin(BaseUserAdmin):
         if obj:
             return django_readonly + ('username',)
         return django_readonly
+
+
+UserAdmin.add_fieldsets = (
+    (None, {
+        'classes': ('wide',),
+        'fields': ('username', 'password1', 'password2','email')
+    }),
+)
 
 
 @admin.register(UserAttribute)
@@ -571,7 +684,8 @@ admin.site.register(DashboardConfiguration, ConfigurationModelAdmin)
 admin.site.register(RegistrationCookieConfiguration, ConfigurationModelAdmin)
 admin.site.register(BulkUnenrollConfiguration, ConfigurationModelAdmin)
 admin.site.register(BulkChangeEnrollmentConfiguration, ConfigurationModelAdmin)
-
+admin.site.register(Country)
+admin.site.register(State, StateinlineAdmin)
 
 # We must first un-register the User model since it may also be registered by the auth app.
 try:
