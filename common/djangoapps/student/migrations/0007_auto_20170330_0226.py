@@ -7,7 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('student', '0006_logoutviewconfiguration'),
+        # ('student', '0006_logoutviewconfiguration'),
+        ('student', '0001_squashed_0031_auto_20200317_1122'),
     ]
 
     operations = [
