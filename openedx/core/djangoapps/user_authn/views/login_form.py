@@ -157,6 +157,8 @@ def login_and_registration_form(request, initial_mode="login"):
         response = set_logged_in_cookies(request, response, request.user)
         return response
 
+    if settings.FEATURES.get('AUTH_USE_CAS'):
+        return redirect(reverse('cas_ng_login'))
     # Retrieve the form descriptions from the user API
     form_descriptions = _get_form_descriptions(request)
 
