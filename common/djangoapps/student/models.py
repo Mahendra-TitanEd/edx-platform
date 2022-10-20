@@ -742,8 +742,8 @@ class UserProfile(models.Model):
     is_college_admin = models.BooleanField("organization Admin", default=False)
     is_college_subadmin = models.BooleanField("Group Admin", default=False)
     is_archive = models.BooleanField("Archived User", default=False)
-    # phone_regex = RegexValidator(
-    #     regex=r'^\+?1?\d{10}$', message='Mobile number must be entered in the format: "9999999999". Up to 10 digits allowed.')
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{10}$', message='Mobile number must be entered in the format: "9999999999". Up to 10 digits allowed.')
     mobile_number = models.CharField(
         validators=[phone_regex], max_length=10, blank=True, null=True, db_index=True
     )
