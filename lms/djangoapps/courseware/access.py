@@ -69,6 +69,9 @@ from xmodule.error_module import ErrorBlock  # lint-amnesty, pylint: disable=wro
 from xmodule.partitions.partitions import NoSuchUserPartitionError, NoSuchUserPartitionGroupError  # lint-amnesty, pylint: disable=wrong-import-order
 from xmodule.x_module import XModule  # lint-amnesty, pylint: disable=wrong-import-order
 
+#Added by Mahendra
+from subscription.access import _can_access_with_subscription
+
 log = logging.getLogger(__name__)
 
 
@@ -311,7 +314,7 @@ def _has_access_course(user, action, courselike):
     'see_about_page' -- user is able to see the course about page.
     """
     @function_trace('can_load')
-    def can_load():
+    def can_load(from_see_exists=False):    # Updated by Mahendra
         """
         Can this user load this course?
 
@@ -332,6 +335,17 @@ def _has_access_course(user, action, courselike):
         # )
         if courselike.id.deprecated:  # we no longer support accessing Old Mongo courses
             return OldMongoAccessError(courselike)
+
+
+        #Added by Mahendra
+        if from_see_exists:
+            has_subscription = _can_access_with_subscription(user, courselike)
+            if not has_subscription:
+                staff_access = _has_staff_access_to_descriptor(user, courselike, courselike.id)
+                if staff_access:
+                    return staff_access
+                else:
+                    return has_subscription
 
         visible_to_nonstaff = _visible_to_nonstaff_users(courselike)
         if not visible_to_nonstaff:
@@ -380,7 +394,7 @@ def _has_access_course(user, action, courselike):
         Can see if can enroll, but also if can load it: if user enrolled in a course and now
         it's past the enrollment period, they should still see it.
         """
-        return ACCESS_GRANTED if (can_load() or can_enroll()) else ACCESS_DENIED
+        return ACCESS_GRANTED if (can_load(from_see_exists=True) or can_enroll()) else ACCESS_DENIED  #Updated by Mahendra
 
     @function_trace('can_see_in_catalog')
     def can_see_in_catalog():

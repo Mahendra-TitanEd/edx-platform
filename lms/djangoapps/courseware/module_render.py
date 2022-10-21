@@ -57,6 +57,7 @@ from lms.djangoapps.courseware.masquerade import (
     is_masquerading_as_specific_student,
     setup_masquerade
 )
+from lms.djangoapps.course_api.blocks.api import get_blocks
 from lms.djangoapps.courseware.model_data import DjangoKeyValueStore, FieldDataCache
 from lms.djangoapps.courseware.field_overrides import OverrideFieldData
 from lms.djangoapps.courseware.services import UserStateService
@@ -95,6 +96,11 @@ from common.djangoapps.util.json_request import JsonResponse
 from common.djangoapps.edxmako.services import MakoService
 from common.djangoapps.xblock_django.user_service import DjangoXBlockUserService
 from openedx.core.lib.cache_utils import CacheService
+
+
+#Added by Mahendra
+from ebc_royaltycal.track import log_video_play_event
+from course_progress.custom_track import item_affects_course_progress
 
 log = logging.getLogger(__name__)
 
@@ -997,6 +1003,14 @@ def handle_xblock_callback(request, course_id, usage_id, handler, suffix=None):
     except InvalidKeyError:
         raise Http404(f'{course_id} is not a valid course key')  # lint-amnesty, pylint: disable=raise-missing-from
 
+    # Video play log
+    # Added by Mahendra
+    if suffix == 'save_user_state':
+        saved_position = request.POST.get('saved_video_position', '00:00:00')
+        instance, tracking_context = get_module_by_usage_id(request, course_id, usage_id)
+        item_affects_course_progress(request, course_key, suffix, handler, instance)
+        log_video_play_event(request.user, course_key, instance.display_name, usage_id, saved_position)
+
     with modulestore().bulk_operations(course_key):
         try:
             course = modulestore().get_course(course_key)
@@ -1133,6 +1147,8 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, course
         instance, tracking_context = get_module_by_usage_id(
             request, course_id, str(block_usage_key), course=course, will_recheck_access=will_recheck_access,
         )
+        #Added by Mahendra
+        affects = item_affects_course_progress(request, course_key, suffix, handler, instance)
 
         # Name the transaction so that we can view XBlock handlers separately in
         # New Relic. The suffix is necessary for XModule handlers because the
@@ -1159,6 +1175,11 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, course
                         and getattr(instance, 'in_entrance_exam', False):
                     ee_data = {'entrance_exam_passed': user_has_passed_entrance_exam(request.user, course)}
                     resp = append_data_to_webob_response(resp, ee_data)
+            #Added by Mahendra
+            # if affects:
+            #     block_fields = ['type', 'display_name', 'children']
+            #     course_usage_key = modulestore().make_course_usage_key(course_key)
+            #     course_struct = get_blocks(request, course_usage_key, request.user, 'all', requested_fields=block_fields)
 
         except NoSuchHandlerError:
             log.exception("XBlock %s attempted to access missing handler %r", instance, handler)

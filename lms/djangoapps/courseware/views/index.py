@@ -6,7 +6,7 @@ View for Courseware Index
 
 
 import logging
-
+import json
 import urllib
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
@@ -68,7 +68,12 @@ from ..toggles import (
     courseware_legacy_is_visible,
     courseware_mfe_is_advertised
 )
-from .views import CourseTabView
+from .views import CourseTabView, get_social_share_urls
+
+
+#Added by Mahendra
+from hit_counter.models import HitSendMail
+from hit_counter.views import courseware_hit_counter
 
 log = logging.getLogger("edx.courseware.views.index")
 
@@ -256,6 +261,17 @@ class CoursewareIndex(View):
                         ),
                     )
                 )
+
+        #Added by Mahendra
+        if request.user.is_authenticated:
+            try:
+                mail = HitSendMail.objects.all()
+                mail_list = str(mail.values()[0].get('csv_email'))
+                hit_email = mail_list.split(',')
+                if str(self.request.user.email) not in hit_email :
+                    courseware_hit_counter(self.request.user, self.course_key)
+            except:
+                pass
 
         return render_to_response('courseware/courseware.html', self._create_courseware_context(request))
 
@@ -454,6 +470,12 @@ class CoursewareIndex(View):
                 self.effective_user,
             )
         )
+
+        # Added by Mahendra
+        overview = CourseOverview.get_from_id(self.course.id)
+        # share course on facebook
+        get_social_share_urls(self.request, courseware_context, self.course, overview)
+
         table_of_contents = toc_for_course(
             self.effective_user,
             self.request,

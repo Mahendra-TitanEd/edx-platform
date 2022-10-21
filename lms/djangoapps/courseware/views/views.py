@@ -1024,7 +1024,8 @@ def course_about(request, course_id):
             'sidebar_html_enabled': sidebar_html_enabled,
             'allow_anonymous': allow_anonymous,
         }
-
+        #Added by Mahendra
+        get_social_share_urls(request, context, course, overview)
         return render_to_response('courseware/course_about.html', context)
 
 
@@ -2185,3 +2186,24 @@ def get_learner_username(learner_identifier):
     learner = User.objects.filter(Q(username=learner_identifier) | Q(email=learner_identifier)).first()
     if learner:
         return learner.username
+
+
+#Added by Mahendra
+def get_social_share_urls(request, context, course, course_overview):
+
+    # Site Domain and Platform name
+    
+    site_domain = settings.SITE_NAME
+    platform_name = settings.PLATFORM_NAME
+    share_url = urllib.parse.quote_plus(request.build_absolute_uri(reverse('about_course', args=[str(course_overview.id)])))
+    share_text_default = _("I'm learning on {platform_name}:").format(platform_name=settings.PLATFORM_NAME)
+
+    share_text = urllib.parse.quote_plus(share_text_default)
+
+    # Facebook Share URL
+    facebook_url = 'https://www.facebook.com/sharer/sharer.php?u=' + share_url
+
+    context['facebook_url'] = facebook_url
+    context['share_url'] = share_url
+
+    return context
