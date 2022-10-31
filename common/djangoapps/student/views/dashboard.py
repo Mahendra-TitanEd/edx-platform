@@ -27,19 +27,30 @@ from common.djangoapps.edxmako.shortcuts import render_to_response, render_to_st
 from common.djangoapps.entitlements.models import CourseEntitlement
 from lms.djangoapps.commerce.utils import EcommerceService
 from lms.djangoapps.courseware.access import has_access
-from lms.djangoapps.experiments.utils import get_dashboard_course_info, get_experiment_user_metadata_context
+from lms.djangoapps.experiments.utils import (
+    get_dashboard_course_info,
+    get_experiment_user_metadata_context,
+)
 from lms.djangoapps.verify_student.services import IDVerificationService
 from openedx.core.djangoapps.catalog.utils import (
     get_programs,
     get_pseudo_session_for_entitlement,
-    get_visible_sessions_for_entitlement
+    get_visible_sessions_for_entitlement,
 )
-from openedx.core.djangoapps.credit.email_utils import get_credit_provider_attribute_values, make_providers_strings
+from openedx.core.djangoapps.credit.email_utils import (
+    get_credit_provider_attribute_values,
+    make_providers_strings,
+)
 from openedx.core.djangoapps.plugins.constants import ProjectType
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
-from openedx.core.djangoapps.programs.utils import ProgramDataExtender, ProgramProgressMeter
+from openedx.core.djangoapps.programs.utils import (
+    ProgramDataExtender,
+    ProgramProgressMeter,
+)
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
-from openedx.core.djangoapps.user_api.accounts.utils import is_secondary_email_feature_enabled
+from openedx.core.djangoapps.user_api.accounts.utils import (
+    is_secondary_email_feature_enabled,
+)
 from openedx.core.djangoapps.util.maintenance_banner import add_maintenance_banner
 from openedx.core.djangolib.markup import HTML, Text
 from openedx.features.enterprise_support.api import (
@@ -47,21 +58,29 @@ from openedx.features.enterprise_support.api import (
     get_enterprise_learner_portal_context,
 )
 from common.djangoapps.student.api import COURSE_DASHBOARD_PLUGIN_VIEW_NAME
-from common.djangoapps.student.helpers import cert_info, check_verify_status_by_course, get_resume_urls_for_enrollments
+from common.djangoapps.student.helpers import (
+    cert_info,
+    check_verify_status_by_course,
+    get_resume_urls_for_enrollments,
+)
 from common.djangoapps.student.models import (
     AccountRecovery,
     CourseEnrollment,
     CourseEnrollmentAttribute,
     DashboardConfiguration,
     PendingSecondaryEmailChange,
-    UserProfile
+    UserProfile,
 )
-from common.djangoapps.util.milestones_helpers import get_pre_requisite_courses_not_completed
-from xmodule.modulestore.django import modulestore  # lint-amnesty, pylint: disable=wrong-import-order
+from common.djangoapps.util.milestones_helpers import (
+    get_pre_requisite_courses_not_completed,
+)
+from xmodule.modulestore.django import (
+    modulestore,
+)  # lint-amnesty, pylint: disable=wrong-import-order
 
 log = logging.getLogger("edx.student")
 
-experiments_namespace = LegacyWaffleFlagNamespace(name='student.experiments')
+experiments_namespace = LegacyWaffleFlagNamespace(name="student.experiments")
 
 
 def get_org_black_and_whitelist_for_site():
@@ -100,16 +119,19 @@ def _get_recently_enrolled_courses(course_enrollments):
         list[CourseEnrollment]: A list of recent course enrollments.
     """
     seconds = DashboardConfiguration.current().recent_enrollment_time_delta
-    time_delta = (datetime.datetime.now(UTC) - datetime.timedelta(seconds=seconds))
+    time_delta = datetime.datetime.now(UTC) - datetime.timedelta(seconds=seconds)
     return [
-        enrollment for enrollment in course_enrollments
+        enrollment
+        for enrollment in course_enrollments
         # If the enrollment has no created date, we are explicitly excluding the course
         # from the list of recent enrollments.
         if enrollment.is_active and enrollment.created > time_delta
     ]
 
 
-def _create_recent_enrollment_message(course_enrollments, course_modes):  # lint-amnesty, pylint: disable=unused-argument
+def _create_recent_enrollment_message(
+    course_enrollments, course_modes
+):  # lint-amnesty, pylint: disable=unused-argument
     """
     Builds a recent course enrollment message.
 
@@ -129,25 +151,32 @@ def _create_recent_enrollment_message(course_enrollments, course_modes):  # lint
 
     if recently_enrolled_courses:
         enrollments_count = len(recently_enrolled_courses)
-        course_name_separator = ', '
+        course_name_separator = ", "
         # If length of enrolled course 2, join names with 'and'
         if enrollments_count == 2:
-            course_name_separator = _(' and ')
+            course_name_separator = _(" and ")
 
         course_names = course_name_separator.join(
-            [enrollment.course_overview.display_name for enrollment in recently_enrolled_courses]
+            [
+                enrollment.course_overview.display_name
+                for enrollment in recently_enrolled_courses
+            ]
         )
 
-        platform_name = configuration_helpers.get_value('platform_name', settings.PLATFORM_NAME)
+        platform_name = configuration_helpers.get_value(
+            "platform_name", settings.PLATFORM_NAME
+        )
 
         return render_to_string(
-            'enrollment/course_enrollment_message.html',
+            "enrollment/course_enrollment_message.html",
             {
-                'course_names': course_names,
-                'enrollments_count': enrollments_count,
-                'platform_name': platform_name,
-                'course_id': recently_enrolled_courses[0].course_overview.id if enrollments_count == 1 else None
-            }
+                "course_names": course_names,
+                "enrollments_count": enrollments_count,
+                "platform_name": platform_name,
+                "course_id": recently_enrolled_courses[0].course_overview.id
+                if enrollments_count == 1
+                else None,
+            },
         )
 
 
@@ -165,7 +194,9 @@ def get_course_enrollments(user, org_whitelist, org_blacklist, course_limit=None
         generator[CourseEnrollment]: a sequence of enrollments to be displayed
         on the user's dashboard.
     """
-    for enrollment in CourseEnrollment.enrollments_for_user_with_overviews_preload(user, course_limit):
+    for enrollment in CourseEnrollment.enrollments_for_user_with_overviews_preload(
+        user, course_limit
+    ):
 
         # If the course is missing or broken, log an error and skip it.
         course_overview = enrollment.course_overview
@@ -173,7 +204,7 @@ def get_course_enrollments(user, org_whitelist, org_blacklist, course_limit=None
             log.error(
                 "User %s enrolled in broken or non-existent course %s",
                 user.username,
-                enrollment.course_id
+                enrollment.course_id,
             )
             continue
 
@@ -217,15 +248,17 @@ def get_filtered_course_entitlements(user, org_whitelist, org_blacklist):
         if not course_entitlement.enrollment_course_run:
             # Unfulfilled entitlements need a mock session for metadata
             pseudo_session = get_pseudo_session_for_entitlement(course_entitlement)
-            unfulfilled_entitlement_pseudo_sessions[str(course_entitlement.uuid)] = pseudo_session
+            unfulfilled_entitlement_pseudo_sessions[
+                str(course_entitlement.uuid)
+            ] = pseudo_session
 
         # Check the org of the Course and filter out entitlements that are not available.
         if course_entitlement.enrollment_course_run:
             course_run_key = course_entitlement.enrollment_course_run.course_id
         elif available_runs:
-            course_run_key = CourseKey.from_string(available_runs[0]['key'])
+            course_run_key = CourseKey.from_string(available_runs[0]["key"])
         elif pseudo_session:
-            course_run_key = CourseKey.from_string(pseudo_session['key'])
+            course_run_key = CourseKey.from_string(pseudo_session["key"])
 
         if course_run_key:
             # If there is no course_run_key at this point we will be unable to determine if it should be shown.
@@ -235,10 +268,16 @@ def get_filtered_course_entitlements(user, org_whitelist, org_blacklist):
             elif org_blacklist and course_run_key.org in org_blacklist:
                 continue
 
-            course_entitlement_available_sessions[str(course_entitlement.uuid)] = available_runs
+            course_entitlement_available_sessions[
+                str(course_entitlement.uuid)
+            ] = available_runs
             filtered_entitlements.append(course_entitlement)
 
-    return filtered_entitlements, course_entitlement_available_sessions, unfulfilled_entitlement_pseudo_sessions
+    return (
+        filtered_entitlements,
+        course_entitlement_available_sessions,
+        unfulfilled_entitlement_pseudo_sessions,
+    )
 
 
 def complete_course_mode_info(course_id, enrollment, modes=None):
@@ -253,17 +292,22 @@ def complete_course_mode_info(course_id, enrollment, modes=None):
     if modes is None:
         modes = CourseMode.modes_for_course_dict(course_id)
 
-    mode_info = {'show_upsell': False, 'days_for_upsell': None}
+    mode_info = {"show_upsell": False, "days_for_upsell": None}
     # we want to know if the user is already enrolled as verified or credit and
     # if verified is an option.
-    if CourseMode.VERIFIED in modes and enrollment.mode in CourseMode.UPSELL_TO_VERIFIED_MODES:
-        mode_info['show_upsell'] = True
-        mode_info['verified_sku'] = modes['verified'].sku
-        mode_info['verified_bulk_sku'] = modes['verified'].bulk_sku
+    if (
+        CourseMode.VERIFIED in modes
+        and enrollment.mode in CourseMode.UPSELL_TO_VERIFIED_MODES
+    ):
+        mode_info["show_upsell"] = True
+        mode_info["verified_sku"] = modes["verified"].sku
+        mode_info["verified_bulk_sku"] = modes["verified"].bulk_sku
         # if there is an expiration date, find out how long from now it is
-        if modes['verified'].expiration_datetime:
+        if modes["verified"].expiration_datetime:
             today = datetime.datetime.now(UTC).date()
-            mode_info['days_for_upsell'] = (modes['verified'].expiration_datetime.date() - today).days
+            mode_info["days_for_upsell"] = (
+                modes["verified"].expiration_datetime.date() - today
+            ).days
 
     return mode_info
 
@@ -274,14 +318,14 @@ def get_verification_error_reasons_for_display(verification_error_codes):
     """
     verification_errors = []
     verification_error_map = {
-        'photos_mismatched': _('Photos are mismatched'),
-        'id_image_missing_name': _('Name missing from ID photo'),
-        'id_image_missing': _('ID photo not provided'),
-        'id_invalid': _('ID is invalid'),
-        'user_image_not_clear': _('Learner photo is blurry'),
-        'name_mismatch': _('Name on ID does not match name on account'),
-        'user_image_missing': _('Learner photo not provided'),
-        'id_image_not_clear': _('ID photo is blurry'),
+        "photos_mismatched": _("Photos are mismatched"),
+        "id_image_missing_name": _("Name missing from ID photo"),
+        "id_image_missing": _("ID photo not provided"),
+        "id_invalid": _("ID is invalid"),
+        "user_image_not_clear": _("Learner photo is blurry"),
+        "name_mismatch": _("Name on ID does not match name on account"),
+        "user_image_missing": _("Learner photo not provided"),
+        "id_image_not_clear": _("ID photo is blurry"),
     }
 
     for error in verification_error_codes:
@@ -390,19 +434,20 @@ def _credit_statuses(user, course_enrollments):
         for attribute in CourseEnrollmentAttribute.objects.filter(
             namespace="credit",
             name="provider_id",
-            enrollment__in=list(credit_enrollments.values())
+            enrollment__in=list(credit_enrollments.values()),
         ).select_related("enrollment")
     }
 
     provider_info_by_id = {
-        provider["id"]: provider
-        for provider in credit_api.get_credit_providers()
+        provider["id"]: provider for provider in credit_api.get_credit_providers()
     }
 
     statuses = {}
     for eligibility in credit_api.get_eligibilities_for_user(user.username):
         course_key = CourseKey.from_string(str(eligibility["course_key"]))
-        providers_names = get_credit_provider_attribute_values(course_key, 'display_name')
+        providers_names = get_credit_provider_attribute_values(
+            course_key, "display_name"
+        )
         status = {
             "course_key": str(course_key),
             "eligible": True,
@@ -428,7 +473,8 @@ def _credit_statuses(user, course_enrollments):
                     "for user %s in course %s.  The user will not be able to see their "
                     "credit request status on the student dashboard.  This attribute should "
                     "have been set when the user purchased credit in the course.",
-                    user.id, course_key
+                    user.id,
+                    course_key,
                 )
             else:
                 provider_info = provider_info_by_id.get(provider_id, {})
@@ -441,7 +487,8 @@ def _credit_statuses(user, course_enrollments):
                     log.error(
                         "Could not find credit provider info for [%s] in [%s]. The user will not "
                         "be able to see their credit request status on the student dashboard.",
-                        provider_id, provider_info_by_id
+                        provider_id,
+                        provider_info_by_id,
                     )
 
         statuses[course_key] = status
@@ -468,7 +515,7 @@ def get_dashboard_course_limit():
     """
     get course limit from configuration
     """
-    course_limit = getattr(settings, 'DASHBOARD_COURSE_LIMIT', None)
+    course_limit = getattr(settings, "DASHBOARD_COURSE_LIMIT", None)
     return course_limit
 
 
@@ -479,7 +526,9 @@ def check_for_unacknowledged_notices(context):
     """
     notice_url = None
 
-    notices = context.get("plugins", {}).get("notices", {}).get("unacknowledged_notices")
+    notices = (
+        context.get("plugins", {}).get("notices", {}).get("unacknowledged_notices")
+    )
     if notices:
         # We will only show one notice to the user one at a time. Build a redirect URL to the first notice in the
         # list of unacknowledged notices.
@@ -508,61 +557,67 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     """
     user = request.user
     if not UserProfile.objects.filter(user=user).exists():
-        return redirect(reverse('account_settings'))
+        return redirect(reverse("account_settings"))
 
-    platform_name = configuration_helpers.get_value("platform_name", settings.PLATFORM_NAME)
+    platform_name = configuration_helpers.get_value(
+        "platform_name", settings.PLATFORM_NAME
+    )
 
     enable_verified_certificates = configuration_helpers.get_value(
-        'ENABLE_VERIFIED_CERTIFICATES',
-        settings.FEATURES.get('ENABLE_VERIFIED_CERTIFICATES')
+        "ENABLE_VERIFIED_CERTIFICATES",
+        settings.FEATURES.get("ENABLE_VERIFIED_CERTIFICATES"),
     )
     display_course_modes_on_dashboard = configuration_helpers.get_value(
-        'DISPLAY_COURSE_MODES_ON_DASHBOARD',
-        settings.FEATURES.get('DISPLAY_COURSE_MODES_ON_DASHBOARD', True)
+        "DISPLAY_COURSE_MODES_ON_DASHBOARD",
+        settings.FEATURES.get("DISPLAY_COURSE_MODES_ON_DASHBOARD", True),
     )
-    activation_email_support_link = configuration_helpers.get_value(
-        'ACTIVATION_EMAIL_SUPPORT_LINK', settings.ACTIVATION_EMAIL_SUPPORT_LINK
-    ) or settings.SUPPORT_SITE_LINK
+    activation_email_support_link = (
+        configuration_helpers.get_value(
+            "ACTIVATION_EMAIL_SUPPORT_LINK", settings.ACTIVATION_EMAIL_SUPPORT_LINK
+        )
+        or settings.SUPPORT_SITE_LINK
+    )
     hide_dashboard_courses_until_activated = configuration_helpers.get_value(
-        'HIDE_DASHBOARD_COURSES_UNTIL_ACTIVATED',
-        settings.FEATURES.get('HIDE_DASHBOARD_COURSES_UNTIL_ACTIVATED', False)
+        "HIDE_DASHBOARD_COURSES_UNTIL_ACTIVATED",
+        settings.FEATURES.get("HIDE_DASHBOARD_COURSES_UNTIL_ACTIVATED", False),
     )
     empty_dashboard_message = configuration_helpers.get_value(
-        'EMPTY_DASHBOARD_MESSAGE', None
+        "EMPTY_DASHBOARD_MESSAGE", None
     )
 
-    disable_course_limit = request and 'course_limit' in request.GET
+    disable_course_limit = request and "course_limit" in request.GET
     course_limit = get_dashboard_course_limit() if not disable_course_limit else None
 
     # Get the org whitelist or the org blacklist for the current site
     site_org_whitelist, site_org_blacklist = get_org_black_and_whitelist_for_site()
-    course_enrollments = list(get_course_enrollments(user, site_org_whitelist, site_org_blacklist, course_limit))
+    course_enrollments = list(
+        get_course_enrollments(
+            user, site_org_whitelist, site_org_blacklist, course_limit
+        )
+    )
 
     # Get the entitlements for the user and a mapping to all available sessions for that entitlement
     # If an entitlement has no available sessions, pass through a mock course overview object
-    (course_entitlements,
-     course_entitlement_available_sessions,
-     unfulfilled_entitlement_pseudo_sessions) = get_filtered_course_entitlements(
-        user,
-        site_org_whitelist,
-        site_org_blacklist
-    )
+    (
+        course_entitlements,
+        course_entitlement_available_sessions,
+        unfulfilled_entitlement_pseudo_sessions,
+    ) = get_filtered_course_entitlements(user, site_org_whitelist, site_org_blacklist)
 
     # Record how many courses there are so that we can get a better
     # understanding of usage patterns on prod.
-    monitoring_utils.accumulate('num_courses', len(course_enrollments))
+    monitoring_utils.accumulate("num_courses", len(course_enrollments))
 
     # Sort the enrollment pairs by the enrollment date
     course_enrollments.sort(key=lambda x: x.created, reverse=True)
 
     # Retrieve the course modes for each course
     enrolled_course_ids = [enrollment.course_id for enrollment in course_enrollments]
-    __, unexpired_course_modes = CourseMode.all_and_unexpired_modes_for_courses(enrolled_course_ids)
+    __, unexpired_course_modes = CourseMode.all_and_unexpired_modes_for_courses(
+        enrolled_course_ids
+    )
     course_modes_by_course = {
-        course_id: {
-            mode.slug: mode
-            for mode in modes
-        }
+        course_id: {mode.slug: mode for mode in modes}
         for course_id, modes in unexpired_course_modes.items()
     }
 
@@ -571,44 +626,57 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     enrollment_message = _create_recent_enrollment_message(
         course_enrollments, course_modes_by_course
     )
-    course_optouts = Optout.objects.filter(user=user).values_list('course_id', flat=True)
+    course_optouts = Optout.objects.filter(user=user).values_list(
+        "course_id", flat=True
+    )
 
     # Display activation message
-    activate_account_message = ''
+    activate_account_message = ""
     if not user.is_active:
-        activate_account_message = Text(_(
-            "Check your {email_start}{email}{email_end} inbox for an account activation link from {platform_name}. "
-            "If you need help, contact {link_start}{platform_name} Support{link_end}."
-        )).format(
+        activate_account_message = Text(
+            _(
+                "Check your {email_start}{email}{email_end} inbox for an account activation link from {platform_name}. "
+                "If you need help, contact {link_start}{platform_name} Support{link_end}."
+            )
+        ).format(
             platform_name=platform_name,
             email_start=HTML("<strong>"),
             email_end=HTML("</strong>"),
             email=user.email,
-            link_start=HTML("<a target='_blank' href='{activation_email_support_link}'>").format(
+            link_start=HTML(
+                "<a target='_blank' href='{activation_email_support_link}'>"
+            ).format(
                 activation_email_support_link=activation_email_support_link,
             ),
             link_end=HTML("</a>"),
         )
 
-    enterprise_message = get_dashboard_consent_notification(request, user, course_enrollments)
+    enterprise_message = get_dashboard_consent_notification(
+        request, user, course_enrollments
+    )
 
     recovery_email_message = recovery_email_activation_message = None
     if is_secondary_email_feature_enabled():
         try:
-            pending_email = PendingSecondaryEmailChange.objects.get(user=user)  # lint-amnesty, pylint: disable=unused-variable
+            pending_email = PendingSecondaryEmailChange.objects.get(
+                user=user
+            )  # lint-amnesty, pylint: disable=unused-variable
         except PendingSecondaryEmailChange.DoesNotExist:
             try:
-                account_recovery_obj = AccountRecovery.objects.get(user=user)  # lint-amnesty, pylint: disable=unused-variable
+                account_recovery_obj = AccountRecovery.objects.get(
+                    user=user
+                )  # lint-amnesty, pylint: disable=unused-variable
             except AccountRecovery.DoesNotExist:
                 recovery_email_message = Text(
                     _(
                         "Add a recovery email to retain access when single-sign on is not available. "
-                        "Go to {link_start}your Account Settings{link_end}.")
+                        "Go to {link_start}your Account Settings{link_end}."
+                    )
                 ).format(
                     link_start=HTML("<a href='{account_setting_page}'>").format(
-                        account_setting_page=reverse('account_settings'),
+                        account_setting_page=reverse("account_settings"),
                     ),
-                    link_end=HTML("</a>")
+                    link_end=HTML("</a>"),
                 )
         else:
             recovery_email_activation_message = Text(
@@ -624,19 +692,23 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
 
     # Account activation message
     account_activation_messages = [
-        message for message in messages.get_messages(request) if 'account-activation' in message.tags
+        message
+        for message in messages.get_messages(request)
+        if "account-activation" in message.tags
     ]
 
     # Global staff can see what courses encountered an error on their dashboard
     staff_access = False
     errored_courses = {}
-    if has_access(user, 'staff', 'global'):
+    if has_access(user, "staff", "global"):
         # Show any courses that encountered an error on load
         staff_access = True
         errored_courses = modulestore().get_errored_courses()
 
     show_courseware_links_for = {
-        enrollment.course_id: has_access(request.user, 'load', enrollment.course_overview)
+        enrollment.course_id: has_access(
+            request.user, "load", enrollment.course_overview
+        )
         for enrollment in course_enrollments
     }
 
@@ -648,19 +720,29 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     inverted_programs = meter.invert_programs()
 
     urls, programs_data = {}, {}
-    bundles_on_dashboard_flag = LegacyWaffleFlag(experiments_namespace, 'bundles_on_dashboard', __name__)  # lint-amnesty, pylint: disable=toggle-missing-annotation
+    bundles_on_dashboard_flag = LegacyWaffleFlag(
+        experiments_namespace, "bundles_on_dashboard", __name__
+    )  # lint-amnesty, pylint: disable=toggle-missing-annotation
 
     # TODO: Delete this code and the relevant HTML code after testing LEARNER-3072 is complete
-    if bundles_on_dashboard_flag.is_enabled() and inverted_programs and list(inverted_programs.items()):
+    if (
+        bundles_on_dashboard_flag.is_enabled()
+        and inverted_programs
+        and list(inverted_programs.items())
+    ):
         if len(course_enrollments) < 4:
             for program in inverted_programs.values():
                 try:
-                    program_uuid = program[0]['uuid']
+                    program_uuid = program[0]["uuid"]
                     program_data = get_programs(uuid=program_uuid)
-                    program_data = ProgramDataExtender(program_data, request.user).extend()
-                    skus = program_data.get('skus')
+                    program_data = ProgramDataExtender(
+                        program_data, request.user
+                    ).extend()
+                    skus = program_data.get("skus")
                     checkout_page_url = ecommerce_service.get_checkout_page_url(*skus)
-                    program_data['completeProgramURL'] = checkout_page_url + '&bundle=' + program_data.get('uuid')
+                    program_data["completeProgramURL"] = (
+                        checkout_page_url + "&bundle=" + program_data.get("uuid")
+                    )
                     programs_data[program_uuid] = program_data
                 except:  # pylint: disable=bare-except
                     pass
@@ -670,8 +752,9 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     # we loaded earlier to avoid hitting the database.
     course_mode_info = {
         enrollment.course_id: complete_course_mode_info(
-            enrollment.course_id, enrollment,
-            modes=course_modes_by_course[enrollment.course_id]
+            enrollment.course_id,
+            enrollment,
+            modes=course_modes_by_course[enrollment.course_id],
         )
         for enrollment in course_enrollments
     }
@@ -698,28 +781,32 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
 
     # only show email settings for Mongo course and when bulk email is turned on
     show_email_settings_for = frozenset(
-        enrollment.course_id for enrollment in course_enrollments if (
-            is_bulk_email_feature_enabled(enrollment.course_id)
-        )
+        enrollment.course_id
+        for enrollment in course_enrollments
+        if (is_bulk_email_feature_enabled(enrollment.course_id))
     )
 
     # Verification Attempts
     # Used to generate the "you must reverify for course x" banner
     verification_status = IDVerificationService.user_status(user)
-    verification_errors = get_verification_error_reasons_for_display(verification_status['error'])
+    verification_errors = get_verification_error_reasons_for_display(
+        verification_status["error"]
+    )
 
     # Gets data for midcourse reverifications, if any are necessary or have failed
     statuses = ["approved", "denied", "pending", "must_reverify"]
     reverifications = reverification_info(statuses)
 
     enrolled_courses_either_paid = frozenset(
-        enrollment.course_id for enrollment in course_enrollments
+        enrollment.course_id
+        for enrollment in course_enrollments
         if enrollment.is_paid_course()
     )
 
     # Checks if a course enrollment redeemed using a voucher is refundable
     enrolled_courses_voucher_refundable = frozenset(
-        enrollment.course_id for enrollment in course_enrollments
+        enrollment.course_id
+        for enrollment in course_enrollments
         if enrollment.is_order_voucher_refundable()
     )
 
@@ -729,84 +816,100 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
 
     # get list of courses having pre-requisites yet to be completed
     courses_having_prerequisites = frozenset(
-        enrollment.course_id for enrollment in course_enrollments
+        enrollment.course_id
+        for enrollment in course_enrollments
         if enrollment.course_overview.pre_requisite_courses
     )
-    courses_requirements_not_met = get_pre_requisite_courses_not_completed(user, courses_having_prerequisites)
+    courses_requirements_not_met = get_pre_requisite_courses_not_completed(
+        user, courses_having_prerequisites
+    )
 
-    if 'notlive' in request.GET:
-        redirect_message = _("The course you are looking for does not start until {date}.").format(
-            date=request.GET['notlive']
-        )
-    elif 'course_closed' in request.GET:
-        redirect_message = _("The course you are looking for is closed for enrollment as of {date}.").format(
-            date=request.GET['course_closed']
-        )
-    elif 'access_response_error' in request.GET:
+    if "notlive" in request.GET:
+        redirect_message = _(
+            "The course you are looking for does not start until {date}."
+        ).format(date=request.GET["notlive"])
+    elif "course_closed" in request.GET:
+        redirect_message = _(
+            "The course you are looking for is closed for enrollment as of {date}."
+        ).format(date=request.GET["course_closed"])
+    elif "access_response_error" in request.GET:
         # This can be populated in a generalized way with fields from access response errors
-        redirect_message = request.GET['access_response_error']
+        redirect_message = request.GET["access_response_error"]
     else:
-        redirect_message = ''
+        redirect_message = ""
 
     # Filter out any course enrollment course cards that are associated with fulfilled entitlements
-    for entitlement in [e for e in course_entitlements if e.enrollment_course_run is not None]:
+    for entitlement in [
+        e for e in course_entitlements if e.enrollment_course_run is not None
+    ]:
         course_enrollments = [
-            enr for enr in course_enrollments if entitlement.enrollment_course_run.course_id != enr.course_id
+            enr
+            for enr in course_enrollments
+            if entitlement.enrollment_course_run.course_id != enr.course_id
         ]
 
-    show_account_activation_popup = request.COOKIES.get(settings.SHOW_ACTIVATE_CTA_POPUP_COOKIE_NAME, None)
+    show_account_activation_popup = request.COOKIES.get(
+        settings.SHOW_ACTIVATE_CTA_POPUP_COOKIE_NAME, None
+    )
 
     context = {
-        'urls': urls,
-        'programs_data': programs_data,
-        'enterprise_message': enterprise_message,
-        'consent_required_courses': consent_required_courses,
-        'enrollment_message': enrollment_message,
-        'redirect_message': Text(redirect_message),
-        'account_activation_messages': account_activation_messages,
-        'activate_account_message': activate_account_message,
-        'course_enrollments': course_enrollments,
-        'course_entitlements': course_entitlements,
-        'course_entitlement_available_sessions': course_entitlement_available_sessions,
-        'unfulfilled_entitlement_pseudo_sessions': unfulfilled_entitlement_pseudo_sessions,
-        'course_optouts': course_optouts,
-        'staff_access': staff_access,
-        'errored_courses': errored_courses,
-        'show_courseware_links_for': show_courseware_links_for,
-        'all_course_modes': course_mode_info,
-        'cert_statuses': cert_statuses,
-        'credit_statuses': _credit_statuses(user, course_enrollments),
-        'show_email_settings_for': show_email_settings_for,
-        'reverifications': reverifications,
-        'verification_display': verification_status['should_display'],
-        'verification_status': verification_status['status'],
-        'verification_expiry': verification_status['verification_expiry'],
-        'verification_status_by_course': verify_status_by_course,
-        'verification_errors': verification_errors,
-        'denied_banner': denied_banner,
-        'billing_email': settings.PAYMENT_SUPPORT_EMAIL,
-        'show_account_activation_popup': show_account_activation_popup,
-        'user': user,
-        'logout_url': reverse('logout'),
-        'platform_name': platform_name,
-        'enrolled_courses_either_paid': enrolled_courses_either_paid,
-        'enrolled_courses_voucher_refundable': enrolled_courses_voucher_refundable,
-        'provider_states': [],
-        'courses_requirements_not_met': courses_requirements_not_met,
-        'nav_hidden': True,
-        'inverted_programs': inverted_programs,
-        'show_program_listing': ProgramsApiConfig.is_enabled(),
-        'show_dashboard_tabs': True,
-        'disable_courseware_js': True,
-        'display_course_modes_on_dashboard': enable_verified_certificates and display_course_modes_on_dashboard,
-        'display_sidebar_account_activation_message': not(user.is_active or hide_dashboard_courses_until_activated),
-        'display_dashboard_courses': (user.is_active or not hide_dashboard_courses_until_activated),
-        'empty_dashboard_message': empty_dashboard_message,
-        'recovery_email_message': recovery_email_message,
-        'recovery_email_activation_message': recovery_email_activation_message,
-        'show_load_all_courses_link': show_load_all_courses_link(user, course_limit, course_enrollments),
+        "urls": urls,
+        "programs_data": programs_data,
+        "enterprise_message": enterprise_message,
+        "consent_required_courses": consent_required_courses,
+        "enrollment_message": enrollment_message,
+        "redirect_message": Text(redirect_message),
+        "account_activation_messages": account_activation_messages,
+        "activate_account_message": activate_account_message,
+        "course_enrollments": course_enrollments,
+        "course_entitlements": course_entitlements,
+        "course_entitlement_available_sessions": course_entitlement_available_sessions,
+        "unfulfilled_entitlement_pseudo_sessions": unfulfilled_entitlement_pseudo_sessions,
+        "course_optouts": course_optouts,
+        "staff_access": staff_access,
+        "errored_courses": errored_courses,
+        "show_courseware_links_for": show_courseware_links_for,
+        "all_course_modes": course_mode_info,
+        "cert_statuses": cert_statuses,
+        "credit_statuses": _credit_statuses(user, course_enrollments),
+        "show_email_settings_for": show_email_settings_for,
+        "reverifications": reverifications,
+        "verification_display": verification_status["should_display"],
+        "verification_status": verification_status["status"],
+        "verification_expiry": verification_status["verification_expiry"],
+        "verification_status_by_course": verify_status_by_course,
+        "verification_errors": verification_errors,
+        "denied_banner": denied_banner,
+        "billing_email": settings.PAYMENT_SUPPORT_EMAIL,
+        "show_account_activation_popup": show_account_activation_popup,
+        "user": user,
+        "logout_url": reverse("logout"),
+        "platform_name": platform_name,
+        "enrolled_courses_either_paid": enrolled_courses_either_paid,
+        "enrolled_courses_voucher_refundable": enrolled_courses_voucher_refundable,
+        "provider_states": [],
+        "courses_requirements_not_met": courses_requirements_not_met,
+        "nav_hidden": True,
+        "inverted_programs": inverted_programs,
+        "show_program_listing": ProgramsApiConfig.is_enabled(),
+        "show_dashboard_tabs": True,
+        "disable_courseware_js": True,
+        "display_course_modes_on_dashboard": enable_verified_certificates
+        and display_course_modes_on_dashboard,
+        "display_sidebar_account_activation_message": not (
+            user.is_active or hide_dashboard_courses_until_activated
+        ),
+        "display_dashboard_courses": (
+            user.is_active or not hide_dashboard_courses_until_activated
+        ),
+        "empty_dashboard_message": empty_dashboard_message,
+        "recovery_email_message": recovery_email_message,
+        "recovery_email_activation_message": recovery_email_activation_message,
+        "show_load_all_courses_link": show_load_all_courses_link(
+            user, course_limit, course_enrollments
+        ),
         # TODO START: clean up as part of REVEM-199 (START)
-        'course_info': get_dashboard_course_info(user, course_enrollments),
+        "course_info": get_dashboard_course_info(user, course_enrollments),
         # TODO START: clean up as part of REVEM-199 (END)
     }
 
@@ -815,9 +918,7 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     context.update(enterprise_learner_portal_context)
 
     context_from_plugins = get_plugins_view_context(
-        ProjectType.LMS,
-        COURSE_DASHBOARD_PLUGIN_VIEW_NAME,
-        context
+        ProjectType.LMS, COURSE_DASHBOARD_PLUGIN_VIEW_NAME, context
     )
     context.update(context_from_plugins)
 
@@ -833,27 +934,27 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
         )
     )
     if ecommerce_service.is_enabled(request.user):
-        context.update({
-            'use_ecommerce_payment_flow': True,
-            'ecommerce_payment_page': ecommerce_service.payment_page_url(),
-        })
+        context.update(
+            {
+                "use_ecommerce_payment_flow": True,
+                "ecommerce_payment_page": ecommerce_service.payment_page_url(),
+            }
+        )
 
     # Gather urls for course card resume buttons.
-    resume_button_urls = ['' for entitlement in course_entitlements]
+    resume_button_urls = ["" for entitlement in course_entitlements]
     for url in get_resume_urls_for_enrollments(user, course_enrollments).values():
         resume_button_urls.append(url)
     # There must be enough urls for dashboard.html. Template creates course
     # cards for "enrollments + entitlements".
-    context.update({
-        'resume_button_urls': resume_button_urls
-    })
+    context.update({"resume_button_urls": resume_button_urls})
 
-    response = render_to_response('dashboard.html', context)
+    response = render_to_response("dashboard.html", context)
     if show_account_activation_popup:
         response.delete_cookie(
             settings.SHOW_ACTIVATE_CTA_POPUP_COOKIE_NAME,
             domain=settings.SESSION_COOKIE_DOMAIN,
-            path='/',
+            path="/",
         )
 
     return response
