@@ -80,6 +80,11 @@ from xmodule.modulestore.django import (
 
 log = logging.getLogger("edx.student")
 
+# Added by Mahendra
+from subscription.api import user_coupon_info
+from free_trial.models import FreeTrialSettings
+from ebc_course.models import EbcCourseConfiguration
+
 experiments_namespace = LegacyWaffleFlagNamespace(name="student.experiments")
 
 
@@ -559,6 +564,15 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     if not UserProfile.objects.filter(user=user).exists():
         return redirect(reverse("account_settings"))
 
+    # Added by Mahendra
+    user_trial_coupon = user_coupon_info(user)
+    try:
+        free_trial_cert_restriction = (
+            FreeTrialSettings.objects.first().enable_free_trial_cert_restrictions
+        )
+    except Exception as e:
+        free_trial_cert_restriction = True
+
     platform_name = configuration_helpers.get_value(
         "platform_name", settings.PLATFORM_NAME
     )
@@ -948,6 +962,263 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     # There must be enough urls for dashboard.html. Template creates course
     # cards for "enrollments + entitlements".
     context.update({"resume_button_urls": resume_button_urls})
+
+    # Added by Mahendra
+    from ebc_course.models import EbcCourseConfiguration
+
+    weekly_series_enrollments = []
+    new_course_enrollments = []
+    for course_enrollment in course_enrollments:
+        try:
+            ebc_course_configuration = EbcCourseConfiguration.objects.get(
+                course__course_key=course_enrollment.course_id, weekly_series=True
+            )
+            weekly_series_enrollments.append(course_enrollment)
+        except Exception as e:
+            log.info(str(e))
+            new_course_enrollments.append(course_enrollment)
+
+    # programs_data = program_search_data(user)
+    ebc_subjects = []
+    weekly_series_subjects = []
+    paths_subjects = []
+
+    for course_enrollment in new_course_enrollments:
+        try:
+            ebc_course_configuration = EbcCourseConfiguration.objects.get(
+                course__course_key=course_enrollment.course_id
+            )
+            if ebc_course_configuration.subject not in ebc_subjects:
+                ebc_subjects.append(ebc_course_configuration.subject)
+        except Exception as e:
+            log.info(str(e))
+
+    for weekly_series_enrollment in weekly_series_enrollments:
+        try:
+            ebc_course_configuration = EbcCourseConfiguration.objects.get(
+                course__course_key=weekly_series_enrollment.course_id
+            )
+            if ebc_course_configuration.subject not in weekly_series_subjects:
+                weekly_series_subjects.append(ebc_course_configuration.subject)
+        except Exception as e:
+            log.info(str(e))
+
+    get_course_progress_ids = [i.course_id for i in course_enrollments]
+    # programs_data_for_path = program_search_data(user, all_data=True)
+    programs_data_for_path = list()
+    # pro = custom_dashboard_views.get_courses_progress(user, get_course_progress_ids)
+    courses_of_path = {}
+    program_unenroll_status = []
+    for program in programs_data_for_path:
+        tmp_dict = {}
+        unenroll_status = False
+        for course in program["course_codes"]:
+            if not unenroll_status:
+                course_locator = CourseKey.from_string(course["key"])
+                course_cert_info = cert_statuses.get(course_locator)
+                if course_cert_info:
+                    can_unenroll = course_cert_info["can_unenroll"]
+                    if not can_unenroll:
+                        unenroll_status = True
+            try:
+                passing_grade = (
+                    CourseOverview.get_from_id(
+                        CourseKey.from_string(course["key"])
+                    ).lowest_passing_grade
+                    * 100
+                )
+            except Exception as e:
+                log.info(str(e))
+                passing_grade = "Not Enrolled"
+            try:
+                stud_grade = pro[CourseKey.from_string(course["key"])]
+            except Exception as e:
+                log.info(str(e))
+                stud_grade = "Not Enrolled"
+
+            tmp_dict[course["key"]] = [passing_grade, stud_grade]
+
+        program_unenroll_status += [
+            {"program_id": program["id"], "unenroll_status": unenroll_status}
+        ]
+        courses_of_path[program["id"]] = tmp_dict
+
+    path_details = {}
+
+    for program in programs_data:
+        if program["program_overview"]["start_date"]:
+            program_start_date = program_start_date = datetime.datetime.strptime(
+                program["program_overview"]["start_date"], "%Y-%m-%dT%H:%M:%SZ"
+            ).replace(tzinfo=UTC)
+            if program_start_date > today:
+                program["is_program_future"] = True
+                program["program_start_date"] = program_start_date.strftime("%B %d, %Y")
+            else:
+                program["is_program_future"] = False
+
+        for certy in program_unenroll_status:
+            if certy["program_id"] == program["id"]:
+                program["unenroll_status"] = certy["unenroll_status"]
+        try:
+            if program["subject"] not in paths_subjects:
+                paths_subjects.append(program["subject"])
+        except Exception as e:
+            log.info(str(e))
+
+    for path_id, path_courses in courses_of_path.items():
+        completed = 0
+        inprogress = 0
+        remaining = 0
+        path_certificate = 0
+        for course_id, course_grades in path_courses.iteritems():
+            course_s_key = CourseKey.from_string(course_id)
+            course = modulestore().get_course(course_s_key, depth=0)
+            certificates = course.certificates.get("certificates", [])
+            try:
+                course_locator = CourseKey.from_string(course_id)
+            except Exception as e:
+                log.info(str(e))
+                course_locator = SlashSeparatedCourseKey.from_deprecated_string(
+                    course_id
+                )
+            if course_grades[1] != "Not Enrolled":
+                if course_grades[1] >= int(course_grades[0]):
+                    completed += 1
+                    try:
+                        cert_statuses.get(course_locator)["status"] == "ready"
+                        path_certificate += 1
+                    except Exception as e:
+                        log.info(str(e))
+                else:
+                    if certificates == []:
+                        # inprogress += 1
+                        completed += 1
+                        path_certificate += 1
+                    else:
+                        inprogress += 1
+                        # completed += 1
+            else:
+                remaining += 1
+        course_id = CourseKey.from_string(course_id)
+
+        try:
+            student_total_progress = StudentTotalProgress.objects.get(
+                course_id=course_id
+            )
+        except Exception as e:
+            log.info(str(e))
+            student_total_progress = False
+        course_video_completion = CourseVideoCompletion.objects.filter(
+            user=user, course_id=course_id, is_video_completed=True
+        ).count()
+
+        if student_total_progress:
+            if str(student_total_progress.total_video) == course_video_completion:
+                if not GeneratedCertificate.objects.filter(
+                    user=user, course_id=course_id
+                ).exists():
+                    custom_certificate = GeneratedCertificate.objects.get_or_create(
+                        user=user,
+                        course_id=course_id,
+                        verify_uuid=uuid.uuid4().hex,
+                        status="downloadable",
+                        mode=enrollment.mode,
+                    )
+        course = modulestore().get_course(course_id, depth=0)
+        certificates = course.certificates.get("certificates", [])
+        if path_certificate == len(path_courses):
+            certificate_id = uuid.uuid4().hex
+            user = request.user
+            for path_detail in programs_data_for_path:
+                if path_detail["id"] == path_id:
+                    path_name = path_detail["name"]
+                    if path_detail["program_overview"]:
+                        path_instructor = ", ".join(
+                            path_detail["program_overview"].get("instructor", "")
+                        )
+                    else:
+                        path_instructor = "---"
+                    if path_detail["certificate_instructor_details"]:
+                        signature_instructor_name = path_detail[
+                            "certificate_instructor_details"
+                        ]["name"]
+                        signature_instructor_designation = path_detail[
+                            "certificate_instructor_details"
+                        ]["designation"]
+                        signature_url = path_detail["certificate_instructor_details"][
+                            "signature_urls"
+                        ]  # ['w435h145']
+                    else:
+                        signature_instructor_name = ""
+                        signature_instructor_designation = ""
+                        signature_url = ""
+            path_certificate_obj, created = PathCertificate.objects.get_or_create(
+                user=user, path_id=path_id
+            )
+            if created:
+                path_certificate_obj.uuid = certificate_id
+                path_certificate_obj.path_name = path_name
+                path_certificate_obj.path_instructor = path_instructor
+                path_certificate_obj.signature_instructor_name = (
+                    signature_instructor_name
+                )
+                path_certificate_obj.signature_instructor_designation = (
+                    signature_instructor_designation
+                )
+                path_certificate_obj.signature_url = signature_url
+                path_certificate_obj.save()
+                path_certificate_url = path_certificate_obj.uuid
+            else:
+                path_certificate_url = path_certificate_obj.uuid.hex
+            path_details[path_id] = {
+                "completed": completed,
+                "inprogress": inprogress,
+                "remaining": remaining,
+                "path_certificate_url": path_certificate_url,
+            }
+        else:
+            path_details[path_id] = {
+                "completed": completed,
+                "inprogress": inprogress,
+                "remaining": remaining,
+                "path_certificate_url": False,
+            }
+
+    try:
+        enrolled_course = CourseEnrollment.objects.filter(user=user).latest("created")
+    except Exception as e:
+        enrolled_course = None
+    if enrolled_course:
+        if enrolled_course.is_active:
+            try:
+                config_object = EbcCourseConfiguration.objects.get(
+                    course__course_key=enrolled_course.course_id
+                )
+                context.update({"enrollment_is_talks": config_object.weekly_series})
+            except Exception as e:
+                context.update({"enrollment_is_talks": False})
+        else:
+            context.update({"enrollment_is_talks": False})
+    else:
+        context.update({"enrollment_is_talks": False})
+
+    context.update(
+        {
+            "course_enrollments": new_course_enrollments,
+            "weekly_series_enrollments": weekly_series_enrollments,
+            "progress_list": dict(),
+            "ebc_subjects": ebc_subjects,
+            "weekly_series_subjects": weekly_series_subjects,
+            "paths_subjects": paths_subjects,
+            "path_details": path_details,
+            "free_trial_cert_restriction": free_trial_cert_restriction,
+            "user_trial_coupon": user_trial_coupon,
+            "playlists": list(),
+            "show_refund_option_for": list(),
+            "block_courses": list(),
+            "course_programs": dict(),
+        }
+    )
 
     response = render_to_response("dashboard.html", context)
     if show_account_activation_popup:

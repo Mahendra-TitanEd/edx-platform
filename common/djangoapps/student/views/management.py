@@ -131,6 +131,30 @@ from xmodule.modulestore.django import (
     modulestore,
 )  # lint-amnesty, pylint: disable=wrong-import-order
 
+# Added by Mahendra
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from lms.djangoapps.courseware.courses import get_course_by_id
+from lms.djangoapps.courseware.models import StudentModule
+from lms.djangoapps.certificates.models import GeneratedCertificate
+from lms.djangoapps.courseware.courses import get_course_with_access
+
+from subscription.api import user_coupon_info
+from course_about.models import CourseInstructor
+from homepage_video.models import HomepageVideo
+from free_trial.models import FreeTrialSettings
+from leaderboard.models import LeaderBoard
+from subscription.views import verify_subscription
+from subscription.models import UserSubscription
+from ebc_testimonial.models import Testimonial
+from ebc_course.models import EbcCourseConfiguration
+from hit_counter.views import sort_weekly_series_by_courseware_hit
+
+from pytz import UTC
+
+today = UTC.localize(datetime.datetime.now())
+today = today.replace(tzinfo=UTC)
+
+
 log = logging.getLogger("edx.student")
 
 AUDIT_LOG = logging.getLogger("audit")
@@ -211,7 +235,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
     # Note: This value should be moved into a configuration setting and plumbed-through to the
     # context via the site configuration workflow, versus living here
     youtube_video_id = configuration_helpers.get_value(
-        "homepage_promo_video_youtube_id", "your-youtube-id"
+        "homepage_promo_video_youtube_id", "B-EFayAA5_0"
     )
     context["homepage_promo_video_youtube_id"] = youtube_video_id
 
@@ -225,6 +249,217 @@ def index(request, extra_context=None, user=AnonymousUser()):
     context["programs_list"] = get_programs_with_type(
         request.site, include_hidden=False
     )
+
+    # Added by Mahendra
+    # added template for new courses section on index page
+    context["new_courses_list"] = theming_helpers.get_template_path(
+        "new_courses_list.html"
+    )
+
+    # added template for weekly series
+    context["weekly_series_list"] = theming_helpers.get_template_path(
+        "weekly_series_list.html"
+    )
+
+    # added template for path
+    context["path_list"] = theming_helpers.get_template_path("path_list.html")
+
+    never_subscribed = True
+    instructors = {}
+    upcoming_courses = list()
+    all_courses = CourseOverview.objects.all()
+    new_courses = list()
+    courses_without_invitation = list()
+    weekly_series_without_invitation = list()
+    upcoming_courses_without_invitation = list()
+    new_courses_without_invitation = list()
+
+    if request.user.is_authenticated:
+        try:
+            user_subscription = verify_subscription(request)
+            user_subscription = json.loads(user_subscription.content)
+            never_subscribed = user_subscription.get("never_subscribed")
+        except Exception as e:
+            pass
+
+    context["never_subscribed"] = never_subscribed
+    # added for new course on index page
+    for course in all_courses:
+        course_item = get_course_with_access(request.user, "load", course.id)
+        try:
+            course_config = EbcCourseConfiguration.objects.get(
+                course__course_key=course.id
+            )
+            is_upcoming = course_config.is_upcoming
+        except Exception as e:
+            is_upcoming = False
+        if is_upcoming:
+            upcoming_courses.append(course)
+            if course in courses:
+                courses.remove(course)
+
+        course_enrollment_end = (
+            course.enrollment_end if course.enrollment_end != None else None
+        )
+        if course_enrollment_end != None:
+            if course_item.is_new or course_enrollment_end > today:
+                # new_courses.append(course)
+                pass
+        else:
+            if course_item.is_new:
+                new_courses.append(course)
+
+    context["new_courses"] = new_courses
+    upcoming_courses = list(set(upcoming_courses))
+
+    for course in courses:
+        try:
+            instructors_list = {
+                "instructors": ", ".join(
+                    CourseInstructor.objects.filter(
+                        course_configuration__course__course_key=course.id
+                    ).values_list("name", flat=True)
+                )
+            }
+            course = CourseOverview.objects.get(id=course.id)
+            if not course.self_paced:
+                if course.enrollment_end:
+                    if course.enrollment_end > today:
+                        enroll_date = "Enroll by {}".format(
+                            course.enrollment_end.strftime("%b %d, %Y")
+                        )
+            elif course.self_paced:
+                enroll_date = "Available Now"
+            instructors_list.update({"enroll_date": enroll_date})
+            instructors.update({course.id: instructors_list})
+        except Exception as e:
+            pass
+
+        # hide invitation courses.
+        if not course.invitation_only:
+            courses_without_invitation.append(course)
+
+    # insert instructors to  the context for use in the template
+    weekly_series = sort_weekly_series_by_courseware_hit(courses)
+    weekly_instructors = {}
+    for series in weekly_series:
+        try:
+            instructors_list = {
+                "instructors": ", ".join(
+                    CourseInstructor.objects.filter(
+                        course_configuration__course__course_key=series.id
+                    ).values_list("name", flat=True)
+                )
+            }
+            weekly_instructors.update({series.id: instructors_list})
+        except Exception as e:
+            pass
+        # hide invitation courses.
+        if not series.invitation_only:
+            weekly_series_without_invitation.append(series)
+
+    upcoming_instructors = {}
+    for upcoming_course in upcoming_courses:
+        try:
+            instructors_list = {
+                "instructors": ", ".join(
+                    CourseInstructor.objects.filter(
+                        course_configuration__course__course_key=upcoming_course.id
+                    ).values_list("name", flat=True)
+                )
+            }
+            course_config = EbcCourseConfiguration.objects.get(
+                course__course_key=upcoming_course.id
+            )
+            course = CourseOverview.objects.get(id=upcoming_course.id)
+            is_talk = course_config.weekly_series
+            instructors_list.update({"is_talk": is_talk})
+            if not course.self_paced:
+                if course.enrollment_end:
+                    if course.enrollment_end > today:
+                        enroll_date = "Enroll by {}".format(
+                            course.enrollment_end.strftime("%b %d, %Y")
+                        )
+            elif course.self_paced:
+                enroll_date = "Available Now"
+            instructors_list.update({"enroll_date": enroll_date})
+            upcoming_instructors.update({upcoming_course.id: instructors_list})
+
+        except Exception as e:
+            pass
+        # hide invitation courses.
+        if not upcoming_course.invitation_only:
+            upcoming_courses_without_invitation.append(upcoming_course)
+
+    new_instructors = {}
+
+    for new_course in new_courses:
+        try:
+            instructors_list = {
+                "instructors": ", ".join(
+                    CourseInstructor.objects.filter(
+                        course_configuration__course__course_key=new_course.id
+                    ).values_list("name", flat=True)
+                )
+            }
+            course_config = EbcCourseConfiguration.objects.get(
+                course__course_key=new_course.id
+            )
+            course = CourseOverview.objects.get(id=new_course.id)
+            is_talk = course_config.weekly_series
+            instructors_list.update({"is_talk": is_talk})
+            if not course.self_paced:
+                if course.enrollment_end:
+                    if course.enrollment_end > today:
+                        enroll_date = "Enroll by {}".format(
+                            course.enrollment_end.strftime("%b %d, %Y")
+                        )
+                    else:
+                        enroll_date = "Available Now"
+            elif course.self_paced:
+                enroll_date = "Available Now"
+            instructors_list.update({"enroll_date": enroll_date})
+            new_instructors.update({new_course.id: instructors_list})
+
+        except Exception as e:
+            pass
+        # hide invitation courses.
+        if not new_course.invitation_only:
+            new_courses_without_invitation.append(new_course)
+    context["instructors"] = instructors
+    context["weekly_instructors"] = weekly_instructors
+    context["upcoming_courses_html"] = "upcoming_courses.html"
+    context["upcomming_courses"] = upcoming_courses_without_invitation
+    context["upcoming_instructors"] = upcoming_instructors
+    context["new_courses"] = new_courses_without_invitation
+    context["new_instructors"] = new_instructors
+    context["courses"] = courses_without_invitation
+    context["weekly_series"] = weekly_series_without_invitation
+    context["testimonial_list"] = Testimonial.objects.order_by("-modified")
+
+    video = HomepageVideo.objects.filter(is_active=True)
+    if video:
+        homepage_video = video[0]
+    else:
+        homepage_video = None
+    context["homepage_video"] = homepage_video
+
+    user_coupon = user_coupon_info(request.user)
+    user_subscription_status = UserSubscription.has_subscribed(request.user)
+    if user == AnonymousUser():
+        context.update({"user_coupon_info": False})
+    else:
+        trial_settings_obj = FreeTrialSettings.objects.first()
+        if not user_coupon and user_subscription_status:
+            context.update({"user_coupon_info": False})
+        else:
+            if trial_settings_obj:
+                if trial_settings_obj.enable_free_trial_course_limit:
+                    context.update({"user_coupon_info": True})
+                else:
+                    context.update({"user_coupon_info": False})
+            else:
+                context.update({"user_coupon_info": False})
 
     return render_to_response("index.html", context)
 

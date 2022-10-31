@@ -569,6 +569,23 @@ def _cert_info(user, enrollment, cert_status):
     status = template_state.get(cert_status["status"], default_status)
     is_hidden_status = status in ("processing", "generating", "notpassing", "auditing")
 
+    # Added by Mahendra
+    from course_progress.models import StudentTotalProgress
+    from ebc_royaltycal.models import CourseVideoCompletion
+
+    try:
+        student_total_progress = StudentTotalProgress.objects.get(
+            course_id=course_overview.id
+        )
+    except:
+        student_total_progress = None
+    try:
+        course_video_completion = CourseVideoCompletion.objects.filter(
+            user=user, course_id=course_overview.id, is_video_completed=True
+        )
+    except:
+        course_video_completion = None
+
     if _is_certificate_earned_but_not_available(course_overview, status):
         status = certificate_earned_but_not_available_status
 
