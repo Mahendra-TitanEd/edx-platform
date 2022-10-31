@@ -3233,6 +3233,10 @@ INSTALLED_APPS = [
 
     # Blockstore
     'blockstore.apps.bundles',
+
+    'dal',
+    'dal_select2',
+    'import_export',
 ]
 
 ######################### CSRF #########################################
