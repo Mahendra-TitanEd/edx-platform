@@ -56,6 +56,7 @@ from openedx.core.djangoapps.site_configuration import helpers as configuration_
 from openedx.core.lib.courses import course_image_url
 from openedx.core.lib.courses import get_course_by_id
 from xmodule.data import CertificatesDisplayBehaviors  # lint-amnesty, pylint: disable=wrong-import-order
+from openedx.core.djangoapps.user_api.accounts.image_helpers import get_profile_image_urls_for_user
 
 log = logging.getLogger(__name__)
 _ = translation.gettext
@@ -123,8 +124,15 @@ def _update_certificate_context(context, course, course_overview, user_certifica
     else:
         date = display_date_for_certificate(course, user_certificate)
     # Translators:  The format of the date includes the full name of the month
-    context['certificate_date_issued'] = strftime_localized(date, settings.CERTIFICATE_DATE_FORMAT)
+    # Updated by Mahendra
+    context['certificate_date_issued'] = _('{day}.{month}.{year}').format(
+        day=user_certificate.modified_date.strftime("%d"),
+        month=user_certificate.modified_date.strftime("%m"),
+        year=user_certificate.modified_date.strftime("%Y")
+    )
 
+    context['certificate_date_issued_out_cert'] = user_certificate.modified_date
+    
     # Translators:  This text represents the verification of the certificate
     context['document_meta_description'] = _('This is a valid {platform_name} certificate for {user_name}, '
                                              'who participated in {partner_short_name} {course_number}').format(
@@ -141,13 +149,23 @@ def _update_certificate_context(context, course, course_overview, user_certifica
         platform_name=platform_name
     )
 
+    #Added by Mahendra
+    if user_certificate.grade:
+        passing_grade = int(float(user_certificate.grade) * 100)
+        #passing_grade_condi = False
+    else:
+        passing_grade = user_certificate.grade + "__"
+
     # Translators:  This text fragment appears after the student's name (displayed in a large font) on the certificate
     # screen.  The text describes the accomplishment represented by the certificate information displayed to the user
-    context['accomplishment_copy_description_full'] = _("successfully completed, received a passing grade, and was "
+    # Updated by Mahendra
+    context['accomplishment_copy_description_full'] = _("successfully completed, scored {passing_grade}%, and was "
                                                         "awarded this {platform_name} {certificate_type} "
                                                         "Certificate of Completion in ").format(
         platform_name=platform_name,
-        certificate_type=context.get("certificate_type"))
+        certificate_type=context.get("certificate_type"),
+        passing_grade=passing_grade,
+    )
 
     certificate_type_description = get_certificate_description(
         user_certificate.mode, certificate_type, platform_name, course.location.course_key
@@ -252,6 +270,17 @@ def _update_course_context(request, context, course, platform_name):
     context['accomplishment_copy_course_name'] = accomplishment_copy_course_name
     course_number = course.display_coursenumber if course.display_coursenumber else course.number
     context['course_number'] = course_number
+
+    #Added by Mahendra
+    from course_about.models import CourseInstructor
+    instructors = CourseInstructor.objects.filter(course_configuration__course__course_key=course.id).values_list('name',flat=True)
+    # to show instructor name in certificate
+    if instructors:
+        context['instructor'] = ', '.join(instructors)
+    else:
+        context['instructor'] = "---"
+    # end
+
     context['is_integrity_signature_enabled_for_course'] = settings.FEATURES.get('ENABLE_INTEGRITY_SIGNATURE')
     if context['organization_long_name']:
         # Translators:  This text represents the description of course
@@ -327,19 +356,21 @@ def _update_context_with_user_info(context, user, user_certificate):
         user_name=user_fullname
     )
     # Translators: This line is displayed to a user who has completed a course and achieved a certification
-    context['accomplishment_banner_opening'] = _("{fullname}, you earned a certificate!").format(
+    context['accomplishment_banner_opening'] = _("{fullname}, you've earned a certificate").format(
         fullname=user_fullname
     )
 
     # Translators: This line congratulates the user and instructs them to share their accomplishment on social networks
-    context['accomplishment_banner_congrats'] = _("Congratulations! This page summarizes what "
-                                                  "you accomplished. Show it off to family, friends, and colleagues "
+    context['accomplishment_banner_congrats'] = _("Congratulations! This page summarises all "
+                                                  "of the  details of what you've accomplished. Show it off to family, friends, and colleagues "
                                                   "in your social and professional networks.")
 
     # Translators: This line leads the reader to understand more about the certificate that a student has been awarded
     context['accomplishment_copy_more_about'] = _("More about {fullname}'s accomplishment").format(
         fullname=user_fullname
     )
+
+    context['accomplishment_profile_url'] = get_profile_image_urls_for_user(user)['large'].split("?")[0]
 
 
 def _get_user_certificate(request, user, course_key, course_overview, preview_mode=None):
