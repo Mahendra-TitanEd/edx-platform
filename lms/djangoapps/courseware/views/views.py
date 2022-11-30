@@ -1180,12 +1180,13 @@ def course_about(request, course_id):
             "allow_anonymous": allow_anonymous,
         }
         # Added by Mahendra
-        get_social_share_urls(request, context, course, overview)
+        from ebc_course.helpers import get_course_config_details
+        get_course_config_details(request, context, course, overview)
         return render_to_response("courseware/course_about.html", context)
 
 
 @ensure_csrf_cookie
-@cache_if_anonymous()
+# @cache_if_anonymous()
 def program_marketing(request, program_uuid):
     """
     Display the program marketing page.
@@ -1208,6 +1209,10 @@ def program_marketing(request, program_uuid):
         )
 
     context["uses_bootstrap"] = True
+
+    # Added by Mahendra
+    from ebc_path_enrollment.helpers import get_program_more_context
+    get_program_more_context(request, program_uuid, program, context)
 
     return render_to_response("courseware/program_marketing.html", context)
 
@@ -2488,30 +2493,3 @@ def get_learner_username(learner_identifier):
     ).first()
     if learner:
         return learner.username
-
-
-# Added by Mahendra
-def get_social_share_urls(request, context, course, course_overview):
-
-    # Site Domain and Platform name
-
-    site_domain = settings.SITE_NAME
-    platform_name = settings.PLATFORM_NAME
-    share_url = urllib.parse.quote_plus(
-        request.build_absolute_uri(
-            reverse("about_course", args=[str(course_overview.id)])
-        )
-    )
-    share_text_default = _("I'm learning on {platform_name}:").format(
-        platform_name=settings.PLATFORM_NAME
-    )
-
-    share_text = urllib.parse.quote_plus(share_text_default)
-
-    # Facebook Share URL
-    facebook_url = "https://www.facebook.com/sharer/sharer.php?u=" + share_url
-
-    context["facebook_url"] = facebook_url
-    context["share_url"] = share_url
-
-    return context

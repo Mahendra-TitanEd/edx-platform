@@ -77,7 +77,6 @@ from ..model_data import FieldDataCache
 from ..module_render import get_module_for_descriptor, toc_for_course
 from ..permissions import MASQUERADE_AS_STUDENT
 from ..toggles import courseware_legacy_is_visible, courseware_mfe_is_advertised
-from .views import CourseTabView, get_social_share_urls
 
 
 # Added by Mahendra
@@ -527,6 +526,7 @@ class CoursewareIndex(View):
         # Added by Mahendra
         overview = CourseOverview.get_from_id(self.course.id)
         # share course on facebook
+        from ebc_course.helpers import get_social_share_urls
         get_social_share_urls(self.request, courseware_context, self.course, overview)
 
         table_of_contents = toc_for_course(
