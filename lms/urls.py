@@ -1041,6 +1041,11 @@ urlpatterns += [
     path('api/ora_staff_grader/', include('lms.djangoapps.ora_staff_grader.urls', 'ora-staff-grader')),
 ]
 
+#Added by Mahendra
+# to use editor to edit content from admin panel
+urlpatterns += (
+    url(r'^tinymce/', include('tinymce.urls')),
+)
 
 if settings.FEATURES.get('AUTH_USE_CAS'):
     import django_cas_ng.views

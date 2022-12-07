@@ -3234,9 +3234,11 @@ INSTALLED_APPS = [
     # Blockstore
     'blockstore.apps.bundles',
 
+    # Added by Mahendra
     'dal',
     'dal_select2',
     'import_export',
+    'tinymce',
 ]
 
 ######################### CSRF #########################################
@@ -5101,7 +5103,7 @@ DISCUSSION_MODERATION_CLOSE_REASON_CODES = {
     "off-topic": _("Post is off-topic"),
 }
 
-
+# Added by Mahendra
 ######################## CAS authentication ###########################
 
 if FEATURES.get('AUTH_USE_CAS'):
@@ -5112,3 +5114,28 @@ if FEATURES.get('AUTH_USE_CAS'):
    )
    INSTALLED_APPS += ('django_cas_ng',)
    MIDDLEWARE += ('django_cas_ng.middleware.CASMiddleware',)
+
+######################## TINYMCE DEFAULT CONFIG ###########################
+
+TINYMCE_DEFAULT_CONFIG = {
+   'height': 300,
+   'width': 720,
+   'cleanup_on_startup': True,
+   'custom_undo_redo_levels': 20,
+   'selector': 'textarea',
+   'theme': 'modern',
+   'plugins': '''
+         textcolor save link image media codesample contextmenu
+         table code lists insertdatetime  nonbreaking
+         contextmenu directionality searchreplace wordcount visualblocks
+         visualchars code fullscreen autolink lists  charmap print  hr
+         anchor pagebreak
+         ''',
+   'toolbar1': '''
+         fullscreen preview bold italic underline | fontselect,
+         fontsizeselect  | forecolor backcolor | alignleft alignright |
+         aligncenter alignjustify | indent outdent | link image media
+         ''',
+   'menubar': False,
+   'statusbar': True,
+}
