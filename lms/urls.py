@@ -1044,7 +1044,7 @@ urlpatterns += [
 #Added by Mahendra
 # to use editor to edit content from admin panel
 urlpatterns += (
-    url(r'^tinymce/', include('tinymce.urls')),
+    re_path(r'^tinymce/', include('tinymce.urls')),
 )
 
 if settings.FEATURES.get('AUTH_USE_CAS'):
