@@ -2,6 +2,9 @@
 
 import logging
 import re
+import collections
+import pytz
+import datetime
 from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 
@@ -18,6 +21,16 @@ from openedx.core.lib.courses import course_image_url
 from xmodule.annotator_mixin import html_to_text  # lint-amnesty, pylint: disable=wrong-import-order
 from xmodule.library_tools import normalize_key_for_search  # lint-amnesty, pylint: disable=wrong-import-order
 from xmodule.modulestore import ModuleStoreEnum  # lint-amnesty, pylint: disable=wrong-import-order
+
+
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from openedx.core.djangoapps.models.course_details import CourseDetails
+from ebc_course.models import EbcCourseConfiguration
+# from programs_search import views as programs_search_view
+from hit_counter.views import get_count, get_weekly_series_views
+from lms.djangoapps.courseware.courses import get_course_about_section
+from course_about.models import CourseInstructor
+from free_trial.models import FreeTrialSettings
 
 # REINDEX_AGE is the default amount of time that we look back for changes
 # that might have happened. If we are provided with a time at which the
@@ -606,17 +619,82 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             return
 
         course_id = str(course.id)
+
+        # Added by Mahendra
+        local_tz = pytz.timezone(settings.TIME_ZONE)
+        course_start_date = course.start.astimezone(local_tz).date()
+        today_date = datetime.datetime.now().date()
+        course_overview = CourseOverview.objects.get(id=course.id)
+        course_details = CourseDetails.fetch(course.id)
+        try:
+            hits = get_weekly_series_views(course)
+        except Exception as e:
+            hits = 0
+        try:
+            course_length = course_details.duration
+        except Exception as e:
+            course_length = ""
+
+        # instructors_list = course_details.instructor_info
+        instructors_list = {
+            "instructors": ", ".join(
+                CourseInstructor.objects.filter(
+                    course_configuration__course__course_key=course.id
+                ).values_list("name", flat=True)
+            )
+        }
+
+        # Course Price for Instructor Led Courses on Courses Page
+        # Second Variable is to seprate price with comma in try block
+        try:
+            course_price = CourseMode.objects.filter(course_id=course.id)[0].min_price
+            course_price = "{:,}".format(int(course_price))
+        except:
+            course_price = None
+
+        # get Dates from course and format it for future date condition
+        try:
+            enrollment_end = course.enrollment_end.strftime("%b %d, %Y")
+            start_date = course.start.date().strftime("%b %d, %Y")
+        except:
+            enrollment_end = course.enrollment_end
+            start_date = course.start.date()
+
+        if not course.self_paced:
+            if enrollment_end:
+                if enrollment_end > today_date.strftime("%b %d, %Y"):
+                    enroll_date = "Enroll by {}".format(
+                        course.enrollment_end.strftime("%b %d, %Y")
+                    )
+                else:
+                    enroll_date = "Available Now"
+            else:
+                enroll_date = "Available Now"
+        else:
+            enroll_date = "Available Now"
+
+        start_date = course.start.date().strftime("%b %d, %Y")
+        advertised_start = course.advertised_start or start_date
+
         course_info = {
-            'id': course_id,
-            'course': course_id,
-            'content': {},
-            'image_url': course_image_url(course),
+            "id": course_id,
+            "course": course_id,
+            "content": {},
+            "image_url": course_image_url(course),
+            "instructors": instructors_list,  # Added by Mahendra
+            "hits": hits,  # Added by Mahendra
+            "length": course_length,  # Added by Mahendra
+            "enroll_end_date": enroll_date,  # Added by Mahendra
+            "course_price": course_price,  # Added by Mahendra
+            "a_date": advertised_start,  # Added by Mahendra
         }
 
         # load data for all of the 'about' modules for this course into a dictionary
         about_dictionary = {
             item.location.block_id: item.data
-            for item in modulestore.get_items(course.id, qualifiers={"category": "about"})
+            for item in modulestore.get_items(
+                course.id, qualifiers={"category": "about"}
+            )
         }
 
         about_context = {
@@ -642,24 +720,244 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                     analyse_content = section_content
                     if isinstance(section_content, str):
                         analyse_content = strip_html_content_to_text(section_content)
-                    course_info['content'][about_information.property_name] = analyse_content
+                    course_info["content"][
+                        about_information.property_name
+                    ] = analyse_content
                 if about_information.index_flags & AboutInfo.PROPERTY:
                     course_info[about_information.property_name] = section_content
 
-        # Broad exception handler to protect around and report problems with indexing
-        try:
-            searcher.index([course_info])
-        except:
-            log.exception(
-                "Course discovery indexing error encountered, course discovery index may be out of date %s",
-                course_id,
+        # Added by Mahendra
+        # To search courses using synonyms added in advanced settings.
+        course_fields = course.fields.values()
+        for field in course_fields:
+            if field.name == "course_synonyms":
+                course_info["content"]["course_synonyms"] = field.read_json(course)
+
+        if course.is_new:
+            course_info.update(
+                {
+                    "is_new": True,
+                    "is_recent": True,
+                }
             )
-            raise
+        else:
+            course_info.update(
+                {
+                    "is_new": False,
+                    "is_recent": False,
+                }
+            )
+
+        free_trial_obj = FreeTrialSettings.objects.first()
+        try:
+            ebc_course_configuration = EbcCourseConfiguration.objects.get(
+                course__course_key=course.id
+            )
+            if free_trial_obj:
+                course_info.update(
+                    {"trial_course": ebc_course_configuration.is_available_for_free}
+                )
+            if ebc_course_configuration.subject:
+                course_info.update(
+                    {
+                        "subject": ebc_course_configuration.subject.name,
+                    }
+                )
+            if ebc_course_configuration.topic:
+                course_info.update(
+                    {
+                        "topic": ebc_course_configuration.topic.name,
+                    }
+                )
+            if ebc_course_configuration.level:
+                course_info.update(
+                    {
+                        "level": ebc_course_configuration.level,
+                    }
+                )
+
+            if free_trial_obj and free_trial_obj.enable_free_trial_course_limit:
+                if (
+                    ebc_course_configuration.weekly_series
+                    and ebc_course_configuration.is_available_for_free
+                ):
+                    course_info.update(
+                        {
+                            "course_status": ["Free Trial Talks"],
+                        }
+                    )
+                elif (
+                    ebc_course_configuration.is_available_for_free
+                    and not ebc_course_configuration.weekly_series
+                ):
+                    course_info.update(
+                        {
+                            "course_status": ["Free Trial Courses"],
+                        }
+                    )
+                elif (
+                    course_start_date <= today_date
+                    and not ebc_course_configuration.is_upcoming
+                ):
+                    course_info.update(
+                        {
+                            "course_status": ["Launched"],
+                        }
+                    )
+                elif ebc_course_configuration.is_upcoming:
+                    course_info.update(
+                        {
+                            "course_status": ["Upcoming"],
+                        }
+                    )
+                elif not ebc_course_configuration.is_upcoming:
+                    course_info.update(
+                        {
+                            "course_status": ["Launched"],
+                        }
+                    )
+            else:
+                if (
+                    course_start_date <= today_date
+                    and not ebc_course_configuration.is_upcoming
+                ):
+                    course_info.update(
+                        {
+                            "course_status": ["Launched"],
+                        }
+                    )
+                elif ebc_course_configuration.is_upcoming:
+                    course_info.update(
+                        {
+                            "course_status": ["Upcoming"],
+                        }
+                    )
+                elif not ebc_course_configuration.is_upcoming:
+                    course_info.update(
+                        {
+                            "course_status": ["Launched"],
+                        }
+                    )
+            if course.invitation_only:
+                course_info.update({"all": ["Invitation"]})
+            elif not course.self_paced and course.invitation_only:
+                course_info.update({"all": ["Invitation"]})
+            elif course.invitation_only and course.self_paced:
+                course_info.update({"all": ["Invitation"]})
+            elif not course.invitation_only and not course.self_paced:
+                course_info.update({"all": ["Instructor-Led Courses"]})
+            elif ebc_course_configuration.weekly_series:
+                course_info.update({"all": ["Talks"]})
+                course_info.update({"is_talks": True})
+            else:
+                course_info.update({"all": ["Self-Paced Courses"]})
+
+            # Price filter for courses and path
+            if ebc_course_configuration:
+                if course.self_paced:
+                    course_info.update({"price": ["IN SUBSCRIPTION"]})
+                elif not course.invitation_only and not course.self_paced:
+                    course_info.update({"price": ["INDIVIDUALLY PRICED"]})
+            elif course.invitation_only and not course.self_paced:
+                course_info.update({"price": ["IN SUBSCRIPTION"]})
+            elif not course.invitation_only and not course.self_paced:
+                course_info.update({"price": ["INDIVIDUALLY PRICED"]})
+
+            try:
+                searcher.index([course_info])
+            except Exception as e:
+                log.exception(
+                    "Course discovery indexing error encountered for {course_id}. Error:{error}".format(
+                        course_id=course_id, error=str(e)
+                    )
+                )
+        except Exception as e:
+            # Broad exception handler to protect around and report problems with indexing
+            # to hide invitation courses
+            log.exception(
+                "Course discovery indexing error encountered for {course_id}. Error:{error}".format(
+                    course_id=course_id, error=str(e)
+                )
+            )
+            ebc_course_configuration = EbcCourseConfiguration.objects.filter(
+                course__course_key=course.id
+            ).first()
+            if ebc_course_configuration:
+                if not ebc_course_configuration.is_upcoming:
+                    course_info.update(
+                        {
+                            "course_status": ["Launched"],
+                        }
+                    )
+            if course_start_date <= today_date:
+                course_info.update(
+                    {
+                        "course_status": ["Launched"],
+                    }
+                )
+            if course.invitation_only:
+                course_info.update({"all": ["Invitation"]})
+            elif not course.self_paced and not course.invitation_only:
+                course_info.update({"all": ["Instructor-Led Courses"]})
+            elif course.invitation_only and not course.self_paced:
+                course_info.update({"all": ["Invitation"]})
+            else:
+                course_info.update({"all": ["Self-Paced Courses"]})
+
+            # Price filter for courses and path
+            if ebc_course_configuration:
+                if course.self_paced:
+                    course_info.update({"price": ["IN SUBSCRIPTION"]})
+                elif not course.invitation_only and not course.self_paced:
+                    course_info.update({"price": ["INDIVIDUALLY PRICED"]})
+            elif course.invitation_only and not course.self_paced:
+                course_info.update({"price": ["IN SUBSCRIPTION"]})
+            elif not course.invitation_only and not course.self_paced:
+                course_info.update({"price": ["INDIVIDUALLY PRICED"]})
+
+            try:
+                searcher.index([course_info])
+            except Exception as e:
+                log.exception(
+                    "Course discovery indexing error encountered for {course_id}. Error:{error}".format(
+                        course_id=course_id, error=str(e)
+                    )
+                )
+        # try:
+        #     programs_search_view.index_programs_information(cls.INDEX_NAME)
+        # except Exception as e:
+        #     log.warning("Program index")
+
+        del course_info["content"]["course_synonyms"]
+        for section in course.get_children():
+            course_info["chapter_id"] = section.location.block_id
+            course_info["course_name"] = course.display_name
+            for subsection in section.get_children():
+                course_info["content"]["display_name"] = subsection.display_name
+                course_info["content"]["chapter_id"] = section.location.block_id
+                course_info["id"] = subsection.location.block_id
+                course_info["subsection_id"] = subsection.location.block_id
+                if course.invitation_only:
+                    course_info.update({"all": ["Invitation_subtopic"]})
+                else:
+                    course_info.update({"all": ["Subtopics"]})
+                course_info["number"] = None
+                course_info["org"] = None
+                course_info["content"]["number"] = None
+                course_info["content"]["overview"] = None
+                try:
+                    searcher.index([course_info])
+                except Exception as e:
+                    log.exception(
+                        "Course discovery indexing error encountered for {course_id}. Error:{error}".format(
+                            course_id=course_id, error=str(e)
+                        )
+                    )
 
         log.debug(
-            "Successfully added %s course to the course discovery index",
-            course_id
+            "Successfully added %s course to the course discovery index", course_id
         )
+
 
     @classmethod
     def _get_location_info(cls, normalized_structure_key):

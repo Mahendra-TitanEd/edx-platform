@@ -5139,3 +5139,42 @@ TINYMCE_DEFAULT_CONFIG = {
    'menubar': False,
    'statusbar': True,
 }
+
+# Setting for overriding default filtering facets for Course discovery
+########################## Course Discovery #######################
+COURSE_DISCOVERY_FILTERS = ["all","course_status", "subject", "topic", "price", "level", "language", "is_new"]
+COURSE_DISCOVERY_FACETS = {
+    'all': {}, 
+    'course_status': {},
+    'subject': {'size': 1000}, 
+    'topic': {'size': 1000}, 
+    'language': {'size': 100}, 
+    'level': {},
+    'price': {},
+    'is_new': {},
+}
+LANGUAGE_MAP = {'terms': {lang: display for lang, display in ALL_LANGUAGES}, 'name': 'Language'}
+COURSE_DISCOVERY_MEANINGS = {
+    'all': {
+        'name': 'Types',
+    },
+    'course_status' : {
+        'name': 'Status',
+    },
+    'subject': {
+        'name': 'Purpose'
+    },
+    'topic': {
+        'name': 'Topics'
+    },
+    'level': {
+        'name': 'Level'
+    },
+    'price': {
+        'name': 'Price'
+    },
+    'language': LANGUAGE_MAP,
+    'is_new': {
+        'name' : 'New'
+    },
+}

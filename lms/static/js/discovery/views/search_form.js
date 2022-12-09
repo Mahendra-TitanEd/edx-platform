@@ -44,8 +44,8 @@
 
             showFoundMessage: function(count) {
                 var msg = ngettext(
-                'Viewing %s course',
-                'Viewing %s courses',
+                '<h3> Showing %s result </h3>',
+                '<h3> Showing %s results </h3>',
                 count
             );
                 this.$message.html(interpolate(msg, [count]));
@@ -53,7 +53,7 @@
 
             showNotFoundMessage: function(term) {
                 var msg = interpolate(
-                gettext('We couldn\'t find any results for "%s".'),
+                gettext('<h3> We couldn\'t find any results for "%s".</h3>'),
                 [_.escape(term)]
             );
                 this.$message.html(msg);
@@ -61,7 +61,7 @@
             },
 
             showErrorMessage: function(error) {
-                this.$message.text(gettext(error || 'There was an error, try searching again.'));
+                this.$message.text(gettext(error || '<h3>There was an error, try searching again.</h3>'));
             }
 
         });
