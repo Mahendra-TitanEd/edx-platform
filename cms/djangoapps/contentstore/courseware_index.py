@@ -928,7 +928,11 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         # except Exception as e:
         #     log.warning("Program index")
 
-        del course_info["content"]["course_synonyms"]
+        try:
+            del course_info["content"]["course_synonyms"]
+        except Exception as e:
+            pass
+
         for section in course.get_children():
             course_info["chapter_id"] = section.location.block_id
             course_info["course_name"] = course.display_name
