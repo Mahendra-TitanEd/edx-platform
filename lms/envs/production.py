@@ -1074,7 +1074,7 @@ REST_FRAMEWORK.update(ENV_TOKENS.get('REST_FRAMEWORK', {}))
 ########################## Course Discovery #######################
 ALL_LANGUAGES = ENV_TOKENS.get('ALL_LANGUAGES', ALL_LANGUAGES)
 COURSE_DISCOVERY_FILTERS = ["all","course_status", "subject", "topic", "price", "level", "language", "is_new"]
-COURSE_DISCOVERY_FACETS = {
+COURSE_DISCOVERY_AGGREGATIONS = {
     'all': {}, 
     'course_status': {},
     'subject': {'size': 1000}, 
