@@ -17,6 +17,7 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, to_locale
 from django.utils.translation import gettext as _
@@ -178,6 +179,20 @@ class ChooseModeView(View):
         )
         is_single_mode = len(modes) == 1
 
+        #Added by Mahendra
+        try:
+            from ebc_course.models import EbcCourseConfiguration
+            ebc_course_configuration = EbcCourseConfiguration.objects.get(
+                course__course_key=course_key,
+            )
+            if ebc_course_configuration.purchase_product_id:
+                buy_to_access = settings.EBC_LINKS.get("course_purchase", "#")
+                buy_to_access = buy_to_access + ebc_course_configuration.purchase_product_id
+            else:
+                buy_to_access = False
+        except Exception as e:
+            buy_to_access = False
+
         context = {
             "course_modes_choose_url": reverse(
                 "course_modes_choose",
@@ -196,6 +211,7 @@ class ChooseModeView(View):
             "content_gating_enabled": gated_content,
             "course_duration_limit_enabled": CourseDurationLimitConfig.enabled_for_enrollment(request.user, course),
             "search_courses_url": urljoin(settings.MKTG_URLS.get('ROOT'), '/search?tab=course'),
+            "buy_to_access": buy_to_access
         }
         context.update(
             get_experiment_user_metadata_context(
