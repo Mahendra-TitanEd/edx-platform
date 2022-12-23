@@ -340,7 +340,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
             courses_without_invitation.append(course)
 
     # insert instructors to  the context for use in the template
-    weekly_series = sort_weekly_series_by_courseware_hit(courses)
+    weekly_series, monthly_top_courses = sort_weekly_series_by_courseware_hit(courses)
     weekly_instructors = {}
     for series in weekly_series:
         try:
@@ -433,7 +433,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
     context["upcoming_instructors"] = upcoming_instructors
     context["new_courses"] = new_courses_without_invitation
     context["new_instructors"] = new_instructors
-    context["courses"] = courses_without_invitation
+    context["courses"] = monthly_top_courses
     context["weekly_series"] = weekly_series_without_invitation
     context["testimonial_list"] = Testimonial.objects.order_by("-modified")
 

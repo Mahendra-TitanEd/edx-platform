@@ -297,9 +297,11 @@ class CoursewareIndex(View):
         # Added by Mahendra
         if request.user.is_authenticated:
             try:
-                mail = HitSendMail.objects.all()
-                mail_list = str(mail.values()[0].get("csv_email"))
-                hit_email = mail_list.split(",")
+                mail = HitSendMail.objects.all().first()
+                hit_email = list()
+                if mail:
+                    mail_list = str(mail.values()[0].get("csv_email"))
+                    hit_email = mail_list.split(",")
                 if str(self.request.user.email) not in hit_email:
                     courseware_hit_counter(self.request.user, self.course_key)
             except:

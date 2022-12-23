@@ -17,10 +17,10 @@ USER_TASKS_ARTIFACT_STORAGE = COURSE_IMPORT_EXPORT_STORAGE
 DEBUG = True
 USE_I18N = True
 DEFAULT_TEMPLATE_ENGINE['OPTIONS']['debug'] = DEBUG
-SITE_NAME = 'localhost:8001'
+CMS_BASE = ENV_TOKENS.get('CMS_BASE', 'localhost:18010')
+SITE_NAME = ENV_TOKENS.get('SITE_NAME', 'localhost:8001')
 HTTPS = 'off'
 
-CMS_BASE = 'localhost:18010'
 SESSION_COOKIE_NAME = 'studio_sessionid'
 
 ################################ LOGGERS ######################################
@@ -44,7 +44,7 @@ EMAIL_FILE_PATH = '/edx/src/ace_messages/'
 
 ################################# LMS INTEGRATION #############################
 
-LMS_BASE = 'localhost:18000'
+LMS_BASE = ENV_TOKENS.get('LMS_BASE', 'localhost:18000')
 LMS_ROOT_URL = f'http://{LMS_BASE}'
 FEATURES['PREVIEW_LMS_BASE'] = "preview." + LMS_BASE
 
@@ -136,9 +136,9 @@ FEATURES['LICENSING'] = True
 XBLOCK_SETTINGS.update({'VideoBlock': {'licensing_enabled': True}})
 
 ################################ SEARCH INDEX ################################
-FEATURES['ENABLE_COURSEWARE_INDEX'] = False
-FEATURES['ENABLE_LIBRARY_INDEX'] = False
-FEATURES['ENABLE_CONTENT_LIBRARY_INDEX'] = False
+FEATURES['ENABLE_COURSEWARE_INDEX'] = True
+FEATURES['ENABLE_LIBRARY_INDEX'] = True
+FEATURES['ENABLE_CONTENT_LIBRARY_INDEX'] = True
 SEARCH_ENGINE = "search.elastic.ElasticSearchEngine"
 
 ################################ COURSE DISCUSSIONS ###########################
@@ -151,7 +151,7 @@ CREDENTIALS_SERVICE_USERNAME = 'credentials_worker'
 FEATURES['CERTIFICATES_HTML_VIEW'] = True
 
 ########################## AUTHOR PERMISSION #######################
-FEATURES['ENABLE_CREATOR_GROUP'] = False
+FEATURES['ENABLE_CREATOR_GROUP'] = True
 
 ################### FRONTEND APPLICATION PUBLISHER URL ###################
 FEATURES['FRONTEND_APP_PUBLISHER_URL'] = 'http://localhost:18400'
@@ -273,8 +273,8 @@ WEBPACK_LOADER['DEFAULT']['TIMEOUT'] = 5
 ################ Using LMS SSO for login to Studio ################
 SOCIAL_AUTH_EDX_OAUTH2_KEY = 'studio-sso-key'
 SOCIAL_AUTH_EDX_OAUTH2_SECRET = 'studio-sso-secret'  # in stage, prod would be high-entropy secret
-SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = 'http://edx.devstack.lms:18000'  # routed internally server-to-server
-SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT = 'http://localhost:18000'  # used in browser redirect
+SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = 'http://192.168.232.249:18000'  # routed internally server-to-server
+SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT = 'http://192.168.232.249:18000'  # used in browser redirect
 
 # Don't form the return redirect URL with HTTPS on devstack
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = False

@@ -686,7 +686,11 @@ def _save_xblock(user, xblock, data=None, children_strings=None, metadata=None, 
         # Make public after updating the xblock, in case the caller asked for both an update and a publish.
         # Used by Bok Choy tests and by republishing of staff locks.
         if publish == 'make_public':
-            modulestore().publish(xblock.location, user.id)
+            component = modulestore().publish(xblock.location, user.id)
+            #Added by Mahendra
+            from course_progress.helpers import course_element_count
+            course_element_count(xblock, component.children)
+
 
         # Note that children aren't being returned until we have a use case.
         return JsonResponse(result, encoder=EdxJSONEncoder)

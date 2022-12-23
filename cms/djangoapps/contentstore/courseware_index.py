@@ -26,7 +26,7 @@ from xmodule.modulestore import ModuleStoreEnum  # lint-amnesty, pylint: disable
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.models.course_details import CourseDetails
 from ebc_course.models import EbcCourseConfiguration
-# from programs_search import views as programs_search_view
+from ebc_course.index import index_programs_information
 from hit_counter.views import get_count, get_weekly_series_views
 from lms.djangoapps.courseware.courses import get_course_about_section
 from course_about.models import CourseInstructor
@@ -923,10 +923,10 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                         course_id=course_id, error=str(e)
                     )
                 )
-        # try:
-        #     programs_search_view.index_programs_information(cls.INDEX_NAME)
-        # except Exception as e:
-        #     log.warning("Program index")
+        try:
+            index_programs_information(cls.INDEX_NAME)
+        except Exception as e:
+            log.warning("Program index")
 
         try:
             del course_info["content"]["course_synonyms"]

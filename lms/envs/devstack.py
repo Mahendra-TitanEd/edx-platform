@@ -25,8 +25,8 @@ ORA2_FILEUPLOAD_BACKEND = 'django'
 DEBUG = True
 USE_I18N = True
 DEFAULT_TEMPLATE_ENGINE['OPTIONS']['debug'] = True
-LMS_BASE = 'localhost:18000'
-CMS_BASE = 'localhost:18010'
+LMS_BASE = ENV_TOKENS.get('LMS_BASE', 'localhost:18000')
+CMS_BASE = ENV_TOKENS.get('CMS_BASE', 'localhost:18010')
 SITE_NAME = LMS_BASE
 
 SESSION_COOKIE_NAME = 'lms_sessionid'

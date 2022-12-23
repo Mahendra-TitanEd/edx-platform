@@ -965,6 +965,9 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
 
     # Added by Mahendra
     from ebc_course.models import EbcCourseConfiguration
+    from course_progress.models import StudentTotalProgress
+    from course_progress.helpers import get_courses_progress
+    from ebc_royaltycal.models import CourseVideoCompletion
 
     weekly_series_enrollments = []
     new_course_enrollments = []
@@ -975,38 +978,14 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
             )
             weekly_series_enrollments.append(course_enrollment)
         except Exception as e:
-            log.info(str(e))
             new_course_enrollments.append(course_enrollment)
 
     # programs_data = program_search_data(user)
-    ebc_subjects = []
     weekly_series_subjects = []
     paths_subjects = []
-
-    for course_enrollment in new_course_enrollments:
-        try:
-            ebc_course_configuration = EbcCourseConfiguration.objects.get(
-                course__course_key=course_enrollment.course_id
-            )
-            if ebc_course_configuration.subject not in ebc_subjects:
-                ebc_subjects.append(ebc_course_configuration.subject)
-        except Exception as e:
-            log.info(str(e))
-
-    for weekly_series_enrollment in weekly_series_enrollments:
-        try:
-            ebc_course_configuration = EbcCourseConfiguration.objects.get(
-                course__course_key=weekly_series_enrollment.course_id
-            )
-            if ebc_course_configuration.subject not in weekly_series_subjects:
-                weekly_series_subjects.append(ebc_course_configuration.subject)
-        except Exception as e:
-            log.info(str(e))
-
     get_course_progress_ids = [i.course_id for i in course_enrollments]
     # programs_data_for_path = program_search_data(user, all_data=True)
     programs_data_for_path = list()
-    # pro = custom_dashboard_views.get_courses_progress(user, get_course_progress_ids)
     courses_of_path = {}
     program_unenroll_status = []
     for program in programs_data_for_path:
@@ -1099,6 +1078,7 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
                         # completed += 1
             else:
                 remaining += 1
+
         course_id = CourseKey.from_string(course_id)
 
         try:
@@ -1206,8 +1186,7 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
         {
             "course_enrollments": new_course_enrollments,
             "weekly_series_enrollments": weekly_series_enrollments,
-            "progress_list": dict(),
-            "ebc_subjects": ebc_subjects,
+            "progress_list": get_courses_progress(user, get_course_progress_ids),
             "weekly_series_subjects": weekly_series_subjects,
             "paths_subjects": paths_subjects,
             "path_details": path_details,
