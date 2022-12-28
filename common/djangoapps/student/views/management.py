@@ -85,7 +85,7 @@ from common.djangoapps.student.helpers import (
 from openedx.core.djangoapps.ace_common.template_context import (
     get_base_template_context,
 )
-from openedx.core.djangoapps.catalog.utils import get_programs_with_type
+from openedx.core.djangoapps.catalog.utils import get_programs_with_type, get_programs
 from openedx.core.djangoapps.embargo import api as embargo_api
 from openedx.core.djangoapps.lang_pref import LANGUAGE_KEY
 from openedx.core.djangoapps.programs.models import (
@@ -147,8 +147,10 @@ from subscription.views import verify_subscription
 from subscription.models import UserSubscription
 from ebc_testimonial.models import Testimonial
 from ebc_course.models import EbcCourseConfiguration
-from hit_counter.views import sort_weekly_series_by_courseware_hit
-
+from hit_counter.views import (
+    sort_weekly_series_by_courseware_hit,
+    sort_path_by_courseware_hit,
+)
 from pytz import UTC
 
 today = UTC.localize(datetime.datetime.now())
@@ -251,38 +253,31 @@ def index(request, extra_context=None, user=AnonymousUser()):
     )
 
     # Added by Mahendra
+    programs = get_programs(request.site)
+    context["programs"] = sort_path_by_courseware_hit(programs)
     # added template for new courses section on index page
     context["new_courses_list"] = theming_helpers.get_template_path(
         "new_courses_list.html"
     )
-
+    context["upcoming_courses_html"] = theming_helpers.get_template_path(
+        "upcoming_courses.html"
+    )
     # added template for weekly series
     context["weekly_series_list"] = theming_helpers.get_template_path(
         "weekly_series_list.html"
     )
-
     # added template for path
     context["path_list"] = theming_helpers.get_template_path("path_list.html")
-
-    never_subscribed = True
-    instructors = {}
     upcoming_courses = list()
     all_courses = CourseOverview.objects.all()
     new_courses = list()
-    courses_without_invitation = list()
-    weekly_series_without_invitation = list()
-    upcoming_courses_without_invitation = list()
-    new_courses_without_invitation = list()
-
     if request.user.is_authenticated:
         try:
             user_subscription = verify_subscription(request)
             user_subscription = json.loads(user_subscription.content)
-            never_subscribed = user_subscription.get("never_subscribed")
         except Exception as e:
             pass
 
-    context["never_subscribed"] = never_subscribed
     # added for new course on index page
     for course in all_courses:
         course_item = get_course_with_access(request.user, "load", course.id)
@@ -297,144 +292,15 @@ def index(request, extra_context=None, user=AnonymousUser()):
             upcoming_courses.append(course)
             if course in courses:
                 courses.remove(course)
+        if course_item.is_new:
+            new_courses.append(course)
 
-        course_enrollment_end = (
-            course.enrollment_end if course.enrollment_end != None else None
-        )
-        if course_enrollment_end != None:
-            if course_item.is_new or course_enrollment_end > today:
-                # new_courses.append(course)
-                pass
-        else:
-            if course_item.is_new:
-                new_courses.append(course)
-
-    context["new_courses"] = new_courses
     upcoming_courses = list(set(upcoming_courses))
-
-    for course in courses:
-        try:
-            instructors_list = {
-                "instructors": ", ".join(
-                    CourseInstructor.objects.filter(
-                        course_configuration__course__course_key=course.id
-                    ).values_list("name", flat=True)
-                )
-            }
-            course = CourseOverview.objects.get(id=course.id)
-            if not course.self_paced:
-                if course.enrollment_end:
-                    if course.enrollment_end > today:
-                        enroll_date = "Enroll by {}".format(
-                            course.enrollment_end.strftime("%b %d, %Y")
-                        )
-            elif course.self_paced:
-                enroll_date = "Available Now"
-            instructors_list.update({"enroll_date": enroll_date})
-            instructors.update({course.id: instructors_list})
-        except Exception as e:
-            pass
-
-        # hide invitation courses.
-        if not course.invitation_only:
-            courses_without_invitation.append(course)
-
-    # insert instructors to  the context for use in the template
     weekly_series, monthly_top_courses = sort_weekly_series_by_courseware_hit(courses)
-    weekly_instructors = {}
-    for series in weekly_series:
-        try:
-            instructors_list = {
-                "instructors": ", ".join(
-                    CourseInstructor.objects.filter(
-                        course_configuration__course__course_key=series.id
-                    ).values_list("name", flat=True)
-                )
-            }
-            weekly_instructors.update({series.id: instructors_list})
-        except Exception as e:
-            pass
-        # hide invitation courses.
-        if not series.invitation_only:
-            weekly_series_without_invitation.append(series)
-
-    upcoming_instructors = {}
-    for upcoming_course in upcoming_courses:
-        try:
-            instructors_list = {
-                "instructors": ", ".join(
-                    CourseInstructor.objects.filter(
-                        course_configuration__course__course_key=upcoming_course.id
-                    ).values_list("name", flat=True)
-                )
-            }
-            course_config = EbcCourseConfiguration.objects.get(
-                course__course_key=upcoming_course.id
-            )
-            course = CourseOverview.objects.get(id=upcoming_course.id)
-            is_talk = course_config.weekly_series
-            instructors_list.update({"is_talk": is_talk})
-            if not course.self_paced:
-                if course.enrollment_end:
-                    if course.enrollment_end > today:
-                        enroll_date = "Enroll by {}".format(
-                            course.enrollment_end.strftime("%b %d, %Y")
-                        )
-            elif course.self_paced:
-                enroll_date = "Available Now"
-            instructors_list.update({"enroll_date": enroll_date})
-            upcoming_instructors.update({upcoming_course.id: instructors_list})
-
-        except Exception as e:
-            pass
-        # hide invitation courses.
-        if not upcoming_course.invitation_only:
-            upcoming_courses_without_invitation.append(upcoming_course)
-
-    new_instructors = {}
-
-    for new_course in new_courses:
-        try:
-            instructors_list = {
-                "instructors": ", ".join(
-                    CourseInstructor.objects.filter(
-                        course_configuration__course__course_key=new_course.id
-                    ).values_list("name", flat=True)
-                )
-            }
-            course_config = EbcCourseConfiguration.objects.get(
-                course__course_key=new_course.id
-            )
-            course = CourseOverview.objects.get(id=new_course.id)
-            is_talk = course_config.weekly_series
-            instructors_list.update({"is_talk": is_talk})
-            if not course.self_paced:
-                if course.enrollment_end:
-                    if course.enrollment_end > today:
-                        enroll_date = "Enroll by {}".format(
-                            course.enrollment_end.strftime("%b %d, %Y")
-                        )
-                    else:
-                        enroll_date = "Available Now"
-            elif course.self_paced:
-                enroll_date = "Available Now"
-            instructors_list.update({"enroll_date": enroll_date})
-            new_instructors.update({new_course.id: instructors_list})
-
-        except Exception as e:
-            pass
-        # hide invitation courses.
-        if not new_course.invitation_only:
-            new_courses_without_invitation.append(new_course)
-    context["instructors"] = instructors
-    context["weekly_instructors"] = weekly_instructors
-    context["upcoming_courses_html"] = "upcoming_courses.html"
-    context["upcomming_courses"] = upcoming_courses_without_invitation
-    context["upcoming_instructors"] = upcoming_instructors
-    context["new_courses"] = new_courses_without_invitation
-    context["new_instructors"] = new_instructors
+    context["new_courses"] = new_courses
+    context["upcomming_courses"] = upcoming_courses
     context["courses"] = monthly_top_courses
-    context["weekly_series"] = weekly_series_without_invitation
+    context["weekly_series"] = weekly_series
     context["testimonial_list"] = Testimonial.objects.order_by("-modified")
 
     video = HomepageVideo.objects.filter(is_active=True)
