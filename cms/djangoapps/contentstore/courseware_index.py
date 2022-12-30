@@ -926,7 +926,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         try:
             index_programs_information(cls.INDEX_NAME)
         except Exception as e:
-            log.warning("Program index")
+            log.info("Failed to reindex program. Error: {}".format(str(e)))
 
         try:
             del course_info["content"]["course_synonyms"]

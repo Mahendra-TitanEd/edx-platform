@@ -115,6 +115,8 @@ from .library import (
     should_redirect_to_library_authoring_mfe
 )
 
+from ebc_course.helpers import clone_course_config
+
 log = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -1019,6 +1021,8 @@ def rerun_course(user, source_course_key, org, number, run, fields, background=T
     else:
         rerun_course_task(*args)
 
+    #Added by Mahendra
+    clone_course_config(source_course_key, destination_course_key)
     return destination_course_key
 
 
