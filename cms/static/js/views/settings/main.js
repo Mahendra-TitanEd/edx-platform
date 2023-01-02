@@ -30,6 +30,10 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    options = options || {};
         // fill in fields
                    this.$el.find('#course-language').val(this.model.get('language'));
+                   // Added by Mahendra
+                   this.$el.find('#course_topic').val(this.model.get('course_topic'));
+                   this.$el.find('#course_subject').val(this.model.get('course_subject'));
+                   this.$el.find('#course_level').val(this.model.get('course_level'));
                    this.$el.find('#course-organization').val(this.model.get('org'));
                    this.$el.find('#course-number').val(this.model.get('course_id'));
                    this.$el.find('#course-name').val(this.model.get('run'));
@@ -159,6 +163,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.learning_info_view.render();
                    this.instructor_info_view.render();
 
+                   // Added by Mahendra
+                   this.$el.find('#' + this.fieldToSelectorMap['course_topic']).val(this.model.get('course_topic'));
+                   this.$el.find('#' + this.fieldToSelectorMap['course_subject']).val(this.model.get('course_subject'));
+                   this.$el.find('#' + this.fieldToSelectorMap['course_level']).val(this.model.get('course_level'));
+
                    return this;
                },
                fieldToSelectorMap: {
@@ -188,7 +197,10 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_settings_learning_fields: 'course-settings-learning-fields',
                    add_course_learning_info: 'add-course-learning-info',
                    add_course_instructor_info: 'add-course-instructor-info',
-                   course_learning_info: 'course-learning-info'
+                   course_learning_info: 'course-learning-info',
+                   course_topic: 'course_topic',    // Added by Mahendra
+                   course_subject: 'course_subject', // Added by Mahendra
+                   course_level: 'course_level', // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -317,6 +329,10 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course-subtitle':
                    case 'course-duration':
                    case 'course-description':
+                    // Added by Mahendra
+                   case 'course_topic':
+                   case 'course_subject':
+                   case 'course_level':
                    case 'course-short-description':
                        this.setField(event);
                        break;

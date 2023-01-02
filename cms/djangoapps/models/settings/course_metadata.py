@@ -76,6 +76,10 @@ class CourseMetadata:
         'highlights_enabled_for_messaging',
         'is_onboarding_exam',
         'discussions_settings',
+        # Added by Mahendra
+        'course_topic',
+        'course_subject',
+        'course_level',
     ]
 
     @classmethod

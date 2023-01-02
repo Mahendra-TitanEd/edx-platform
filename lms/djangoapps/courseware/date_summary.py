@@ -31,7 +31,7 @@ from common.djangoapps.student.models import CourseEnrollment
 
 from .context_processor import user_timezone_locale_prefs
 
-from ebc_course.helpers import get_course_purchase_url
+from ebc_course.api import get_course_purchase_url
 
 class DateSummary:
     """Base class for all date summary blocks."""

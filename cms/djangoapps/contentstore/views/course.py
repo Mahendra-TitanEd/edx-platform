@@ -116,6 +116,7 @@ from .library import (
 )
 
 from ebc_course.helpers import clone_course_config
+from ebc_course.models import CourseTopics, COURSE_LEVEL, CourseCategory
 
 log = logging.getLogger(__name__)
 User = get_user_model()
@@ -1213,7 +1214,13 @@ def settings_handler(request, course_key_string):  # lint-amnesty, pylint: disab
                             'show_min_grade_warning': show_min_grade_warning,
                         }
                     )
-
+            topics = CourseTopics.objects.all()
+            subjects = CourseCategory.objects.all()
+            settings_context.update({
+                'topics': topics,
+                'subjects': subjects,
+                'levels': COURSE_LEVEL,
+            })
             return render_to_response('settings.html', settings_context)
         elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
             if request.method == 'GET':

@@ -267,6 +267,18 @@ class CourseOverview(TimeStampedModel):
         if not CatalogIntegration.is_enabled():
             course_overview.language = course.language
 
+        # Added by Mahendra
+        from ebc_course.models import EbcCourseConfiguration
+        course_topic = CourseDetails.fetch_about_attribute(course.id, 'course_topic')
+        course_subject = CourseDetails.fetch_about_attribute(course.id, 'course_subject')
+        course_level = CourseDetails.fetch_about_attribute(course.id, 'course_level')
+        data_dict = {
+            'topic': course_topic,
+            'subject': course_subject,
+            'level': course_level,
+        }
+        EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
+
         return course_overview
 
     @classmethod

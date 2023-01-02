@@ -1035,6 +1035,25 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         ),
         scope=Scope.settings
     )
+    # Added by Mahendra
+    course_topic = String(
+        display_name=_("Course Topic"),
+        help=_("Select one of the topic for the course."),
+        default='',
+        scope=Scope.settings
+    )
+    course_subject = String(
+        display_name=_("Course Subject"),
+        help=_("Select one of the subject for the course."),
+        default='',
+        scope=Scope.settings
+    )
+    course_level = String(
+        display_name=_("Course level"),
+        help=_("Select one of the level for the course."),
+        default='',
+        scope=Scope.settings
+    )
 
 
 class CourseBlock(
