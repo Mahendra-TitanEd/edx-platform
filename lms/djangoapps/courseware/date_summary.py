@@ -31,6 +31,7 @@ from common.djangoapps.student.models import CourseEnrollment
 
 from .context_processor import user_timezone_locale_prefs
 
+from ebc_course.helpers import get_course_purchase_url
 
 class DateSummary:
     """Base class for all date summary blocks."""
@@ -548,7 +549,8 @@ class VerifiedUpgradeDeadlineDate(DateSummary):
 
     @property
     def link(self):
-        return verified_upgrade_deadline_link(self.user, self.course, self.course_id)
+        # Added by Mahendra
+        return get_course_purchase_url(self.course_id)
 
     @cached_property
     def enrollment(self):

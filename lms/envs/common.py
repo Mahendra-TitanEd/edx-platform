@@ -4082,7 +4082,7 @@ ACCOUNT_VISIBILITY_CONFIGURATION["bulk_shareable_fields"] = (
     ACCOUNT_VISIBILITY_CONFIGURATION["public_fields"] + [
         'bio',
         'course_certificates',
-        'country',
+        # 'country',
         'date_joined',
         'language_proficiencies',
         "level_of_education",
@@ -4118,7 +4118,7 @@ ACCOUNT_VISIBILITY_CONFIGURATION["admin_fields"] = (
         "secondary_email",
         "secondary_email_enabled",
         "year_of_birth",
-        "phone_number",
+        # "phone_number",
         "activation_key",
         "pending_name_change",
     ]

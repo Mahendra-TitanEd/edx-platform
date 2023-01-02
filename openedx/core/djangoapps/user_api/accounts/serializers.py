@@ -153,7 +153,7 @@ class UserReadOnlySerializer(serializers.Serializer):  # lint-amnesty, pylint: d
             "is_active": user.is_active,
             "activation_key": activation_key,
             "bio": None,
-            "country": None,
+            # "country": None,
             "state": None,
             "profile_image": None,
             "language_proficiencies": None,
@@ -168,7 +168,7 @@ class UserReadOnlySerializer(serializers.Serializer):  # lint-amnesty, pylint: d
             "account_privacy": self.configuration.get('default_visibility'),
             "social_links": None,
             "extended_profile_fields": None,
-            "phone_number": None,
+            # "phone_number": None,
             "pending_name_change": None,
             "verified_name": None,
         }
@@ -177,8 +177,8 @@ class UserReadOnlySerializer(serializers.Serializer):  # lint-amnesty, pylint: d
             data.update(
                 {
                     "bio": AccountLegacyProfileSerializer.convert_empty_to_None(user_profile.bio),
-                    "country": AccountLegacyProfileSerializer.convert_empty_to_None(user_profile.country.code),
-                    "state": AccountLegacyProfileSerializer.convert_empty_to_None(user_profile.state),
+                    # "country": AccountLegacyProfileSerializer.convert_empty_to_None(user_profile.country.code),
+                    # "state": AccountLegacyProfileSerializer.convert_empty_to_None(user_profile.state),
                     "profile_image": AccountLegacyProfileSerializer.get_profile_image(
                         user_profile, user, self.context.get('request')
                     ),
@@ -199,7 +199,12 @@ class UserReadOnlySerializer(serializers.Serializer):  # lint-amnesty, pylint: d
                         user_profile.social_links.all().order_by('platform'), many=True
                     ).data,
                     "extended_profile": get_extended_profile(user_profile),
-                    "phone_number": user_profile.phone_number,
+                    # Updated by Mahendra
+                    # "phone_number": user_profile.phone_number,
+                    "state": user_profile.state.id if user_profile.state else None,
+                    "mobile_number": user_profile.mobile_number,
+                    "city": user_profile.city,
+                    "new_country": int(user_profile.new_country.id) if user_profile.new_country else None,
                 }
             )
 
@@ -278,18 +283,19 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
     """
     Class that serializes the portion of UserProfile model needed for account information.
     """
+    # Updated by Mahendra
     profile_image = serializers.SerializerMethodField("_get_profile_image")
     requires_parental_consent = serializers.SerializerMethodField()
     language_proficiencies = LanguageProficiencySerializer(many=True, required=False)
     social_links = SocialLinkSerializer(many=True, required=False)
-    phone_number = PhoneNumberSerializer(required=False)
+    # phone_number = PhoneNumberSerializer(required=False)
 
     class Meta:
         model = UserProfile
         fields = (
             "name", "gender", "goals", "year_of_birth", "level_of_education", "new_country", "state", "social_links",
             "mailing_address", "bio", "profile_image", "requires_parental_consent", "language_proficiencies",
-            "phone_number"
+            "mobile_number"
         )
         # Currently no read-only field, but keep this so view code doesn't need to know.
         read_only_fields = ()
