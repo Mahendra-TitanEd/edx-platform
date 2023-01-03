@@ -1,0 +1,37 @@
+<li class="field-group">
+  <div class="field text field-course-quote-name">
+    <label for="course-quote-name-<%- index %>"><%- gettext("Name") %></label>
+    <input type="text" class="long" id="course-quote-name-<%- index %>" value="<%- data['name'] %>" data-index=<%- index %> data-field="name" placeholder="<%- gettext('Name') %>"  />
+    <span class="tip tip-stacked"><%- gettext("Please enter name")%></span>
+  </div>
+
+  <div class="field text field-course-quote-sequence">
+    <label for="course-quote-sequence-<%- index %>"><%- gettext("Sequence") %></label>
+    <input type="text" class="long" id="course-quote-sequence-<%- index %>" value="<%- data['sequence'] %>" data-index=<%- index %> data-field="sequence" placeholder="<%- gettext('Sequence') %>" />
+    <span class="tip tip-stacked"><%- gettext("Please enter sequence 1 or 2.")%></span>
+  </div>
+
+  <div class="field text field-course-quote-bio">
+    <label for="course-quote-bio-<%- index %>"><%- gettext("Quote") %></label>
+    <textarea class="short text" id="course-quote-bio-<%- index %>" data-index=<%- index %> data-field="bio" placeholder="<%- gettext('Quote') %>" ><%- data['bio'] %></textarea>
+    <span class="tip tip-stacked"><%- gettext("Please enter Quote text")%></span>
+  </div>
+
+  <div class="field image field-course-quote-image current-quote-image">
+  <label for="course-quote-image-<%- index %>"><%- gettext("Photo") %></label>
+    <span class="wrapper-quote-image">
+        <img id="course-quote-image-preview-<%- index %>" class="quote-image" src="<%- data['image']%>" alt="<%- gettext('Photo') %>" />
+    </span>
+    <div class="wrapper-input">
+      <div class="input">
+        <input type="text" dir="ltr" class="long new-quote-image-url" id="course-quote-image-<%- index %>" value="<%- data['image'] %>" data-index="<%- index %>"" data-field="image" placeholder="<%- gettext('Photo URL') %>" autocomplete="off" />
+        <span class="tip tip-stacked"><%- gettext("Please add a photo(Note: only JPEG or PNG format supported)")%></span>
+      </div>
+      <button type="button" class="action action-upload-quote-image" data-index=<%- index %>><%- gettext("Upload Photo") %></button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="button delete-button standard remove-item remove-quote-data" data-index=<%- index %>><%- gettext("Delete") %></button>
+  </div>
+</li>

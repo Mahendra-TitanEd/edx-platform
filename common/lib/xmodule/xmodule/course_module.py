@@ -1054,6 +1054,26 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='',
         scope=Scope.settings
     )
+    overview_2 = String(
+        display_name=_("WHY TAKE THIS COURSE?"),
+        help=_("Enter details for WHY TAKE THIS COURSE?."),
+        default='',
+        scope=Scope.settings
+    )
+    certificate_overview = String(
+        display_name=_("Course Certificate Overview"),
+        help=_("Enter details for Course Certificate Overview."),
+        default='',
+        scope=Scope.settings
+    )
+    quote_info = Dict(
+        display_name=_("Course Quotes"),
+        help=_("Enter the details for Course quotes"),
+        default={
+            "quotes": []
+        },
+        scope=Scope.settings
+    )
 
 
 class CourseBlock(

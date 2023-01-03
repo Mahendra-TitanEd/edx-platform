@@ -35,6 +35,8 @@ ABOUT_ATTRIBUTES = [
     'course_topic',
     'course_subject',
     'course_level',
+    'overview_2',
+    'certificate_overview',
 ]
 
 
@@ -86,6 +88,9 @@ class CourseDetails:
         self.course_topic = ""
         self.course_subject = ""
         self.course_level = ""
+        self.overview_2 = ""
+        self.certificate_overview = ""
+        self.quote_info = []
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -142,7 +147,9 @@ class CourseDetails:
         course_details.course_topic = course_descriptor.course_topic
         course_details.course_subject = course_descriptor.course_subject
         course_details.course_level = course_descriptor.course_level
-
+        course_details.overview_2 = course_descriptor.overview_2
+        course_details.certificate_overview = course_descriptor.certificate_overview
+        course_details.quote_info = course_descriptor.quote_info
         # Default course license is "All Rights Reserved"
         course_details.license = getattr(course_descriptor, "license", "all-rights-reserved")
 
@@ -299,6 +306,10 @@ class CourseDetails:
 
         if 'instructor_info' in jsondict:
             descriptor.instructor_info = jsondict['instructor_info']
+            dirty = True
+        # Added by Mahendra
+        if 'quote_info' in jsondict:
+            descriptor.quote_info = jsondict['quote_info']
             dirty = True
 
         if 'language' in jsondict and jsondict['language'] != descriptor.language:

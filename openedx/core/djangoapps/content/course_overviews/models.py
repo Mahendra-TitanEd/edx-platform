@@ -269,16 +269,27 @@ class CourseOverview(TimeStampedModel):
 
         # Added by Mahendra
         from ebc_course.models import EbcCourseConfiguration
+        from course_about.models import CourseAboutCertificate, CourseAboutOverview, CourseAboutQuote
         course_topic = CourseDetails.fetch_about_attribute(course.id, 'course_topic')
         course_subject = CourseDetails.fetch_about_attribute(course.id, 'course_subject')
         course_level = CourseDetails.fetch_about_attribute(course.id, 'course_level')
+        overview_2 = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
+        certificate_overview = CourseDetails.fetch_about_attribute(course.id, 'certificate_overview')
         data_dict = {
             'topic': course_topic,
             'subject': course_subject,
             'level': course_level,
         }
-        EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
+        course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
+        if certificate_overview:
+            CourseAboutCertificate.create_or_update(course_config, certificate_overview)
 
+        if overview_2:
+            CourseAboutOverview.create_or_update(course_config, overview_2)
+
+        if course.quote_info.get('quotes', list()):
+            for quoto_info in course.quote_info.get('quotes', list()):
+                CourseAboutQuote.create_or_update(course_config, quoto_info)
         return course_overview
 
     @classmethod

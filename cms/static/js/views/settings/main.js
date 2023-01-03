@@ -1,10 +1,10 @@
 define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui', 'js/utils/date_utils',
     'js/models/uploads', 'js/views/uploads', 'js/views/license', 'js/models/license',
     'common/js/components/views/feedback_notification', 'jquery.timepicker', 'date', 'gettext',
-    'js/views/learning_info', 'js/views/instructor_info', 'edx-ui-toolkit/js/utils/string-utils'],
+    'js/views/learning_info', 'js/views/instructor_info', 'js/views/quote_info', 'edx-ui-toolkit/js/utils/string-utils'],
        function(ValidatingView, CodeMirror, _, $, ui, DateUtils, FileUploadModel,
                 FileUploadDialog, LicenseView, LicenseModel, NotificationView,
-                timepicker, date, gettext, LearningInfoView, InstructorInfoView, StringUtils) {
+                timepicker, date, gettext, LearningInfoView, InstructorInfoView, QuoteInfoView, StringUtils) {
            var DetailsView = ValidatingView.extend({
     // Model class is CMS.Models.Settings.CourseDetails
                events: {
@@ -17,13 +17,16 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    'click .remove-course-introduction-video': 'removeVideo',
                    'focus #course-overview': 'codeMirrorize',
                    'focus #course-about-sidebar-html': 'codeMirrorize',
+                   'focus #overview_2': 'codeMirrorize',
+                   'focus #certificate_overview': 'codeMirrorize',
                    'mouseover .timezone': 'updateTime',
         // would love to move to a general superclass, but event hashes don't inherit in backbone :-(
                    'focus :input': 'inputFocus',
                    'blur :input': 'inputUnfocus',
                    'click .action-upload-image': 'uploadImage',
                    'click .add-course-learning-info': 'addLearningFields',
-                   'click .add-course-instructor-info': 'addInstructorFields'
+                   'click .add-course-instructor-info': 'addInstructorFields',
+                   'click .add-course-quote-info': 'addQuoteFields'
                },
 
                initialize: function(options) {
@@ -34,6 +37,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#course_topic').val(this.model.get('course_topic'));
                    this.$el.find('#course_subject').val(this.model.get('course_subject'));
                    this.$el.find('#course_level').val(this.model.get('course_level'));
+                   this.$el.find('#overview_2').val(this.model.get('overview_2'));
+                   this.$el.find('#certificate_overview').val(this.model.get('certificate_overview'));
                    this.$el.find('#course-organization').val(this.model.get('org'));
                    this.$el.find('#course-number').val(this.model.get('course_id'));
                    this.$el.find('#course-name').val(this.model.get('run'));
@@ -76,6 +81,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                    this.instructor_info_view = new InstructorInfoView({
                        el: $('.course-instructor-details-fields'),
+                       model: this.model
+                   });
+
+                   this.quote_info_view = new QuoteInfoView({
+                       el: $('.course-quote-details-fields'),
                        model: this.model
                    });
                },
@@ -162,11 +172,18 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.licenseView.render();
                    this.learning_info_view.render();
                    this.instructor_info_view.render();
+                   this.quote_info_view.render();
 
                    // Added by Mahendra
                    this.$el.find('#' + this.fieldToSelectorMap['course_topic']).val(this.model.get('course_topic'));
                    this.$el.find('#' + this.fieldToSelectorMap['course_subject']).val(this.model.get('course_subject'));
                    this.$el.find('#' + this.fieldToSelectorMap['course_level']).val(this.model.get('course_level'));
+
+                   this.$el.find('#' + this.fieldToSelectorMap.overview_2).val(this.model.get('overview_2'));
+                   this.codeMirrorize(null, $('#overview_2')[0]);
+
+                   this.$el.find('#' + this.fieldToSelectorMap.certificate_overview).val(this.model.get('certificate_overview'));
+                   this.codeMirrorize(null, $('#certificate_overview')[0]);
 
                    return this;
                },
@@ -201,6 +218,9 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_topic: 'course_topic',    // Added by Mahendra
                    course_subject: 'course_subject', // Added by Mahendra
                    course_level: 'course_level', // Added by Mahendra
+                   overview_2: 'overview_2', // Added by Mahendra
+                   certificate_overview: 'certificate_overview', // Added by Mahendra
+                   add_course_quote_info: 'add-course-quote-info',
                },
 
                addLearningFields: function() {
@@ -225,6 +245,20 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        bio: ''
                    });
                    this.model.set('instructor_info', {instructors: instructors});
+               },
+
+               addQuoteFields: function() {
+        /*
+        * Add new course instructor fields.
+        * */
+                   var quotes = this.model.get('quote_info').quotes.slice(0);
+                   quotes.push({
+                       name: '',
+                       sequence: '',
+                       image: '',
+                       bio: ''
+                   });
+                   this.model.set('quote_info', {quotes: quotes});
                },
 
                updateTime: function(e) {
@@ -268,6 +302,24 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        this.model.set('instructor_info', {instructors: instructors});
                        this.showNotificationBar();
                        this.updateImagePreview(event.currentTarget, '#course-instructor-image-preview-' + index);
+                       break;
+                   // Added by Mahendra
+                   case 'course-quote-name-' + index:
+                   case 'course-quote-sequence-' + index:
+                   case 'course-quote-bio-' + index:
+                       value = $(event.currentTarget).val();
+                       var field = event.currentTarget.getAttribute('data-field'),
+                           quotes = this.model.get('quote_info').quotes.slice(0);
+                       quotes[index][field] = value;
+                       this.model.set('quote_info', {quotes: quotes});
+                       this.showNotificationBar();
+                       break;
+                   case 'course-quote-image-' + index:
+                       quotes = this.model.get('quote_info').quotes.slice(0);
+                       quotes[index].image = $(event.currentTarget).val();
+                       this.model.set('quote_info', {quotes: quotes});
+                       this.showNotificationBar();
+                       this.updateImagePreview(event.currentTarget, '#course-quote-image-preview-' + index);
                        break;
                    case 'course-image-url':
                        this.updateImageField(event, 'course_image_name', '#course-image');
@@ -333,6 +385,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_topic':
                    case 'course_subject':
                    case 'course_level':
+                   case 'overview_2':
+                   case 'certificate_overview':
                    case 'course-short-description':
                        this.setField(event);
                        break;

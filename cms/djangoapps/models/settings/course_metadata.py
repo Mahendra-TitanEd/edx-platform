@@ -80,6 +80,8 @@ class CourseMetadata:
         'course_topic',
         'course_subject',
         'course_level',
+        'overview_2',
+        'certificate_overview',
     ]
 
     @classmethod
