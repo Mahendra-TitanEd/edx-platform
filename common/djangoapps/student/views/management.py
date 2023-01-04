@@ -7,6 +7,7 @@ import datetime
 import logging
 import urllib.parse
 import uuid
+from pytz import UTC
 from collections import namedtuple
 
 from django.conf import settings
@@ -138,20 +139,13 @@ from lms.djangoapps.courseware.models import StudentModule
 from lms.djangoapps.certificates.models import GeneratedCertificate
 from lms.djangoapps.courseware.courses import get_course_with_access
 
-from subscription.api import user_coupon_info
-from course_about.models import CourseInstructor
 from homepage_video.models import HomepageVideo
-from free_trial.models import FreeTrialSettings
-from leaderboard.models import LeaderBoard
-from subscription.views import verify_subscription
-from subscription.models import UserSubscription
 from ebc_testimonial.models import Testimonial
 from ebc_course.models import EbcCourseConfiguration
 from hit_counter.views import (
     sort_weekly_series_by_courseware_hit,
     sort_path_by_courseware_hit,
 )
-from pytz import UTC
 
 today = UTC.localize(datetime.datetime.now())
 today = today.replace(tzinfo=UTC)
@@ -271,13 +265,6 @@ def index(request, extra_context=None, user=AnonymousUser()):
     upcoming_courses = list()
     all_courses = CourseOverview.objects.all()
     new_courses = list()
-    if request.user.is_authenticated:
-        try:
-            user_subscription = verify_subscription(request)
-            user_subscription = json.loads(user_subscription.content)
-        except Exception as e:
-            pass
-
     # added for new course on index page
     for course in all_courses:
         course_item = get_course_with_access(request.user, "load", course.id)
@@ -309,23 +296,6 @@ def index(request, extra_context=None, user=AnonymousUser()):
     else:
         homepage_video = None
     context["homepage_video"] = homepage_video
-
-    user_coupon = user_coupon_info(request.user)
-    user_subscription_status = UserSubscription.has_subscribed(request.user)
-    if user == AnonymousUser():
-        context.update({"user_coupon_info": False})
-    else:
-        trial_settings_obj = FreeTrialSettings.objects.first()
-        if not user_coupon and user_subscription_status:
-            context.update({"user_coupon_info": False})
-        else:
-            if trial_settings_obj:
-                if trial_settings_obj.enable_free_trial_course_limit:
-                    context.update({"user_coupon_info": True})
-                else:
-                    context.update({"user_coupon_info": False})
-            else:
-                context.update({"user_coupon_info": False})
 
     return render_to_response("index.html", context)
 
