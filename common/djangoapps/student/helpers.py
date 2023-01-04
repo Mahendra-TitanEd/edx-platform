@@ -827,7 +827,6 @@ def do_create_account(form, custom_form=None):
         "gender",
         "mailing_address",
         "city",
-        "country",
         "goals",
         "year_of_birth",
     ]

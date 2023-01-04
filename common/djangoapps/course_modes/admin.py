@@ -189,9 +189,9 @@ class CourseModeAdmin(admin.ModelAdmin):
         'min_price',
         'currency',
         '_expiration_datetime',
-        'verification_deadline',
-        'sku',
-        'bulk_sku'
+        # 'verification_deadline',
+        # 'sku',
+        # 'bulk_sku'
     )
 
     search_fields = ('course__id',)

@@ -77,7 +77,7 @@ from ..model_data import FieldDataCache
 from ..module_render import get_module_for_descriptor, toc_for_course
 from ..permissions import MASQUERADE_AS_STUDENT
 from ..toggles import courseware_legacy_is_visible, courseware_mfe_is_advertised
-
+from .views import CourseTabView
 
 # Added by Mahendra
 from hit_counter.models import HitSendMail
