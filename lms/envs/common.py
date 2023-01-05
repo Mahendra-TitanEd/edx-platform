@@ -5108,7 +5108,7 @@ DISCUSSION_MODERATION_CLOSE_REASON_CODES = {
 
 if FEATURES.get('AUTH_USE_CAS'):
    CAS_SERVER_URL = "http://ebctest.ebcwebstore.com"
-   AUTHENTICATION_BACKENDS = (
+   AUTHENTICATION_BACKENDS += (
      'django.contrib.auth.backends.ModelBackend',
      'django_cas_ng.backends.CASBackend',
    )
