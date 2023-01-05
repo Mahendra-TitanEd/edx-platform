@@ -2,6 +2,7 @@
 
 
 import datetime
+import logging
 
 from django.conf import settings
 from lms.djangoapps.commerce.utils import EcommerceService
@@ -11,6 +12,7 @@ from common.djangoapps.course_modes.models import CourseMode
 from xmodule.partitions.partitions import ENROLLMENT_TRACK_PARTITION_ID  # lint-amnesty, pylint: disable=wrong-import-order
 from xmodule.partitions.partitions_service import PartitionService  # lint-amnesty, pylint: disable=wrong-import-order
 
+log = logging.getLogger(__name__)
 
 def verified_upgrade_deadline_link(user, course=None, course_id=None):
     """
@@ -30,10 +32,25 @@ def verified_upgrade_deadline_link(user, course=None, course_id=None):
         The formatted link that will allow the user to upgrade to verified
         in this course.
     """
-    if course is not None:
-        course_id = course.id
-    return EcommerceService().upgrade_url(user, course_id)
+    #Added by Mahendra
+    # if course is not None:
+    #     course_id = course.id
+    # return EcommerceService().upgrade_url(user, course_id)
+    try:
+        from ebc_course.models import EbcCourseConfiguration
+        ebc_course_configuration = EbcCourseConfiguration.objects.get(
+            course__course_key=course_id,
+        )
+        if ebc_course_configuration.purchase_product_id:
+            purchase_url = settings.EBC_LINKS.get("course_purchase", "#")
+            purchase_url = purchase_url + ebc_course_configuration.purchase_product_id
+        else:
+            purchase_url = None
+    except Exception as e:
+        log.info("Failded to get purchase_url for course: {}. Error: {}".format(course_id, str(e)))
+        purchase_url = None
 
+    return purchase_url
 
 def is_mode_upsellable(user, enrollment, course=None):
     """

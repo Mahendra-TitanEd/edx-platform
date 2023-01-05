@@ -180,6 +180,8 @@ class ChooseModeView(View):
         is_single_mode = len(modes) == 1
 
         #Added by Mahendra
+        is_self_paced = course.self_paced
+        subscription_url = settings.EBC_LINKS.get("subscription", "#")
         try:
             from ebc_course.models import EbcCourseConfiguration
             ebc_course_configuration = EbcCourseConfiguration.objects.get(
@@ -211,7 +213,9 @@ class ChooseModeView(View):
             "content_gating_enabled": gated_content,
             "course_duration_limit_enabled": CourseDurationLimitConfig.enabled_for_enrollment(request.user, course),
             "search_courses_url": urljoin(settings.MKTG_URLS.get('ROOT'), '/search?tab=course'),
-            "buy_to_access": buy_to_access
+            "buy_to_access": buy_to_access,   #Added by Mahendra
+            "subscription_url": subscription_url,   #Added by Mahendra
+            "is_self_paced": is_self_paced,  #Added by Mahendra
         }
         context.update(
             get_experiment_user_metadata_context(

@@ -146,6 +146,7 @@ from hit_counter.views import (
     sort_weekly_series_by_courseware_hit,
     sort_path_by_courseware_hit,
 )
+from subscription.views import verify_subscription
 
 today = UTC.localize(datetime.datetime.now())
 today = today.replace(tzinfo=UTC)
@@ -525,6 +526,8 @@ def change_enrollment(request, check_access=True):
 
         # Check that auto enrollment is allowed for this course
         # (= the course is NOT behind a paywall)
+        # Added by Mahendra
+        subscription_info = verify_subscription(request)
         if CourseMode.can_auto_enroll(course_id):
             # Enroll the user using the default mode (audit)
             # We're assuming that users of the course enrollment table
@@ -535,9 +538,15 @@ def change_enrollment(request, check_access=True):
             try:
                 enroll_mode = CourseMode.auto_enroll_mode(course_id, available_modes)
                 if enroll_mode:
-                    CourseEnrollment.enroll(
-                        user, course_id, check_access=check_access, mode=enroll_mode
-                    )
+                    # Added by Mahendra
+                    if subscription_info.get("is_subscription_active"):
+                        CourseEnrollment.enroll(
+                            user, course_id, check_access=check_access, mode=CourseMode.VERIFIED
+                        )
+                    else:
+                        CourseEnrollment.enroll(
+                            user, course_id, check_access=check_access, mode=enroll_mode
+                        )
             except Exception:  # pylint: disable=broad-except
                 return HttpResponseBadRequest(_("Could not enroll"))
 
@@ -545,12 +554,13 @@ def change_enrollment(request, check_access=True):
         # then send the user to the choose your track page.
         # (In the case of no-id-professional/professional ed, this will redirect to a page that
         # funnels users directly into the verification / payment flow)
-        if CourseMode.has_verified_mode(
-            available_modes
-        ) or CourseMode.has_professional_mode(available_modes):
-            return HttpResponse(
-                reverse("course_modes_choose", kwargs={"course_id": str(course_id)})
-            )
+        if not subscription_info.get("is_subscription_active"):  # Added by Mahendra
+            if CourseMode.has_verified_mode(
+                available_modes
+            ) or CourseMode.has_professional_mode(available_modes):
+                return HttpResponse(
+                    reverse("course_modes_choose", kwargs={"course_id": str(course_id)})
+                )
 
         # Otherwise, there is only one mode available (the default)
         return HttpResponse()

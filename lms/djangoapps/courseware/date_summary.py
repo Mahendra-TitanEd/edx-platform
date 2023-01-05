@@ -654,7 +654,7 @@ class VerificationDeadlineDate(DateSummary):
     Displays the date by which the user must complete the verification
     process.
     """
-    is_enabled = True
+    is_enabled = False
 
     @property
     def css_class(self):
