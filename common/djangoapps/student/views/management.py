@@ -249,7 +249,10 @@ def index(request, extra_context=None, user=AnonymousUser()):
 
     # Added by Mahendra
     programs = get_programs(request.site)
-    context["programs"] = sort_path_by_courseware_hit(programs)
+    programs, new_programs = sort_path_by_courseware_hit(programs)
+    context["programs"] = programs
+    context["new_programs"] = new_programs
+
     # added template for new courses section on index page
     context["new_courses_list"] = theming_helpers.get_template_path(
         "new_courses_list.html"
