@@ -38,8 +38,11 @@ def verified_upgrade_deadline_link(user, course=None, course_id=None):
     # return EcommerceService().upgrade_url(user, course_id)
     try:
         from ebc_course.models import EbcCourseConfiguration
+        course_key = course_id
+        if course:
+            course_key = course.id
         ebc_course_configuration = EbcCourseConfiguration.objects.get(
-            course__course_key=course_id,
+            course__course_key=course_key,
         )
         if ebc_course_configuration.purchase_product_id:
             purchase_url = settings.EBC_LINKS.get("course_purchase", "#")
