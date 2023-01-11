@@ -30,7 +30,6 @@ from ebc_course.index import index_programs_information
 from hit_counter.views import get_count, get_weekly_series_views
 from lms.djangoapps.courseware.courses import get_course_about_section
 from course_about.models import CourseInstructor
-from free_trial.models import FreeTrialSettings
 
 # REINDEX_AGE is the default amount of time that we look back for changes
 # that might have happened. If we are provided with a time at which the
@@ -637,11 +636,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
 
         # instructors_list = course_details.instructor_info
         instructors_list = {
-            "instructors": ", ".join(
-                CourseInstructor.objects.filter(
-                    course_configuration__course__course_key=course.id
-                ).values_list("name", flat=True)
-            )
+            "instructors": ", ".join(instructor.get('name') for instructor in course_details.instructor_info.get("instructors", list()))
         }
 
         # Course Price for Instructor Led Courses on Courses Page
@@ -748,15 +743,10 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 }
             )
 
-        free_trial_obj = FreeTrialSettings.objects.first()
         try:
             ebc_course_configuration = EbcCourseConfiguration.objects.get(
                 course__course_key=course.id
             )
-            if free_trial_obj:
-                course_info.update(
-                    {"trial_course": ebc_course_configuration.is_available_for_free}
-                )
             if ebc_course_configuration.subject:
                 course_info.update(
                     {
@@ -776,75 +766,30 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                     }
                 )
 
-            if free_trial_obj and free_trial_obj.enable_free_trial_course_limit:
-                if (
-                    ebc_course_configuration.weekly_series
-                    and ebc_course_configuration.is_available_for_free
-                ):
-                    course_info.update(
-                        {
-                            "course_status": ["Free Trial Talks"],
-                        }
-                    )
-                elif (
-                    ebc_course_configuration.is_available_for_free
-                    and not ebc_course_configuration.weekly_series
-                ):
-                    course_info.update(
-                        {
-                            "course_status": ["Free Trial Courses"],
-                        }
-                    )
-                elif (
-                    course_start_date <= today_date
-                    and not ebc_course_configuration.is_upcoming
-                ):
-                    course_info.update(
-                        {
-                            "course_status": ["Launched"],
-                        }
-                    )
-                elif ebc_course_configuration.is_upcoming:
-                    course_info.update(
-                        {
-                            "course_status": ["Upcoming"],
-                        }
-                    )
-                elif not ebc_course_configuration.is_upcoming:
-                    course_info.update(
-                        {
-                            "course_status": ["Launched"],
-                        }
-                    )
-            else:
-                if (
-                    course_start_date <= today_date
-                    and not ebc_course_configuration.is_upcoming
-                ):
-                    course_info.update(
-                        {
-                            "course_status": ["Launched"],
-                        }
-                    )
-                elif ebc_course_configuration.is_upcoming:
-                    course_info.update(
-                        {
-                            "course_status": ["Upcoming"],
-                        }
-                    )
-                elif not ebc_course_configuration.is_upcoming:
-                    course_info.update(
-                        {
-                            "course_status": ["Launched"],
-                        }
-                    )
+            if (
+                course_start_date <= today_date
+                and not ebc_course_configuration.is_upcoming
+            ):
+                course_info.update(
+                    {
+                        "course_status": ["Launched"],
+                    }
+                )
+            elif ebc_course_configuration.is_upcoming:
+                course_info.update(
+                    {
+                        "course_status": ["Upcoming"],
+                    }
+                )
+            elif not ebc_course_configuration.is_upcoming:
+                course_info.update(
+                    {
+                        "course_status": ["Launched"],
+                    }
+                )
             if course.invitation_only:
                 course_info.update({"all": ["Invitation"]})
-            elif not course.self_paced and course.invitation_only:
-                course_info.update({"all": ["Invitation"]})
-            elif course.invitation_only and course.self_paced:
-                course_info.update({"all": ["Invitation"]})
-            elif not course.invitation_only and not course.self_paced:
+            elif not course.self_paced:
                 course_info.update({"all": ["Instructor-Led Courses"]})
             elif ebc_course_configuration.weekly_series:
                 course_info.update({"all": ["Talks"]})
@@ -853,24 +798,12 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 course_info.update({"all": ["Self-Paced Courses"]})
 
             # Price filter for courses and path
-            if ebc_course_configuration:
-                if course.self_paced:
-                    course_info.update({"price": ["IN SUBSCRIPTION"]})
-                elif not course.invitation_only and not course.self_paced:
-                    course_info.update({"price": ["INDIVIDUALLY PRICED"]})
-            elif course.invitation_only and not course.self_paced:
+            if course.self_paced:
                 course_info.update({"price": ["IN SUBSCRIPTION"]})
-            elif not course.invitation_only and not course.self_paced:
+            else:
                 course_info.update({"price": ["INDIVIDUALLY PRICED"]})
 
-            try:
-                searcher.index([course_info])
-            except Exception as e:
-                log.exception(
-                    "Course discovery indexing error encountered for {course_id}. Error:{error}".format(
-                        course_id=course_id, error=str(e)
-                    )
-                )
+            searcher.index([course_info])
         except Exception as e:
             # Broad exception handler to protect around and report problems with indexing
             # to hide invitation courses
@@ -879,50 +812,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                     course_id=course_id, error=str(e)
                 )
             )
-            ebc_course_configuration = EbcCourseConfiguration.objects.filter(
-                course__course_key=course.id
-            ).first()
-            if ebc_course_configuration:
-                if not ebc_course_configuration.is_upcoming:
-                    course_info.update(
-                        {
-                            "course_status": ["Launched"],
-                        }
-                    )
-            if course_start_date <= today_date:
-                course_info.update(
-                    {
-                        "course_status": ["Launched"],
-                    }
-                )
-            if course.invitation_only:
-                course_info.update({"all": ["Invitation"]})
-            elif not course.self_paced and not course.invitation_only:
-                course_info.update({"all": ["Instructor-Led Courses"]})
-            elif course.invitation_only and not course.self_paced:
-                course_info.update({"all": ["Invitation"]})
-            else:
-                course_info.update({"all": ["Self-Paced Courses"]})
 
-            # Price filter for courses and path
-            if ebc_course_configuration:
-                if course.self_paced:
-                    course_info.update({"price": ["IN SUBSCRIPTION"]})
-                elif not course.invitation_only and not course.self_paced:
-                    course_info.update({"price": ["INDIVIDUALLY PRICED"]})
-            elif course.invitation_only and not course.self_paced:
-                course_info.update({"price": ["IN SUBSCRIPTION"]})
-            elif not course.invitation_only and not course.self_paced:
-                course_info.update({"price": ["INDIVIDUALLY PRICED"]})
-
-            try:
-                searcher.index([course_info])
-            except Exception as e:
-                log.exception(
-                    "Course discovery indexing error encountered for {course_id}. Error:{error}".format(
-                        course_id=course_id, error=str(e)
-                    )
-                )
         try:
             index_programs_information(cls.INDEX_NAME)
         except Exception as e:
@@ -932,7 +822,6 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             del course_info["content"]["course_synonyms"]
         except Exception as e:
             pass
-
         for section in course.get_children():
             course_info["chapter_id"] = section.location.block_id
             course_info["course_name"] = course.display_name
@@ -941,10 +830,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 course_info["content"]["chapter_id"] = section.location.block_id
                 course_info["id"] = subsection.location.block_id
                 course_info["subsection_id"] = subsection.location.block_id
-                if course.invitation_only:
-                    course_info.update({"all": ["Invitation_subtopic"]})
-                else:
-                    course_info.update({"all": ["Subtopics"]})
+                course_info.update({"all": ["Subtopics"]})
                 course_info["number"] = None
                 course_info["org"] = None
                 course_info["content"]["number"] = None

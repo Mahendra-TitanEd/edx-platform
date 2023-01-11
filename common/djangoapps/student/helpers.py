@@ -14,9 +14,7 @@ from completion.exceptions import UnavailableCompletionData
 from completion.utilities import get_key_to_last_completed_block
 from django.conf import settings
 from django.contrib.auth import load_backend
-from django.contrib.auth.models import (
-    User,
-)  # lint-amnesty, pylint: disable=imported-auth-user
+from django.contrib.auth.models import User  # lint-amnesty, pylint: disable=imported-auth-user
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.validators import ValidationError
 from django.db import IntegrityError, ProgrammingError, transaction
@@ -34,7 +32,7 @@ from common.djangoapps.student.models import (
     UserProfile,
     email_exists_or_retired,
     unique_id_for_user,
-    username_exists_or_retired,
+    username_exists_or_retired
 )
 from common.djangoapps.util.password_policy_validators import normalize_password
 from lms.djangoapps.certificates.api import (
@@ -51,19 +49,12 @@ from lms.djangoapps.grades.api import CourseGradeFactory
 from lms.djangoapps.instructor import access
 from lms.djangoapps.verify_student.models import VerificationDeadline
 from lms.djangoapps.verify_student.services import IDVerificationService
-from lms.djangoapps.verify_student.utils import (
-    is_verification_expiring_soon,
-    verification_for_datetime,
-)
-from openedx.core.djangoapps.content.block_structure.exceptions import (
-    UsageKeyNotInBlockStructure,
-)
+from lms.djangoapps.verify_student.utils import is_verification_expiring_soon, verification_for_datetime
+from openedx.core.djangoapps.content.block_structure.exceptions import UsageKeyNotInBlockStructure
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.theming.helpers import get_themes
 from openedx.core.djangoapps.user_authn.utils import is_safe_login_or_logout_redirect
-from xmodule.data import (
-    CertificatesDisplayBehaviors,
-)  # lint-amnesty, pylint: disable=wrong-import-order
+from xmodule.data import CertificatesDisplayBehaviors  # lint-amnesty, pylint: disable=wrong-import-order
 
 # Enumeration of per-course verification statuses
 # we display on the student dashboard.
@@ -75,13 +66,11 @@ VERIFY_STATUS_MISSED_DEADLINE = "verify_missed_deadline"
 VERIFY_STATUS_NEED_TO_REVERIFY = "verify_need_to_reverify"
 
 DISABLE_UNENROLL_CERT_STATES = [
-    "generating",
-    "downloadable",
+    'generating',
+    'downloadable',
 ]
 EMAIL_EXISTS_MSG_FMT = _("An account with the Email '{email}' already exists.")
-USERNAME_EXISTS_MSG_FMT = _(
-    "An account with the Public Username '{username}' already exists."
-)
+USERNAME_EXISTS_MSG_FMT = _("An account with the Public Username '{username}' already exists.")
 
 
 log = logging.getLogger(__name__)
@@ -128,7 +117,7 @@ def check_verify_status_by_course(user, course_enrollments):
     status_by_course = {}
 
     # If integrity signature is enabled, this is a no-op because IDV is not required
-    if settings.FEATURES.get("ENABLE_INTEGRITY_SIGNATURE"):
+    if settings.FEATURES.get('ENABLE_INTEGRITY_SIGNATURE'):
         return status_by_course
 
     # Retrieve all verifications for the user, sorted in descending
@@ -139,9 +128,7 @@ def check_verify_status_by_course(user, course_enrollments):
     has_active_or_pending = IDVerificationService.user_has_valid_or_pending(user)
 
     # Retrieve expiration_datetime of most recent approved verification
-    expiration_datetime = IDVerificationService.get_expiration_datetime(
-        user, ["approved"]
-    )
+    expiration_datetime = IDVerificationService.get_expiration_datetime(user, ['approved'])
     verification_expiring_soon = is_verification_expiring_soon(expiration_datetime)
 
     # Retrieve verification deadlines for the enrolled courses
@@ -163,15 +150,11 @@ def check_verify_status_by_course(user, course_enrollments):
             relevant_verification = verification_for_datetime(deadline, verifications)
 
             # Picking the max verification datetime on each iteration only with approved status
-            if (
-                relevant_verification is not None
-                and relevant_verification.status == "approved"
-            ):
+            if relevant_verification is not None and relevant_verification.status == "approved":
                 recent_verification_datetime = max(
-                    recent_verification_datetime
-                    if recent_verification_datetime is not None
+                    recent_verification_datetime if recent_verification_datetime is not None
                     else relevant_verification.expiration_datetime,
-                    relevant_verification.expiration_datetime,
+                    relevant_verification.expiration_datetime
                 )
 
             # By default, don't show any status related to verification
@@ -199,15 +182,12 @@ def check_verify_status_by_course(user, course_enrollments):
             # then don't show any messaging next to the course, since we already
             # show messages related to this on the left sidebar.
             submitted = (
-                relevant_verification is not None
-                and relevant_verification.status not in ["created", "ready"]
+                relevant_verification is not None and
+                relevant_verification.status not in ["created", "ready"]
             )
             if status is None and not submitted:
                 if deadline is None or deadline > datetime.now(UTC):
-                    if (
-                        IDVerificationService.user_is_verified(user)
-                        and verification_expiring_soon
-                    ):
+                    if IDVerificationService.user_is_verified(user) and verification_expiring_soon:
                         # The user has an active verification, but the verification
                         # is set to expire within "EXPIRING_SOON_WINDOW" days (default is 4 weeks).
                         # Tell the student to reverify.
@@ -241,29 +221,21 @@ def check_verify_status_by_course(user, course_enrollments):
                     days_until_deadline = (deadline - now).days
 
                 status_by_course[enrollment.course_id] = {
-                    "status": status,
-                    "days_until_deadline": days_until_deadline,
-                    "should_display": should_display,
+                    'status': status,
+                    'days_until_deadline': days_until_deadline,
+                    'should_display': should_display,
                 }
 
     if recent_verification_datetime:
         for key, value in status_by_course.items():  # pylint: disable=unused-variable
-            status_by_course[key][
-                "verification_good_until"
-            ] = recent_verification_datetime.strftime("%m/%d/%Y")
+            status_by_course[key]['verification_good_until'] = recent_verification_datetime.strftime("%m/%d/%Y")
 
     return status_by_course
 
 
 # Query string parameters that can be passed to the "finish_auth" view to manage
 # things like auto-enrollment.
-POST_AUTH_PARAMS = (
-    "course_id",
-    "enrollment_action",
-    "course_mode",
-    "email_opt_in",
-    "purchase_workflow",
-)
+POST_AUTH_PARAMS = ('course_id', 'enrollment_action', 'course_mode', 'email_opt_in', 'purchase_workflow')
 
 
 def get_redirect_url_with_host(root_url, redirect_to):
@@ -273,9 +245,7 @@ def get_redirect_url_with_host(root_url, redirect_to):
     (_, netloc, path, query, fragment) = list(urllib.parse.urlsplit(redirect_to))
     if not netloc:
         parse_root_url = urllib.parse.urlsplit(root_url)
-        redirect_to = urllib.parse.urlunsplit(
-            (parse_root_url.scheme, parse_root_url.netloc, path, query, fragment)
-        )
+        redirect_to = urllib.parse.urlunsplit((parse_root_url.scheme, parse_root_url.netloc, path, query, fragment))
 
     return redirect_to
 
@@ -296,76 +266,63 @@ def get_next_url_for_login_page(request, include_host=False):
 
     This works with both GET and POST requests.
     """
-    request_params = request.GET if request.method == "GET" else request.POST
+    request_params = request.GET if request.method == 'GET' else request.POST
     redirect_to = _get_redirect_to(
         request_host=request.get_host(),
         request_headers=request.META,
         request_params=request_params,
         request_is_https=request.is_secure(),
     )
-    root_url = configuration_helpers.get_value("LMS_ROOT_URL", settings.LMS_ROOT_URL)
+    root_url = configuration_helpers.get_value('LMS_ROOT_URL', settings.LMS_ROOT_URL)
     if not redirect_to:
-        if settings.ROOT_URLCONF == "lms.urls":
-            login_redirect_url = configuration_helpers.get_value(
-                "DEFAULT_REDIRECT_AFTER_LOGIN"
-            )
+        if settings.ROOT_URLCONF == 'lms.urls':
+            login_redirect_url = configuration_helpers.get_value('DEFAULT_REDIRECT_AFTER_LOGIN')
 
             if login_redirect_url:
                 try:
                     redirect_to = reverse(login_redirect_url)
                 except NoReverseMatch:
                     log.warning(
-                        "Default redirect after login doesn't exist: %(login_redirect_url)r. "
-                        "Check the value set on DEFAULT_REDIRECT_AFTER_LOGIN configuration variable.",
-                        {"login_redirect_url": login_redirect_url},
+                        'Default redirect after login doesn\'t exist: %(login_redirect_url)r. '
+                        'Check the value set on DEFAULT_REDIRECT_AFTER_LOGIN configuration variable.',
+                        {"login_redirect_url": login_redirect_url}
                     )
 
             # If redirect url isn't set, reverse to dashboard
             if not redirect_to:
                 # Tries reversing the LMS dashboard if the url doesn't exist
-                redirect_to = reverse("dashboard")
+                redirect_to = reverse('dashboard')
 
-        elif settings.ROOT_URLCONF == "cms.urls":
-            redirect_to = reverse("home")
+        elif settings.ROOT_URLCONF == 'cms.urls':
+            redirect_to = reverse('home')
             scheme = "https" if settings.HTTPS == "on" else "http"
-            root_url = f"{scheme}://{settings.CMS_BASE}"
+            root_url = f'{scheme}://{settings.CMS_BASE}'
 
     if any(param in request_params for param in POST_AUTH_PARAMS):
         # Before we redirect to next/dashboard, we need to handle auto-enrollment:
-        params = [
-            (param, request_params[param])
-            for param in POST_AUTH_PARAMS
-            if param in request_params
-        ]
+        params = [(param, request_params[param]) for param in POST_AUTH_PARAMS if param in request_params]
 
-        params.append(
-            ("next", redirect_to)
-        )  # After auto-enrollment, user will be sent to payment page or to this URL
-        redirect_to = "{}?{}".format(
-            reverse("finish_auth"), urllib.parse.urlencode(params)
-        )
+        params.append(('next', redirect_to))  # After auto-enrollment, user will be sent to payment page or to this URL
+        redirect_to = '{}?{}'.format(reverse('finish_auth'), urllib.parse.urlencode(params))
         # Note: if we are resuming a third party auth pipeline, then the next URL will already
         # be saved in the session as part of the pipeline state. That URL will take priority
         # over this one.
 
     # Append a tpa_hint query parameter, if one is configured
     tpa_hint = configuration_helpers.get_value(
-        "THIRD_PARTY_AUTH_HINT", settings.FEATURES.get("THIRD_PARTY_AUTH_HINT", "")
+        "THIRD_PARTY_AUTH_HINT",
+        settings.FEATURES.get("THIRD_PARTY_AUTH_HINT", '')
     )
     if tpa_hint:
         # Don't add tpa_hint if we're already in the TPA pipeline (prevent infinite loop),
         # and don't overwrite any existing tpa_hint params (allow tpa_hint override).
         running_pipeline = third_party_auth.pipeline.get(request)
-        (scheme, netloc, path, query, fragment) = list(
-            urllib.parse.urlsplit(redirect_to)
-        )
-        if not running_pipeline and "tpa_hint" not in query:
+        (scheme, netloc, path, query, fragment) = list(urllib.parse.urlsplit(redirect_to))
+        if not running_pipeline and 'tpa_hint' not in query:
             params = urllib.parse.parse_qs(query)
-            params["tpa_hint"] = [tpa_hint]
+            params['tpa_hint'] = [tpa_hint]
             query = urllib.parse.urlencode(params, doseq=True)
-            redirect_to = urllib.parse.urlunsplit(
-                (scheme, netloc, path, query, fragment)
-            )
+            redirect_to = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
 
     if include_host:
         return redirect_to, root_url
@@ -386,10 +343,11 @@ def _get_redirect_to(request_host, request_headers, request_params, request_is_h
     Returns: str
         redirect url if safe else None
     """
-    redirect_to = request_params.get("next")
-    header_accept = request_headers.get("HTTP_ACCEPT", "")
+    redirect_to = request_params.get('next')
+    header_accept = request_headers.get('HTTP_ACCEPT', '')
     accepts_text_html = any(
-        mime_type in header_accept for mime_type in ["*/*", "text/*", "text/html"]
+        mime_type in header_accept
+        for mime_type in ['*/*', 'text/*', 'text/html']
     )
 
     # If we get a redirect parameter, make sure it's safe i.e. not redirecting outside our domain.
@@ -401,13 +359,13 @@ def _get_redirect_to(request_host, request_headers, request_params, request_is_h
         safe_redirect = is_safe_login_or_logout_redirect(
             redirect_to=redirect_to,
             request_host=request_host,
-            dot_client_id=request_params.get("client_id"),
+            dot_client_id=request_params.get('client_id'),
             require_https=request_is_https,
         )
         if not safe_redirect:
             log.warning(
                 "Unsafe redirect parameter detected after login page: '%(redirect_to)s'",
-                {"redirect_to": redirect_to},
+                {"redirect_to": redirect_to}
             )
             redirect_to = None
         elif not accepts_text_html:
@@ -415,22 +373,21 @@ def _get_redirect_to(request_host, request_headers, request_params, request_is_h
                 "Redirect to non html content '%(content_type)s' detected from '%(user_agent)s'"
                 " after login page: '%(redirect_to)s'",
                 {
-                    "redirect_to": redirect_to,
-                    "content_type": header_accept,
-                    "user_agent": request_headers.get("HTTP_USER_AGENT", ""),
-                },
+                    "redirect_to": redirect_to, "content_type": header_accept,
+                    "user_agent": request_headers.get('HTTP_USER_AGENT', '')
+                }
             )
             redirect_to = None
         elif mime_type:
             log.warning(
                 "Redirect to url path with specified file type '%(mime_type)s' not allowed: '%(redirect_to)s'",
-                {"redirect_to": redirect_to, "mime_type": mime_type},
+                {"redirect_to": redirect_to, "mime_type": mime_type}
             )
             redirect_to = None
         elif settings.STATIC_URL in redirect_to:
             log.warning(
                 "Redirect to static content detected after login page: '%(redirect_to)s'",
-                {"redirect_to": redirect_to},
+                {"redirect_to": redirect_to}
             )
             redirect_to = None
         else:
@@ -440,7 +397,7 @@ def _get_redirect_to(request_host, request_headers, request_params, request_is_h
                 if theme.theme_dir_name in next_path:
                     log.warning(
                         "Redirect to theme content detected after login page: '%(redirect_to)s'",
-                        {"redirect_to": redirect_to},
+                        {"redirect_to": redirect_to}
                     )
                     redirect_to = None
                     break
@@ -457,11 +414,11 @@ def create_or_set_user_attribute_created_on_site(user, site):
     belongs to the default site.
     """
     if site and site.id != settings.SITE_ID:
-        UserAttribute.set_user_attribute(user, "created_on_site", site.domain)
+        UserAttribute.set_user_attribute(user, 'created_on_site', site.domain)
 
 
 # We want to allow inactive users to log in only when their account is first created
-NEW_USER_AUTH_BACKEND = "django.contrib.auth.backends.AllowAllUsersModelBackend"
+NEW_USER_AUTH_BACKEND = 'django.contrib.auth.backends.AllowAllUsersModelBackend'
 
 # Disable this warning because it doesn't make sense to completely refactor tests to appease Pylint
 # pylint: disable=logging-format-interpolation
@@ -486,7 +443,6 @@ class AccountValidationError(Exception):
     """
     Used in account creation views to raise exceptions with details about specific invalid fields
     """
-
     def __init__(self, message, field, error_code=None):
         super().__init__(message)
         self.field = field
@@ -543,56 +499,38 @@ def _cert_info(user, enrollment, cert_status):
     """
     # simplify the status for the template using this lookup table
     template_state = {
-        CertificateStatuses.generating: "generating",
-        CertificateStatuses.downloadable: "downloadable",
-        CertificateStatuses.notpassing: "notpassing",
-        CertificateStatuses.restricted: "restricted",
-        CertificateStatuses.auditing: "auditing",
-        CertificateStatuses.audit_passing: "auditing",
-        CertificateStatuses.audit_notpassing: "auditing",
-        CertificateStatuses.unverified: "unverified",
+        CertificateStatuses.generating: 'generating',
+        CertificateStatuses.downloadable: 'downloadable',
+        CertificateStatuses.notpassing: 'notpassing',
+        CertificateStatuses.restricted: 'restricted',
+        CertificateStatuses.auditing: 'auditing',
+        CertificateStatuses.audit_passing: 'auditing',
+        CertificateStatuses.audit_notpassing: 'auditing',
+        CertificateStatuses.unverified: 'unverified',
     }
 
-    certificate_earned_but_not_available_status = "certificate_earned_but_not_available"
-    default_status = "processing"
+    certificate_earned_but_not_available_status = 'certificate_earned_but_not_available'
+    default_status = 'processing'
 
     default_info = {
-        "status": default_status,
-        "show_survey_button": False,
-        "can_unenroll": True,
+        'status': default_status,
+        'show_survey_button': False,
+        'can_unenroll': True,
     }
 
     if cert_status is None or enrollment is None:
         return default_info
 
     course_overview = enrollment.course_overview if enrollment else None
-    status = template_state.get(cert_status["status"], default_status)
-    is_hidden_status = status in ("processing", "generating", "notpassing", "auditing")
-
-    # Added by Mahendra
-    from course_progress.models import StudentTotalProgress
-    from ebc_royaltycal.models import CourseVideoCompletion
-
-    try:
-        student_total_progress = StudentTotalProgress.objects.get(
-            course_id=course_overview.id
-        )
-    except:
-        student_total_progress = None
-    try:
-        course_video_completion = CourseVideoCompletion.objects.filter(
-            user=user, course_id=course_overview.id, is_video_completed=True
-        )
-    except:
-        course_video_completion = None
+    status = template_state.get(cert_status['status'], default_status)
+    is_hidden_status = status in ('processing', 'generating', 'notpassing', 'auditing')
 
     if _is_certificate_earned_but_not_available(course_overview, status):
         status = certificate_earned_but_not_available_status
 
     if (
-        course_overview.certificates_display_behavior
-        == CertificatesDisplayBehaviors.EARLY_NO_INFO
-        and is_hidden_status
+        course_overview.certificates_display_behavior == CertificatesDisplayBehaviors.EARLY_NO_INFO and
+        is_hidden_status
     ):
         return default_info
 
@@ -604,83 +542,60 @@ def _cert_info(user, enrollment, cert_status):
         return default_info
 
     status_dict = {
-        "status": status,
-        "mode": cert_status.get("mode", None),
-        "linked_in_url": None,
-        "can_unenroll": status not in DISABLE_UNENROLL_CERT_STATES,
+        'status': status,
+        'mode': cert_status.get('mode', None),
+        'linked_in_url': None,
+        'can_unenroll': status not in DISABLE_UNENROLL_CERT_STATES,
     }
 
-    if (
-        status != default_status
-        and course_overview.end_of_course_survey_url is not None
-    ):
-        status_dict.update(
-            {
-                "show_survey_button": True,
-                "survey_url": process_survey_link(
-                    course_overview.end_of_course_survey_url, user
-                ),
-            }
-        )
+    if status != default_status and course_overview.end_of_course_survey_url is not None:
+        status_dict.update({
+            'show_survey_button': True,
+            'survey_url': process_survey_link(course_overview.end_of_course_survey_url, user)})
     else:
-        status_dict["show_survey_button"] = False
+        status_dict['show_survey_button'] = False
 
-    if status == "downloadable":
+    if status == 'downloadable':
         # showing the certificate web view button if certificate is downloadable state and feature flags are enabled.
         if has_html_certificates_enabled(course_overview):
             if course_overview.has_any_active_web_certificate:
-                status_dict.update(
-                    {
-                        "show_cert_web_view": True,
-                        "cert_web_view_url": get_certificate_url(
-                            course_id=course_overview.id, uuid=cert_status["uuid"]
-                        ),
-                    }
-                )
-            elif cert_status["download_url"]:
-                status_dict["download_url"] = cert_status["download_url"]
+                status_dict.update({
+                    'show_cert_web_view': True,
+                    'cert_web_view_url': get_certificate_url(course_id=course_overview.id, uuid=cert_status['uuid'])
+                })
+            elif cert_status['download_url']:
+                status_dict['download_url'] = cert_status['download_url']
             else:
                 # don't show download certificate button if we don't have an active certificate for course
-                status_dict["status"] = "unavailable"
-        elif "download_url" not in cert_status:
+                status_dict['status'] = 'unavailable'
+        elif 'download_url' not in cert_status:
             log.warning(
                 "User %s has a downloadable cert for %s, but no download url",
                 user.username,
-                course_overview.id,
+                course_overview.id
             )
             return default_info
         else:
-            status_dict["download_url"] = cert_status["download_url"]
+            status_dict['download_url'] = cert_status['download_url']
 
             # If enabled, show the LinkedIn "add to profile" button
             # Clicking this button sends the user to LinkedIn where they
             # can add the certificate information to their profile.
             linkedin_config = LinkedInAddToProfileConfiguration.current()
             if linkedin_config.is_enabled():
-                status_dict["linked_in_url"] = linkedin_config.add_to_profile_url(
-                    course_overview.display_name,
-                    cert_status.get("mode"),
-                    cert_status["download_url"],
+                status_dict['linked_in_url'] = linkedin_config.add_to_profile_url(
+                    course_overview.display_name, cert_status.get('mode'), cert_status['download_url'],
                 )
 
-    if status in {
-        "generating",
-        "downloadable",
-        "notpassing",
-        "restricted",
-        "auditing",
-        "unverified",
-    }:
+    if status in {'generating', 'downloadable', 'notpassing', 'restricted', 'auditing', 'unverified'}:
         cert_grade_percent = -1
         persisted_grade_percent = -1
-        persisted_grade = CourseGradeFactory().read(
-            user, course=course_overview, create_if_needed=False
-        )
+        persisted_grade = CourseGradeFactory().read(user, course=course_overview, create_if_needed=False)
         if persisted_grade is not None:
             persisted_grade_percent = persisted_grade.percent
 
-        if "grade" in cert_status:
-            cert_grade_percent = float(cert_status["grade"])
+        if 'grade' in cert_status:
+            cert_grade_percent = float(cert_status['grade'])
 
         if cert_grade_percent == -1 and persisted_grade_percent == -1:
             # Note: as of 11/20/2012, we know there are students in this state-- cs169.1x,
@@ -693,22 +608,22 @@ def _cert_info(user, enrollment, cert_status):
             if all(grade is None for grade in grades_input)
             else max(filter(lambda x: x is not None, grades_input))
         )
-        status_dict["grade"] = str(max_grade)
+        status_dict['grade'] = str(max_grade)
 
         # If the grade is passing, the status is one of these statuses, and request certificate
         # is enabled for a course then we need to provide the option to the learner
         cert_gen_enabled = (
-            has_self_generated_certificates_enabled(course_overview.id)
-            or auto_certificate_generation_enabled()
+            has_self_generated_certificates_enabled(course_overview.id) or
+            auto_certificate_generation_enabled()
         )
         passing_grade = persisted_grade and persisted_grade.passed
         if (
-            status_dict["status"] != CertificateStatuses.downloadable
-            and cert_gen_enabled
-            and passing_grade
-            and course_overview.has_any_active_web_certificate
+            status_dict['status'] != CertificateStatuses.downloadable and
+            cert_gen_enabled and
+            passing_grade and
+            course_overview.has_any_active_web_certificate
         ):
-            status_dict["status"] = CertificateStatuses.requesting
+            status_dict['status'] = CertificateStatuses.requesting
 
     return status_dict
 
@@ -730,17 +645,16 @@ def _is_certificate_earned_but_not_available(course_overview, status):
         return (
             not certificates_viewable_for_course(course_overview)
             and CertificateStatuses.is_passing_status(status)
-            and course_overview.certificates_display_behavior
-            in (
+            and course_overview.certificates_display_behavior in (
                 CertificatesDisplayBehaviors.END_WITH_DATE,
-                CertificatesDisplayBehaviors.END,
+                CertificatesDisplayBehaviors.END
             )
         )
     else:
         return (
-            not certificates_viewable_for_course(course_overview)
-            and CertificateStatuses.is_passing_status(status)
-            and course_overview.certificate_available_date
+            not certificates_viewable_for_course(course_overview) and
+            CertificateStatuses.is_passing_status(status) and
+            course_overview.certificate_available_date
         )
 
 
@@ -763,8 +677,8 @@ def do_create_account(form, custom_form=None):
     """
     # Check if ALLOW_PUBLIC_ACCOUNT_CREATION flag turned off to restrict user account creation
     if not configuration_helpers.get_value(
-        "ALLOW_PUBLIC_ACCOUNT_CREATION",
-        settings.FEATURES.get("ALLOW_PUBLIC_ACCOUNT_CREATION", True),
+            'ALLOW_PUBLIC_ACCOUNT_CREATION',
+            settings.FEATURES.get('ALLOW_PUBLIC_ACCOUNT_CREATION', True)
     ):
         raise PermissionDenied()
 
@@ -778,7 +692,9 @@ def do_create_account(form, custom_form=None):
 
     proposed_username = form.cleaned_data["username"]
     user = User(
-        username=proposed_username, email=form.cleaned_data["email"], is_active=False
+        username=proposed_username,
+        email=form.cleaned_data["email"],
+        is_active=False
     )
     password = normalize_password(form.cleaned_data["password"])
     user.set_password(password)
@@ -800,21 +716,17 @@ def do_create_account(form, custom_form=None):
         # AccountValidationError and a consistent user message returned (i.e. both should
         # return "It looks like {username} belongs to an existing account. Try again with a
         # different username.")
-        if username_exists_or_retired(
-            user.username
-        ):  # lint-amnesty, pylint: disable=no-else-raise
+        if username_exists_or_retired(user.username):  # lint-amnesty, pylint: disable=no-else-raise
             raise AccountValidationError(  # lint-amnesty, pylint: disable=raise-missing-from
                 USERNAME_EXISTS_MSG_FMT.format(username=proposed_username),
                 field="username",
-                error_code="duplicate-username",
+                error_code='duplicate-username',
             )
         elif email_exists_or_retired(user.email):
             raise AccountValidationError(  # lint-amnesty, pylint: disable=raise-missing-from
-                _("An account with the Email '{email}' already exists.").format(
-                    email=user.email
-                ),
+                _("An account with the Email '{email}' already exists.").format(email=user.email),
                 field="email",
-                error_code="duplicate-email",
+                error_code='duplicate-email'
             )
         else:
             raise
@@ -822,16 +734,12 @@ def do_create_account(form, custom_form=None):
     registration.register(user)
 
     profile_fields = [
-        "name",
-        "level_of_education",
-        "gender",
-        "mailing_address",
-        "city",
-        "goals",
-        "year_of_birth",
+        "name", "level_of_education", "gender", "mailing_address", "city", "country", "goals",
+        "year_of_birth"
     ]
     profile = UserProfile(
-        user=user, **{key: form.cleaned_data.get(key) for key in profile_fields}
+        user=user,
+        **{key: form.cleaned_data.get(key) for key in profile_fields}
     )
     extended_profile = form.cleaned_extended_profile
     if extended_profile:
@@ -846,7 +754,7 @@ def do_create_account(form, custom_form=None):
 
 
 def get_resume_urls_for_enrollments(user, enrollments):
-    """
+    '''
     For a given user, return a list of urls to the user's last completed block in
     a course run for each course run in the user's enrollments.
 
@@ -859,7 +767,7 @@ def get_resume_urls_for_enrollments(user, enrollments):
             key: CourseKey
             value: url to the last completed block
                 if the value is '', then the user has not completed any blocks in the course run
-    """
+    '''
     resume_course_urls = OrderedDict()
     for enrollment in enrollments:
         try:
@@ -867,20 +775,17 @@ def get_resume_urls_for_enrollments(user, enrollments):
             try:
                 block_data = get_course_blocks(user, block_key)
             except UsageKeyNotInBlockStructure:
-                url_to_block = ""
+                url_to_block = ''
             else:
                 if block_key in block_data:
                     url_to_block = reverse(
-                        "jump_to",
-                        kwargs={
-                            "course_id": enrollment.course_id,
-                            "location": block_key,
-                        },
+                        'jump_to',
+                        kwargs={'course_id': enrollment.course_id, 'location': block_key}
                     )
                 else:
-                    url_to_block = ""
+                    url_to_block = ''
         except UnavailableCompletionData:
-            url_to_block = ""
+            url_to_block = ''
         resume_course_urls[enrollment.course_id] = url_to_block
     return resume_course_urls
 
@@ -891,7 +796,7 @@ def does_user_profile_exist(user):
     Ignore errors and return False in case of errors.
     """
     try:
-        return hasattr(user, "profile")
+        return hasattr(user, 'profile')
     except (ProgrammingError, ObjectDoesNotExist):
         return False
 

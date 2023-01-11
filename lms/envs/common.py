@@ -3239,6 +3239,7 @@ INSTALLED_APPS = [
     'dal_select2',
     'import_export',
     'tinymce',
+    'rangefilter',
 ]
 
 ######################### CSRF #########################################
