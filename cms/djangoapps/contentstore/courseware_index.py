@@ -29,7 +29,6 @@ from ebc_course.models import EbcCourseConfiguration
 from ebc_course.index import index_programs_information
 from hit_counter.views import get_count, get_weekly_series_views
 from lms.djangoapps.courseware.courses import get_course_about_section
-from course_about.models import CourseInstructor
 
 # REINDEX_AGE is the default amount of time that we look back for changes
 # that might have happened. If we are provided with a time at which the

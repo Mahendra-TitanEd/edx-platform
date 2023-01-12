@@ -53,6 +53,7 @@ from openedx.core.djangoapps.user_api.models import UserPreference
 from openedx.core.djangolib.markup import Text
 from xmodule.modulestore.django import modulestore  # lint-amnesty, pylint: disable=wrong-import-order
 from xmodule.modulestore.exceptions import ItemNotFoundError  # lint-amnesty, pylint: disable=wrong-import-order
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 log = logging.getLogger(__name__)
 
@@ -149,15 +150,21 @@ def enroll_email(course_id, student_email, auto_enroll=False, email_students=Fal
         # "honor" course_mode. Given the change to use "audit" as the default
         # course_mode in Open edX, we need to be backwards compatible with
         # how White Labels approach enrollment modes.
-        if CourseMode.is_white_label(course_id):
+        # Added by Mahendra
+        if CourseMode.mode_for_course(course_id, "verified"):
+            course_mode = CourseMode.VERIFIED
+        elif CourseMode.is_white_label(course_id):
             course_mode = CourseMode.HONOR
         else:
-            course_mode = None
+            course_mode = CourseMode.AUDIT
 
-        if previous_state.enrollment:
-            course_mode = previous_state.mode
+        try:
+            user = User.objects.get(email=student_email)
+            overview = CourseOverview.get_from_id(course_id)
+            enrollment_obj = CourseEnrollment.get_or_create_enrollment_purchase(user, course_id, course_mode, datetime.now(), overview.end)
+        except User.DoesNotExist:
+            log.warning("Tried to enroll email {} into course {}, but user not found".format(student_email, course_id))
 
-        enrollment_obj = CourseEnrollment.enroll_by_email(student_email, course_id, course_mode)
         if email_students:
             email_params['message_type'] = 'enrolled_enroll'
             email_params['email_address'] = student_email
