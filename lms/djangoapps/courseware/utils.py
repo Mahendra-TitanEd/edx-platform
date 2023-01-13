@@ -5,6 +5,7 @@ import datetime
 import logging
 
 from django.conf import settings
+from django.urls import reverse
 from lms.djangoapps.commerce.utils import EcommerceService
 from pytz import utc  # lint-amnesty, pylint: disable=wrong-import-order
 
@@ -37,18 +38,10 @@ def verified_upgrade_deadline_link(user, course=None, course_id=None):
     #     course_id = course.id
     # return EcommerceService().upgrade_url(user, course_id)
     try:
-        from ebc_course.models import EbcCourseConfiguration
         course_key = course_id
         if course:
             course_key = course.id
-        ebc_course_configuration = EbcCourseConfiguration.objects.get(
-            course__course_key=course_key,
-        )
-        if ebc_course_configuration.purchase_product_id:
-            purchase_url = settings.EBC_LINKS.get("course_purchase", "#")
-            purchase_url = purchase_url + ebc_course_configuration.purchase_product_id
-        else:
-            purchase_url = None
+        purchase_url = reverse("course_modes_choose", kwargs={"course_id": str(course_key)})
     except Exception as e:
         log.info("Failded to get purchase_url for course: {}. Error: {}".format(course_id, str(e)))
         purchase_url = None

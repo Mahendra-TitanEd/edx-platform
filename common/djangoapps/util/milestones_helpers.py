@@ -176,10 +176,7 @@ def get_course_display_string(descriptor):
     Arguments:
         descriptor (CourseBlock|CourseOverview): a course or course overview.
     """
-    return ' '.join([
-        descriptor.display_org_with_default,
-        descriptor.display_number_with_default
-    ])
+    return descriptor.display_name_with_default
 
 
 def fulfill_course_milestone(course_key, user):
