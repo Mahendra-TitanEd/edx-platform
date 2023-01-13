@@ -282,3 +282,11 @@ SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 #################### Network configuration ####################
 # Devstack is directly exposed to the caller
 CLOSEST_CLIENT_IP_FROM_HEADERS = []
+
+ELASTIC_SEARCH_CONFIG = [
+    {
+        'use_ssl': False,
+        'host': 'edx.devstack.elasticsearch',
+        'port': 9200
+    }
+]

@@ -23,12 +23,10 @@ from xmodule.library_tools import normalize_key_for_search  # lint-amnesty, pyli
 from xmodule.modulestore import ModuleStoreEnum  # lint-amnesty, pylint: disable=wrong-import-order
 
 
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.models.course_details import CourseDetails
 from ebc_course.models import EbcCourseConfiguration
 from ebc_course.index import index_programs_information
 from hit_counter.views import get_count, get_weekly_series_views
-from lms.djangoapps.courseware.courses import get_course_about_section
 
 # REINDEX_AGE is the default amount of time that we look back for changes
 # that might have happened. If we are provided with a time at which the
@@ -622,7 +620,6 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         local_tz = pytz.timezone(settings.TIME_ZONE)
         course_start_date = course.start.astimezone(local_tz).date()
         today_date = datetime.datetime.now().date()
-        course_overview = CourseOverview.objects.get(id=course.id)
         course_details = CourseDetails.fetch(course.id)
         try:
             hits = get_weekly_series_views(course)
@@ -633,7 +630,6 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         except Exception as e:
             course_length = ""
 
-        # instructors_list = course_details.instructor_info
         instructors_list = {
             "instructors": ", ".join(instructor.get('name') for instructor in course_details.instructor_info.get("instructors", list()))
         }
