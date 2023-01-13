@@ -531,6 +531,7 @@ def change_enrollment(request, check_access=True):
         # (= the course is NOT behind a paywall)
         # Added by Mahendra
         subscription_info = verify_subscription(request)
+        overview = CourseOverview.get_from_id(course_id)
         if CourseMode.can_auto_enroll(course_id):
             # Enroll the user using the default mode (audit)
             # We're assuming that users of the course enrollment table
@@ -542,7 +543,7 @@ def change_enrollment(request, check_access=True):
                 enroll_mode = CourseMode.auto_enroll_mode(course_id, available_modes)
                 if enroll_mode:
                     # Added by Mahendra
-                    if subscription_info.get("is_subscription_active"):
+                    if subscription_info.get("is_subscription_active") and overview.self_paced:
                         CourseEnrollment.enroll(
                             user, course_id, check_access=check_access, mode=CourseMode.VERIFIED
                         )
@@ -557,7 +558,10 @@ def change_enrollment(request, check_access=True):
         # then send the user to the choose your track page.
         # (In the case of no-id-professional/professional ed, this will redirect to a page that
         # funnels users directly into the verification / payment flow)
-        if not subscription_info.get("is_subscription_active"):  # Added by Mahendra
+        # Added by Mahendra
+        if subscription_info.get("is_subscription_active") and overview.self_paced:
+            return HttpResponse()
+        else:
             if CourseMode.has_verified_mode(
                 available_modes
             ) or CourseMode.has_professional_mode(available_modes):
