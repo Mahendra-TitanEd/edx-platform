@@ -300,7 +300,6 @@ def index(request, extra_context=None, user=AnonymousUser()):
     else:
         homepage_video = None
     context["homepage_video"] = homepage_video
-
     return render_to_response("index.html", context)
 
 

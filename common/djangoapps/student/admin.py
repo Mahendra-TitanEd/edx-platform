@@ -347,7 +347,7 @@ class CourseEnrollmentAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
     )
     raw_id_fields = ("user", "course")
     search_fields = (
-        "course_id",
+        "course__id",
         "mode",
         "user__username",
     )
@@ -397,40 +397,12 @@ class CourseEnrollmentAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
         )  # lint-amnesty, pylint: disable=no-member, super-with-arguments
 
 
-class StateinlineAdmin(admin.ModelAdmin):
-    model = State
-    list_display = ["zone_id", "zone_country_id", "zone_code", "zone_name"]
-
-
-class UserProfileForm(forms.ModelForm):
-    """
-    Dynamic UserProfile Form For the changing required field from settings
-    """
-
-    class Meta:
-        model = UserProfile
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super(UserProfileForm, self).__init__(*args, **kwargs)
-
-        extra_fields = settings.REGISTRATION_EXTRA_FIELDS
-
-        for extra_field in extra_fields.keys():
-            if extra_fields[extra_field] == "required":
-                if extra_field in self.base_fields:
-                    self.fields[extra_field].required = True
-
-
 class UserProfileInline(admin.StackedInline):
     """Inline admin interface for UserProfile model."""
 
     model = UserProfile
-    form = UserProfileForm
-    inlines = [StateinlineAdmin]
     can_delete = False
     verbose_name_plural = _("User profile")
-    exclude = ("college_id",)
 
 
 class AccountRecoveryInline(admin.StackedInline):
@@ -467,10 +439,18 @@ class UserAdmin(BaseUserAdmin):
     """Admin interface for the User model."""
 
     inlines = (UserProfileInline, AccountRecoveryInline)
-    readonly_fields = ("username",)
-    actions = ("export_as_csv",)
     form = UserChangeForm
-    add_form = BaseUserCreationForm
+    actions = ("export_as_csv",)
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Allows editing the users while skipping the username check, so we can have Unicode username with no problems.
+        The username is marked read-only when editing existing users regardless of `ENABLE_UNICODE_USERNAME`, to simplify the bokchoy tests.  # lint-amnesty, pylint: disable=line-too-long
+        """
+        django_readonly = super().get_readonly_fields(request, obj)
+        if obj:
+            return django_readonly + ("username",)
+        return django_readonly
 
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
@@ -482,52 +462,6 @@ class UserAdmin(BaseUserAdmin):
         for obj in queryset:
             row = writer.writerow([getattr(obj, field) for field in field_names])
         return response
-
-    class Media:
-        css = {"all": ("ebc-theme/css/custom_admin.css",)}
-        js = ("ebc-theme/js/items.js",)
-
-    def save_model(self, request, obj, form, change):
-        """
-        instance is old object with username = null and then changing username = email
-        """
-        instance = form.save(commit=False)
-        instance.username = instance.email
-        try:
-            with transaction.atomic():
-                instance.save()
-        except IntegrityError:
-            user = User.objects.get(email=instance.email)
-            user_profile, created = UserProfile.objects.get_or_create(user=user)
-            user_profile.name = instance.profile.name
-            user_profile.gender = instance.profile.gender
-            user_profile.year_of_birth = instance.profile.year_of_birth
-            user_profile.level_of_education = instance.profile.level_of_education
-            user_profile.mobile_number = instance.profile.mobile_number
-            user_profile.city = instance.profile.city
-            # user_profile.new_country = instance.profile.new_country
-            # user_profile.state = instance.profile.state
-            user_profile.save()
-
-        return instance
-
-    def get_form(self, request, obj=None, **kwargs):
-        """
-        Email Filed default is false so it required the email field
-        """
-        form = super(UserAdmin, self).get_form(request, obj, **kwargs)
-        form.base_fields["email"].required = True
-        return form
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Allows editing the users while skipping the username check, so we can have Unicode username with no problems.
-        The username is marked read-only when editing existing users regardless of `ENABLE_UNICODE_USERNAME`, to simplify the bokchoy tests.  # lint-amnesty, pylint: disable=line-too-long
-        """
-        django_readonly = super().get_readonly_fields(request, obj)
-        if obj:
-            return django_readonly + ("username",)
-        return django_readonly
 
 
 UserAdmin.add_fieldsets = (
@@ -804,7 +738,7 @@ admin.site.register(RegistrationCookieConfiguration, ConfigurationModelAdmin)
 admin.site.register(BulkUnenrollConfiguration, ConfigurationModelAdmin)
 admin.site.register(BulkChangeEnrollmentConfiguration, ConfigurationModelAdmin)
 admin.site.register(Country)
-admin.site.register(State, StateinlineAdmin)
+admin.site.register(State)
 
 # We must first un-register the User model since it may also be registered by the auth app.
 try:

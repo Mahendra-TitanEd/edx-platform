@@ -1214,8 +1214,8 @@ def settings_handler(request, course_key_string):  # lint-amnesty, pylint: disab
                             'show_min_grade_warning': show_min_grade_warning,
                         }
                     )
-            topics = CourseTopics.objects.all()
-            subjects = CourseCategory.objects.all()
+            topics = CourseTopics.objects.all().order_by('name')
+            subjects = CourseCategory.objects.all().order_by('name')
             settings_context.update({
                 'topics': topics,
                 'subjects': subjects,
