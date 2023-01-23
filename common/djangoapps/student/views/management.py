@@ -271,20 +271,17 @@ def index(request, extra_context=None, user=AnonymousUser()):
     new_courses = list()
     # added for new course on index page
     for course in all_courses:
-        course_item = get_course_with_access(request.user, "load", course.id)
         try:
+            course_item = modulestore().get_course(course.id,  depth=0)
             course_config = EbcCourseConfiguration.objects.get(
                 course__course_key=course.id
             )
-            is_upcoming = course_config.is_upcoming
+            if course_config.is_upcoming:
+                upcoming_courses.append(course)
+            elif course_item.is_new:
+                new_courses.append(course)
         except Exception as e:
-            is_upcoming = False
-        if is_upcoming:
-            upcoming_courses.append(course)
-            if course in courses:
-                courses.remove(course)
-        if course_item.is_new:
-            new_courses.append(course)
+            log.info(str(e))
 
     upcoming_courses = list(set(upcoming_courses))
     weekly_series, monthly_top_courses = sort_weekly_series_by_courseware_hit(courses)

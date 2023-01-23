@@ -82,11 +82,6 @@ from xmodule.modulestore.django import (
 
 log = logging.getLogger("edx.student")
 
-# Added by Mahendra
-from subscription.api import user_coupon_info
-from free_trial.models import FreeTrialSettings
-from ebc_course.models import EbcCourseConfiguration
-
 experiments_namespace = LegacyWaffleFlagNamespace(name="student.experiments")
 
 
@@ -565,15 +560,6 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     user = request.user
     if not UserProfile.objects.filter(user=user).exists():
         return redirect(reverse("account_settings"))
-
-    # Added by Mahendra
-    user_trial_coupon = user_coupon_info(user)
-    try:
-        free_trial_cert_restriction = (
-            FreeTrialSettings.objects.first().enable_free_trial_cert_restrictions
-        )
-    except Exception as e:
-        free_trial_cert_restriction = True
 
     platform_name = configuration_helpers.get_value(
         "platform_name", settings.PLATFORM_NAME
@@ -1081,8 +1067,6 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
             "progress_list": get_courses_progress(user, get_course_progress_ids),
             "programs_data": enrolled_programs,
             "programs_info_dict": programs_info_dict,
-            "free_trial_cert_restriction": free_trial_cert_restriction,
-            "user_trial_coupon": user_trial_coupon,
         }
     )
 
