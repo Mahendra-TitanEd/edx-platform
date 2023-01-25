@@ -1002,9 +1002,7 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
                 "detail_url": reverse_lazy(
                     "program_marketing_view", kwargs={"program_uuid": program["uuid"]}
                 ),
-                "card_image_url": "{}{}".format(
-                    settings.DISCOVERY_ROOT_URL, program.get("card_image_url")
-                ),
+                "card_image_url": program.get("card_image_url"),
                 "start_date": program.get("start_date"),
                 "title": program.get("title"),
                 "is_program_started": is_program_started,

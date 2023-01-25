@@ -865,7 +865,7 @@ def get_course_prices(course, verified_only=False):
             settings.PAID_COURSE_REGISTRATION_CURRENCY[0]
         )
 
-    if registration_price > 0:
+    if int(registration_price) > 0:
         price = registration_price
     # Handle course overview objects which have no cosmetic_display_price
     elif hasattr(course, 'cosmetic_display_price'):
