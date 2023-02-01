@@ -100,7 +100,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    DateUtils.setupDatePicker('enrollment_start', this);
                    DateUtils.setupDatePicker('enrollment_end', this);
                    DateUtils.setupDatePicker('upgrade_deadline', this);
-
+                   // Added by Mahendra
+                   DateUtils.setupDatePicker('assignment_due_date', this);
                    this.$el.find('#' + this.fieldToSelectorMap.overview).val(this.model.get('overview'));
                    this.codeMirrorize(null, $('#course-overview')[0]);
 
@@ -220,7 +221,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_level: 'course_level', // Added by Mahendra
                    overview_2: 'overview_2', // Added by Mahendra
                    certificate_overview: 'certificate_overview', // Added by Mahendra
-                   add_course_quote_info: 'add-course-quote-info',
+                   add_course_quote_info: 'add-course-quote-info', // Added by Mahendra
+                   assignment_due_date: 'assignment-due', // Added by Mahendra
                },
 
                addLearningFields: function() {

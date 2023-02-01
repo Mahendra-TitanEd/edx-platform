@@ -82,6 +82,7 @@ class CourseMetadata:
         'course_level',
         'overview_2',
         'certificate_overview',
+        'assignment_due_date',
     ]
 
     @classmethod

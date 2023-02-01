@@ -30,6 +30,8 @@ function($, date, TriggerChangeEventOnEnter) {
     function setDate(datepickerInput, timepickerInput, datetime) {
         // given a pair of inputs (datepicker and timepicker) and the date as an
         // ISO-formatted date string.
+        // Added by Mahendra
+        datetime = datetime.replace(".000Z", "Z");
         var parsedDatetime = Date.parse(datetime);
         if (parsedDatetime) {
             $(datepickerInput).datepicker('setDate', parsedDatetime);

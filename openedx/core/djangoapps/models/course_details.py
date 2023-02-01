@@ -37,6 +37,7 @@ ABOUT_ATTRIBUTES = [
     'course_level',
     'overview_2',
     'certificate_overview',
+    'assignment_due_date'
 ]
 
 
@@ -91,6 +92,7 @@ class CourseDetails:
         self.overview_2 = ""
         self.certificate_overview = ""
         self.quote_info = []
+        self.assignment_due_date = None
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -150,6 +152,8 @@ class CourseDetails:
         course_details.overview_2 = course_descriptor.overview_2
         course_details.certificate_overview = course_descriptor.certificate_overview
         course_details.quote_info = course_descriptor.quote_info
+        course_details.assignment_due_date = course_descriptor.assignment_due_date
+
         # Default course license is "All Rights Reserved"
         course_details.license = getattr(course_descriptor, "license", "all-rights-reserved")
 

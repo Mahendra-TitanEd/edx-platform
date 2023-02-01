@@ -11,6 +11,7 @@ define(['backbone', 'underscore', 'gettext', 'js/models/validation_helpers', 'js
                 language: '',
                 start_date: null,	// maps to 'start'
                 end_date: null,		// maps to 'end'
+                assignment_due_date: null, // maps to 'assignment_due_date' Added by Mahendra
                 certificates_display_behavior: "",
                 certificate_available_date: null,
                 enrollment_start: null,

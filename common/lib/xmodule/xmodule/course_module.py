@@ -1074,6 +1074,7 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         },
         scope=Scope.settings
     )
+    assignment_due_date = Date(help=_("Date that the course assignments closed."), scope=Scope.settings)
 
 
 class CourseBlock(
