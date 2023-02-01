@@ -1075,7 +1075,14 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         scope=Scope.settings
     )
     assignment_due_date = Date(help=_("Date that the course assignments closed."), scope=Scope.settings)
-
+    show_outline = String(
+        display_name=_("Show Course Outline"),
+        help=_(
+            "Specify to show course outline on course about page"
+        ),
+        default='true',
+        scope=Scope.settings,
+    )
 
 class CourseBlock(
     CourseFields,

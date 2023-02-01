@@ -185,7 +185,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                    this.$el.find('#' + this.fieldToSelectorMap.certificate_overview).val(this.model.get('certificate_overview'));
                    this.codeMirrorize(null, $('#certificate_overview')[0]);
-
+                   if ((this.model.get('show_outline') == 'true') || this.model.get('show_outline')) {
+                       this.$('#' + this.fieldToSelectorMap.show_outline).attr('checked', this.model.get('show_outline'));
+                   } else {
+                       this.$('#' + this.fieldToSelectorMap.show_outline).removeAttr('checked');
+                   }
                    return this;
                },
                fieldToSelectorMap: {
@@ -223,6 +227,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    certificate_overview: 'certificate_overview', // Added by Mahendra
                    add_course_quote_info: 'add-course-quote-info', // Added by Mahendra
                    assignment_due_date: 'assignment-due', // Added by Mahendra
+                   show_outline: 'show-outline', // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -389,6 +394,13 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_level':
                    case 'overview_2':
                    case 'certificate_overview':
+                   case 'show-outline':
+                       if ($(event.currentTarget).is(':checked')) {
+                           this.model.set('show_outline', 'true');
+                       } else {
+                           this.model.set('show_outline', 'false');
+                       }
+                       break
                    case 'course-short-description':
                        this.setField(event);
                        break;
