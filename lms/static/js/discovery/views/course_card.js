@@ -22,9 +22,9 @@
 
         return Backbone.View.extend({
 
-            tagName: 'li',
+            tagName: 'div',
             templateId: '#course_card-tpl',
-            className: 'courses-listing-item',
+            className: 'col-md-4 col-sm-6 courses-paths',
 
             initialize: function() {
                 this.tpl = HtmlUtils.template($(this.templateId).html());
