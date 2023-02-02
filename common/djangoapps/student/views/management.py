@@ -271,6 +271,9 @@ def index(request, extra_context=None, user=AnonymousUser()):
     new_courses = list()
     # added for new course on index page
     for course in all_courses:
+        # Invitation only courses will be not visible in LMS
+        if course.invitation_only:
+            continue
         try:
             course_item = modulestore().get_course(course.id,  depth=0)
             course_config = EbcCourseConfiguration.objects.get(

@@ -793,8 +793,13 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 course_info.update({"all": ["Self-Paced Courses"]})
 
             # Price filter for courses and path
-            if course.self_paced:
-                course_info.update({"price": ["IN SUBSCRIPTION"]})
+            from lms.djangoapps.courseware.access_utils import check_public_access
+            from xmodule.course_module import COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE
+            allow_anonymous = check_public_access(course, [COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE])
+            if allow_anonymous:
+                course_info.update({"price": ["PUBLIC"]})
+            elif course.self_paced:
+                course_info.update({"price": ["IN SUBSCRIPTION", "INDIVIDUALLY PRICED"]})
             else:
                 course_info.update({"price": ["INDIVIDUALLY PRICED"]})
 
