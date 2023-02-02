@@ -42,97 +42,23 @@
             },
 
             renderFacet: function(facetKey, options) {
-                if(facetKey=='subject'){
-                    return this.facetTpl({
-                        name: facetKey,
-                        displayName: this.facetName(facetKey),
-                        optionsHtml: this.renderOptions(options),
-                        listIsHuge: (options.length > 3)
-                    });
-                }else{
-                    return this.facetTpl({
-                        name: facetKey,
-                        displayName: this.facetName(facetKey),
-                        optionsHtml: this.renderOptions(options),
-                        listIsHuge: (options.length > 10)
-                    });
-                }
+                return this.facetTpl({
+                    name: facetKey,
+                    displayName: this.facetName(facetKey),
+                    optionsHtml: this.renderOptions(options),
+                    listIsHuge: (options.length > 9)
+                });
             },
 
             render: function() {
                 var grouped = this.collection.groupBy('facet');
-                var newGrouped = {};
-                if(grouped.topic){
-                    newGrouped['topic'] = grouped.topic
-                }
-                if(grouped.all){
-                    newGrouped['all'] = grouped.all
-                }
-                if(grouped.subject){
-                    newGrouped['subject'] = grouped.subject
-                }
-                if(grouped.price){
-                    newGrouped['price'] = grouped.price
-                }
-                if(grouped.course_status){
-                    newGrouped['course_status'] = grouped.course_status
-                }
-                if(grouped.level){
-                    newGrouped['level'] = grouped.level
-                }
-                if(grouped.language){
-                    newGrouped['language'] = grouped.language
-                }
-                if(grouped.is_new){
-                    newGrouped['is_new'] = grouped.is_new
-                }
                 var htmlSnippet = HtmlUtils.joinHtml.apply(
-                    this, _.map(newGrouped, function(options, facetKey) {
-                        if (options.length > 0) {
-                            if (facetKey == "level"){
-                                options = options.sort(function(a,b){return a.id.toLowerCase().localeCompare(b.id.toLowerCase());});
-                                var new_options = []
-                                if (options[0].attributes.term == "Advanced") {
-                                    var first = options.shift();
-                                    options.push(first)
-                                }
-                                return this.renderFacet(facetKey, options);
-                            }
-                            else if(facetKey == "all"){
-                                options = options.sort(function(a,b){return b.id.length - a.id.length});
-                                var new_types = []
-                                var i;
-                                Array.prototype.move = function (old_index, new_index) {
-                                    if (new_index >= this.length) {
-                                        var k = new_index - this.length;
-                                        while ((k--) + 1) {
-                                            this.push(undefined);
-                                        }
-                                    }
-                                    this.splice(new_index, 0, this.splice(old_index, 1)[0]);
-                                    // return this; // for testing purposes
-                                };
-                                for (i = 0; i < options.length; i++) { 
-                                    if (options[i].attributes.term == "Free Trial Talks"){
-                                        options.move(i, options.length-1);
-                                        continue;
-                                    }
-                                }
-                                for (i = 0; i < options.length; i++) { 
-                                    if(options[i].attributes.term == "Free Trial Courses"){
-                                        options.move(i, options.length-1);
-                                        continue;
-                                    }
-                                }
-                                return this.renderFacet(facetKey, options);
-                            }
-                            else{
-                                options = options.sort(function(a,b){return a.id.toLowerCase().localeCompare(b.id.toLowerCase());});
-                                return this.renderFacet(facetKey, options);
-                            }
-                        }
-                    }, this)
-                );
+                this, _.map(grouped, function(options, facetKey) {
+                    if (options.length > 0) {
+                        return this.renderFacet(facetKey, options);
+                    }
+                }, this)
+            );
                 HtmlUtils.setHtml(this.$container, htmlSnippet);
                 return this;
             },
