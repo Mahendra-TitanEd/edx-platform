@@ -21,6 +21,6 @@ def cache_programs(request):
     if settings.FEATURES.get('EXPOSE_CACHE_PROGRAMS_ENDPOINT'):
         call_command('cache_programs')
 
-        return HttpResponse('Programs cached.')
+        return HttpResponse('All Programs populated successfully.')
 
     raise Http404

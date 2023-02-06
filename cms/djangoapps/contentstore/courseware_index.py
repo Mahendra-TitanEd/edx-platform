@@ -663,6 +663,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         else:
             enroll_date = "Available Now"
 
+        log.info("Enrollment End Date: {} and enroll show text: {}".format(enrollment_end, enroll_date))
         start_date = course.start.date().strftime("%b %d, %Y")
         advertised_start = course.advertised_start or start_date
 
@@ -784,13 +785,13 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 )
             if course.invitation_only:
                 course_info.update({"all": ["Invitation"]})
-            elif not course.self_paced:
-                course_info.update({"all": ["Instructor-Led Courses"]})
             elif ebc_course_configuration.weekly_series:
                 course_info.update({"all": ["Talks"]})
                 course_info.update({"is_talks": True})
-            else:
+            elif course.self_paced:
                 course_info.update({"all": ["Self-Paced Courses"]})
+            else:
+                course_info.update({"all": ["Instructor-Led Courses"]})
 
             # Price filter for courses and path
             from lms.djangoapps.courseware.access_utils import check_public_access

@@ -50,7 +50,6 @@ class Command(BaseCommand):
 
         catalog_integration = CatalogIntegration.current()
         username = catalog_integration.service_username
-
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
@@ -77,10 +76,13 @@ class Command(BaseCommand):
             client = create_catalog_api_client(user, site=site)
             uuids, program_uuids_failed = self.get_site_program_uuids(client, site)
             new_programs, program_details_failed = self.fetch_program_details(client, uuids)
-            new_pathways, pathways_failed = self.get_pathways(client, site)
-            new_pathways, new_programs, pathway_processing_failed = self.process_pathways(
-                site, new_pathways, new_programs
-            )
+            # Updated by Mahendra
+            new_pathways, pathways_failed = list(), False
+            new_pathways, new_programs, pathway_processing_failed = dict(), new_programs, False
+            # new_pathways, pathways_failed = self.get_pathways(client, site)
+            # new_pathways, new_programs, pathway_processing_failed = self.process_pathways(
+            #     site, new_pathways, new_programs
+            # )
 
             failure = any([
                 program_uuids_failed,
@@ -130,6 +132,13 @@ class Command(BaseCommand):
 
         logger.info(f'Caching programs uuids for {len(organizations)} organizations')
         cache.set_many(organizations, None)
+
+        # Added by Mahendra
+        try:
+            from ebc_course.index import index_programs_information
+            index_programs_information("course_info")
+        except Exception as e:
+            logger.info("Failed to reindex program. Error: {}".format(str(e)))
 
         if failure:
             sys.exit(1)
