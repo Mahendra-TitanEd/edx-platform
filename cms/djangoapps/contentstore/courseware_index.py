@@ -655,7 +655,6 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         else:
             enroll_date = "Available Now"
 
-        log.info("Enrollment End Date: {} and enroll show text: {}".format(course.enrollment_end.strftime("%b %d, %Y"), enroll_date))
         start_date = course.start.date().strftime("%b %d, %Y")
         advertised_start = course.advertised_start or start_date
 
