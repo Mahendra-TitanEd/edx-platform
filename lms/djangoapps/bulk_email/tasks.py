@@ -503,7 +503,7 @@ def _send_course_email(entry_id, email_id, to_list, global_email_context, subtas
     # If EMAIL_USE_COURSE_ID_FROM_FOR_BULK is False, use the default email from address.
     # Otherwise compute a custom from address
     if not is_email_use_course_id_from_for_bulk_enabled():
-        from_addr = settings.BULK_EMAIL_DEFAULT_FROM_EMAIL or settings.DEFAULT_FROM_EMAIL
+        from_addr = settings.DEFAULT_FROM_EMAIL or settings.BULK_EMAIL_DEFAULT_FROM_EMAIL
     else:
         # use the email from address in the CourseEmail, if it is present, otherwise compute it.
         from_addr = course_email.from_addr or _get_source_address(course_email.course_id, course_title, course_language)

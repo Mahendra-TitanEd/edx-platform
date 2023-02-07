@@ -642,17 +642,9 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         except:
             course_price = None
 
-        # get Dates from course and format it for future date condition
-        try:
-            enrollment_end = course.enrollment_end.strftime("%b %d, %Y")
-            start_date = course.start.date().strftime("%b %d, %Y")
-        except:
-            enrollment_end = course.enrollment_end
-            start_date = course.start.date()
-
         if not course.self_paced:
-            if enrollment_end:
-                if enrollment_end > today_date.strftime("%b %d, %Y"):
+            if course.enrollment_end:
+                if course.enrollment_end.date() > today_date:
                     enroll_date = "Enroll by {}".format(
                         course.enrollment_end.strftime("%b %d, %Y")
                     )
@@ -663,7 +655,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         else:
             enroll_date = "Available Now"
 
-        log.info("Enrollment End Date: {} and enroll show text: {}".format(enrollment_end, enroll_date))
+        log.info("Enrollment End Date: {} and enroll show text: {}".format(course.enrollment_end.strftime("%b %d, %Y"), enroll_date))
         start_date = course.start.date().strftime("%b %d, %Y")
         advertised_start = course.advertised_start or start_date
 
