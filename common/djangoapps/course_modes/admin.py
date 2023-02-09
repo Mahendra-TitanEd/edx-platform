@@ -195,15 +195,15 @@ class CourseModeAdmin(admin.ModelAdmin):
     )
 
     search_fields = ('course__id',)
-
+    list_filter = ['mode_slug']
     list_display = (
         'id',
         'course',
         'mode_slug',
         'min_price',
         'expiration_datetime_custom',
-        'sku',
-        'bulk_sku'
+        # 'sku',
+        # 'bulk_sku'
     )
 
     def expiration_datetime_custom(self, obj):
