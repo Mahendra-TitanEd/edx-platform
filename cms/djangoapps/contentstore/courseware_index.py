@@ -27,6 +27,7 @@ from openedx.core.djangoapps.models.course_details import CourseDetails
 from ebc_course.models import EbcCourseConfiguration
 from ebc_course.index import index_programs_information
 from hit_counter.views import get_count, get_weekly_series_views
+from course_about.models import CourseInstructor
 
 # REINDEX_AGE is the default amount of time that we look back for changes
 # that might have happened. If we are provided with a time at which the
@@ -630,15 +631,21 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
         except Exception as e:
             course_length = ""
 
+        if course_details.instructor_info.get("instructors", list()):
+            instructors = ", ".join(instructor.get('name') for instructor in course_details.instructor_info.get("instructors", list()))
+        else:
+            course_instructors = CourseInstructor.objects.filter(course_configuration__course__course_key=course.id, active=True)
+            instructors = ", ".join(instructor.name for instructor in course_instructors)
+
         instructors_list = {
-            "instructors": ", ".join(instructor.get('name') for instructor in course_details.instructor_info.get("instructors", list()))
+            "instructors": instructors
         }
 
         # Course Price for Instructor Led Courses on Courses Page
         # Second Variable is to seprate price with comma in try block
         try:
-            course_price = CourseMode.objects.filter(course_id=course.id)[0].min_price
-            course_price = "{:,}".format(int(course_price))
+            verified_mode = CourseMode.mode_for_course(course.id, "verified")
+            course_price = "{:,}".format(int(verified_mode.min_price))
         except:
             course_price = None
 
