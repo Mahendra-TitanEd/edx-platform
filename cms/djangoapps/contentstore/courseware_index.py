@@ -656,7 +656,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                         course.enrollment_end.strftime("%b %d, %Y")
                     )
                 else:
-                    enroll_date = "Available Now"
+                    enroll_date = "Enrollment is Closed"
             else:
                 enroll_date = "Coming Soon"
         else:

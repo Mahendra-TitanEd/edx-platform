@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 STUDENT_FEATURES = ('id', 'username', 'first_name', 'last_name', 'is_staff', 'email',
                     'date_joined', 'last_login')
 PROFILE_FEATURES = ('name', 'language', 'location', 'year_of_birth', 'gender',
-                    'level_of_education', 'mailing_address', 'goals', 'meta',
+                    'level_of_education', 'goals', 'meta',
                     'city')
 PROGRAM_ENROLLMENT_FEATURES = ('external_user_key', )
 ORDER_ITEM_FEATURES = ('list_price', 'unit_cost', 'status')
