@@ -267,13 +267,10 @@ def index(request, extra_context=None, user=AnonymousUser()):
     # added template for path
     context["path_list"] = theming_helpers.get_template_path("path_list.html")
     upcoming_courses = list()
-    all_courses = CourseOverview.objects.all()
+    all_courses = CourseOverview.objects.filter(enrollment_end__gte=today, invitation_only=False)
     new_courses = list()
     # added for new course on index page
     for course in all_courses:
-        # Invitation only courses will be not visible in LMS
-        if course.invitation_only:
-            continue
         try:
             course_item = modulestore().get_course(course.id,  depth=0)
             course_config = EbcCourseConfiguration.objects.get(
@@ -287,7 +284,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
             log.info(str(e))
 
     upcoming_courses = list(set(upcoming_courses))
-    weekly_series, monthly_top_courses = sort_weekly_series_by_courseware_hit(courses)
+    weekly_series, monthly_top_courses = sort_weekly_series_by_courseware_hit(all_courses)
     context["new_courses"] = new_courses
     context["upcomming_courses"] = upcoming_courses
     context["courses"] = monthly_top_courses

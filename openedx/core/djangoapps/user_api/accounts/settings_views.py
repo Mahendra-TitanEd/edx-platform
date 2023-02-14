@@ -155,8 +155,9 @@ def account_settings_context(request):
         # we display a message to the user.
         context['duplicate_provider'] = pipeline.get_duplicate_provider(messages.get_messages(request))
 
-        auth_states = pipeline.get_provider_user_states(user)
-
+        # Added by Mahendra
+        # auth_states = pipeline.get_provider_user_states(user)
+        auth_states = list()
         context['auth']['providers'] = [{
             'id': state.provider.provider_id,
             'name': state.provider.name,  # The name of the provider e.g. Facebook

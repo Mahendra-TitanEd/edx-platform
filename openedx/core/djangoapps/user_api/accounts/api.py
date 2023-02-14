@@ -264,13 +264,14 @@ def _validate_name_change(user_profile, data, field_errors):
         }
         return None
 
-    if _does_name_change_require_verification(user_profile, old_name, new_name):
-        err_msg = 'This name change requires ID verification.'
-        field_errors['name'] = {
-            'developer_message': err_msg,
-            'user_message': err_msg
-        }
-        return None
+    # Added by Mahendra
+    # if _does_name_change_require_verification(user_profile, old_name, new_name):
+    #     err_msg = 'This name change requires ID verification.'
+    #     field_errors['name'] = {
+    #         'developer_message': err_msg,
+    #         'user_message': err_msg
+    #     }
+    #     return None
 
     return old_name
 
