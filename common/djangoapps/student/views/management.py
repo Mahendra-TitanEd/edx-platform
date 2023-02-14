@@ -1,8 +1,6 @@
 """  # lint-amnesty, pylint: disable=cyclic-import
 Student Views
 """
-
-
 import datetime
 import logging
 import urllib.parse
@@ -267,10 +265,13 @@ def index(request, extra_context=None, user=AnonymousUser()):
     # added template for path
     context["path_list"] = theming_helpers.get_template_path("path_list.html")
     upcoming_courses = list()
-    all_courses = CourseOverview.objects.filter(enrollment_end__gte=today, invitation_only=False)
+    all_courses = CourseOverview.objects.filter(invitation_only=False)
     new_courses = list()
     # added for new course on index page
     for course in all_courses:
+        if not course.self_paced:
+            if course.enrollment_end and course.enrollment_end.date() < today.date():
+                continue
         try:
             course_item = modulestore().get_course(course.id,  depth=0)
             course_config = EbcCourseConfiguration.objects.get(
