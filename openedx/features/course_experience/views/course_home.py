@@ -33,6 +33,7 @@ from openedx.features.course_experience import (
     COURSE_ENABLE_UNENROLLED_ACCESS_FLAG,
     LATEST_UPDATE_FLAG,
     SHOW_UPGRADE_MSG_ON_COURSE_HOME,
+    ENABLE_COURSE_GOALS
 )
 from openedx.features.course_experience.course_tools import CourseToolsPluginManager
 from openedx.features.course_experience.url_helpers import get_learning_mfe_home_url
@@ -212,6 +213,19 @@ class CourseHomeFragmentView(EdxFragmentView):
             settings.FEATURES.get('ENABLE_COURSEWARE_SEARCH') or
             (settings.FEATURES.get('ENABLE_COURSEWARE_SEARCH_FOR_COURSE_STAFF') and user_access['is_staff'])
         )
+
+        # Added by Mahendra
+        selected_goal =  dict()
+        weekly_learning_goal_enabled =  False
+        if (enrollment and ENABLE_COURSE_GOALS.is_enabled(course_key)):
+            weekly_learning_goal_enabled = True
+            user_selected_goal = get_course_goal(request.user, course_key)
+            if user_selected_goal:
+                selected_goal = {
+                    'days_per_week': user_selected_goal.days_per_week,
+                    'subscribed_to_reminders': user_selected_goal.subscribed_to_reminders,
+                }
+
         # Render the course home fragment
         context = {
             'request': request,
@@ -239,6 +253,8 @@ class CourseHomeFragmentView(EdxFragmentView):
             'upgrade_url': upgrade_url,
             'has_discount': has_discount,
             'show_search': show_search,
+            'selected_goal': selected_goal,
+            'weekly_learning_goal_enabled': weekly_learning_goal_enabled,
         }
         html = render_to_string('course_experience/course-home-fragment.html', context)
         return Fragment(html)
