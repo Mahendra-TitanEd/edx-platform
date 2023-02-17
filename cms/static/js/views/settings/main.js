@@ -185,8 +185,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                    this.$el.find('#' + this.fieldToSelectorMap.certificate_overview).val(this.model.get('certificate_overview'));
                    this.codeMirrorize(null, $('#certificate_overview')[0]);
-                   if ((this.model.get('show_outline') == 'true') || this.model.get('show_outline')) {
-                       this.$('#' + this.fieldToSelectorMap.show_outline).attr('checked', this.model.get('show_outline'));
+                   if ((this.model.get('show_outline') == 'true')) {
+                       this.$('#' + this.fieldToSelectorMap.show_outline).attr('checked','checked');
                    } else {
                        this.$('#' + this.fieldToSelectorMap.show_outline).removeAttr('checked');
                    }
@@ -345,6 +345,14 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        }
                        this.setField(event);
                        break;
+                   case 'show-outline':
+                       if ($(event.currentTarget).is(':checked')) {
+                           this.model.set('show_outline', 'true');
+                       } else {
+                           this.model.set('show_outline', 'false');
+                       }
+                       this.setField(event);
+                       break;
                    case 'entrance-exam-minimum-score-pct':
             // If the val is an empty string then update model with default value.
                        if ($(event.currentTarget).val() === '') {
@@ -394,13 +402,6 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_level':
                    case 'overview_2':
                    case 'certificate_overview':
-                   case 'show-outline':
-                       if ($(event.currentTarget).is(':checked')) {
-                           this.model.set('show_outline', 'true');
-                       } else {
-                           this.model.set('show_outline', 'false');
-                       }
-                       break
                    case 'course-short-description':
                        this.setField(event);
                        break;

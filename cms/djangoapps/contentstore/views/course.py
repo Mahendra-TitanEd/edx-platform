@@ -18,6 +18,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.cache import cache_control
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -1114,6 +1115,7 @@ def course_info_update_handler(request, course_key_string, provided_id=None):
 @ensure_csrf_cookie
 @require_http_methods(("GET", "PUT", "POST"))
 @expect_json
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
 def settings_handler(request, course_key_string):  # lint-amnesty, pylint: disable=too-many-statements
     """
     Course settings for dates and about pages
