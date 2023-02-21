@@ -462,3 +462,4 @@ ELASTIC_SEARCH_CONFIG = [
         'port': 9200
     }
 ]
+IS_PRODUCTION_ENV = False

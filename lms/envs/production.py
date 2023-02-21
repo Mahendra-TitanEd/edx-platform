@@ -1109,3 +1109,4 @@ COURSE_DISCOVERY_MEANINGS = {
         'name' : 'New'
     },
 }
+IS_PRODUCTION_ENV = ENV_TOKENS.get('IS_PRODUCTION_ENV', False)

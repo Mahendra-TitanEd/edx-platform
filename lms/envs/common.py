@@ -5182,3 +5182,4 @@ COURSE_DISCOVERY_MEANINGS = {
         'name' : 'Organization'
     },
 }
+IS_PRODUCTION_ENV = False
