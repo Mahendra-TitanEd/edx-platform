@@ -1245,8 +1245,13 @@ def create_xblock_info(xblock, data=None, metadata=None, include_ancestor_info=F
         xblock_info['display_name'] = group_display_name if group_display_name else xblock_info['display_name']
     else:
         user_partitions = get_user_partition_info(xblock, course=course)
+        log.info("Xblock info: {}".format(xblock))
+        try:
+            xblock_edited_on = get_default_time_display(xblock.subtree_edited_on)
+        except Exception as e:
+            xblock_edited_on = None
         xblock_info.update({
-            'edited_on': get_default_time_display(xblock.subtree_edited_on) if xblock.subtree_edited_on else None,
+            'edited_on': xblock_edited_on,
             'published': published,
             'published_on': published_on,
             'studio_url': xblock_studio_url(xblock, parent_xblock),
