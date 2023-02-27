@@ -783,6 +783,7 @@ def students_update_enrollment(request, course_id):  # lint-amnesty, pylint: dis
     auto_enroll = _get_boolean_param(request, 'auto_enroll')
     email_students = _get_boolean_param(request, 'email_students')
     reason = request.POST.get('reason')
+    enrollment_mode = request.POST.get('enrollment_mode', 'audit')  # Added by Mahendra
 
     enrollment_obj = None
     state_transition = DEFAULT_TRANSITION_STATE
@@ -813,7 +814,7 @@ def students_update_enrollment(request, course_id):  # lint-amnesty, pylint: dis
             validate_email(email)  # Raises ValidationError if invalid
             if action == 'enroll':
                 before, after, enrollment_obj = enroll_email(
-                    course_id, email, auto_enroll, email_students, email_params, language=language
+                    course_id, email, auto_enroll, email_students, email_params, language=language, enrollment_mode=enrollment_mode
                 )
                 before_enrollment = before.to_dict()['enrollment']
                 before_user_registered = before.to_dict()['user']

@@ -222,6 +222,34 @@
                     );
                 }
             }),
+            // Modified by Mahendra
+            CustomizedLinkView: FieldViews.LinkFieldView.extend({
+                fieldType: 'button',
+                fieldTemplate: field_link_account_template,
+                events: {
+                    'click button': 'linkClicked'
+                },
+                initialize: function(options) {
+                    this.options = _.extend({}, options);
+                    this._super(options);
+                    _.bindAll(this, 'buttonClicked');
+                },
+                linkClicked: function(event) {
+                    event.preventDefault();
+                    this.toggleDisableButton(true);
+                    this.buttonClicked(event);
+                },
+                buttonClicked: function() {
+                    var view = this;
+                    window.location.href = view.options.linkHref;
+                },
+                toggleDisableButton: function(disabled) {
+                    var button = this.$('#u-field-link-' + this.options.valueAttribute);
+                    if (button) {
+                        button.prop('disabled', disabled);
+                    }
+                }
+            }),
             LanguageProficienciesFieldView: FieldViews.DropdownFieldView.extend({
                 fieldTemplate: field_dropdown_account_template,
                 modelValue: function() {

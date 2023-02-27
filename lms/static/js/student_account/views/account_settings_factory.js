@@ -162,6 +162,7 @@
                         },
                         emailFieldView,
                         fullnameFieldView,
+                        // Modified by Mahendra
                         // {
                         //     view: new AccountSettingsFieldViews.PasswordFieldView({
                         //         model: userAccountModel,
@@ -175,6 +176,45 @@
                         //         helpMessage: gettext('Check your email account for instructions to reset your password.')  // eslint-disable-line max-len
                         //     })
                         // },
+                        {
+                            view: new AccountSettingsFieldViews.CustomizedLinkView({
+                                model: userAccountModel,
+                                title: gettext('Password'),
+                                screenReaderTitle: gettext('Change Password'),
+                                valueAttribute: 'password',
+                                emailAttribute: 'email',
+                                passwordResetSupportUrl: passwordResetSupportUrl,
+                                linkTitle: gettext('Change Password'),
+                                linkHref: fieldsData.password_change.url,
+                                helpMessage: gettext('You will be redirected to EBC webstore for password change.')  // eslint-disable-line max-len
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.CustomizedLinkView({
+                                model: userAccountModel,
+                                title: gettext('Subscriptions'),
+                                screenReaderTitle: gettext('Manage Subscriptions'),
+                                valueAttribute: 'password',
+                                emailAttribute: 'email',
+                                passwordResetSupportUrl: passwordResetSupportUrl,
+                                linkTitle: gettext('Manage Subscriptions'),
+                                linkHref: fieldsData.manage_subscriptions.url,
+                                helpMessage: gettext('You will be redirected to EBC webstore for manage subscriptions.')  // eslint-disable-line max-len
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.CustomizedLinkView({
+                                model: userAccountModel,
+                                title: gettext('Invoices'),
+                                screenReaderTitle: gettext('Manage Invoices'),
+                                valueAttribute: 'password',
+                                emailAttribute: 'email',
+                                passwordResetSupportUrl: passwordResetSupportUrl,
+                                linkTitle: gettext('Manage Invoices'),
+                                linkHref: fieldsData.manage_invoices.url,
+                                helpMessage: gettext('You will be redirected to EBC webstore for manage invoices.')  // eslint-disable-line max-len
+                            })
+                        },
                         {
                             view: new AccountSettingsFieldViews.LanguagePreferenceFieldView({
                                 model: userPreferencesModel,

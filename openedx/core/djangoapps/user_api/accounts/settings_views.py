@@ -126,6 +126,12 @@ def account_settings_context(request):
                 'options': all_languages(),
             }, 'time_zone': {
                 'options': TIME_ZONE_CHOICES,
+            }, 'password_change': {
+                'url': settings.EBC_LINKS.get('password_change', '#'),
+            }, 'manage_subscriptions': {
+                'url': settings.EBC_LINKS.get('manage_subscriptions', '#'),
+            }, 'manage_invoices': {
+                'url': settings.EBC_LINKS.get('manage_invoices', '#'),
             }
         },
         'platform_name': configuration_helpers.get_value('PLATFORM_NAME', settings.PLATFORM_NAME),

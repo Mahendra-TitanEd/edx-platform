@@ -344,8 +344,8 @@ def _update_context_with_user_info(context, user, user_certificate):
     """
     Updates context dictionary with user related info.
     """
-    user_fullname = get_preferred_certificate_name(user) or user.get_full_name() or user.username
-
+    # user_fullname = get_preferred_certificate_name(user) or user.get_full_name() or user.username
+    user_fullname = user_certificate.name or user.username
     context['username'] = user.username
     context['course_mode'] = user_certificate.mode
     context['accomplishment_user_id'] = user.id

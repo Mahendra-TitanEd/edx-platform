@@ -593,6 +593,7 @@ such that the value can be defined later than this assignment (file load order).
             var batchEnroll = this;
             this.$container = $container;
             this.$identifier_input = this.$container.find("textarea[name='student-ids']");
+            this.$enrollment_mode = this.$container.find("select[name='enrollment-mode']");   //Added by Mahendra
             this.$enrollment_button = this.$container.find('.enrollment-button');
             this.$reason_field = this.$container.find("textarea[name='reason-field']");
             this.$checkbox_autoenroll = this.$container.find("input[name='auto-enroll']");
@@ -613,7 +614,8 @@ such that the value can be defined later than this assignment (file load order).
                     identifiers: batchEnroll.$identifier_input.val(),
                     auto_enroll: batchEnroll.$checkbox_autoenroll.is(':checked'),
                     email_students: emailStudents,
-                    reason: batchEnroll.$reason_field.val()
+                    reason: batchEnroll.$reason_field.val(),
+                    enrollment_mode: batchEnroll.$enrollment_mode.val()  //Added by Mahendra
                 };
                 return $.ajax({
                     dataType: 'json',
