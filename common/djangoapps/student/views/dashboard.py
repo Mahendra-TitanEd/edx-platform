@@ -45,6 +45,7 @@ from openedx.core.djangoapps.credit.email_utils import (
 )
 from openedx.core.djangoapps.plugins.constants import ProjectType
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
+from openedx.core.djangoapps.catalog.utils import course_run_keys_for_program
 from openedx.core.djangoapps.programs.utils import (
     ProgramDataExtender,
     ProgramProgressMeter,
@@ -1009,26 +1010,24 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
                 "path_certificate": path_certificate,
             }
             enrolled_programs.append(program_dict)
+            course_keys = [CourseKey.from_string(key) for key in course_run_keys_for_program(program)]
+            completed = 0
+            in_progress = 0
+            not_started = 0
+            for course_key in course_keys:
+                if GeneratedCertificate.objects.filter(
+                    user=request.user,
+                    course_id=course_key,
+                    status=CertificateStatuses.downloadable,
+                ).exists():
+                    completed += 1
+                elif CourseEnrollment.objects.filter(
+                    user=request.user, course_id=course_key, is_active=True
+                ).exists():
+                    in_progress += 1
+                else:
+                    not_started += 1
 
-            for course_code in program.get("courses", list()):
-                course_runs = course_code.get("course_runs", list())
-                completed = in_progress = not_started = 0
-                if course_runs:
-                    course_run = course_runs[0]
-                    course_key = course_run.get("key")
-                    course_key = CourseKey.from_string(course_run.get("key"))
-                    if GeneratedCertificate.objects.filter(
-                        user=request.user,
-                        course_id=course_key,
-                        status=CertificateStatuses.downloadable,
-                    ).exists():
-                        completed += 1
-                    elif CourseEnrollment.objects.filter(
-                        user=request.user, course_id=course_key, is_active=True
-                    ).exists():
-                        in_progress += 1
-                    else:
-                        not_started += 1
             programs_info_dict.update(
                 {
                     program.get("uuid"): {

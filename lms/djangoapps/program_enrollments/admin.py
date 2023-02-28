@@ -144,6 +144,6 @@ class CourseAccessRoleAssignmentAdmin(admin.ModelAdmin):
     list_filter = ('role',)
     raw_id_fields = ('enrollment',)
 
-admin.site.register(ProgramEnrollment, ProgramEnrollmentAdmin)
-admin.site.register(ProgramCourseEnrollment, ProgramCourseEnrollmentAdmin)
-admin.site.register(CourseAccessRoleAssignment, CourseAccessRoleAssignmentAdmin)
+# admin.site.register(ProgramEnrollment, ProgramEnrollmentAdmin)
+# admin.site.register(ProgramCourseEnrollment, ProgramCourseEnrollmentAdmin)
+# admin.site.register(CourseAccessRoleAssignment, CourseAccessRoleAssignmentAdmin)

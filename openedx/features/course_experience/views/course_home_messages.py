@@ -12,10 +12,10 @@ from django.contrib import auth
 from django.template.loader import render_to_string
 from django.utils.translation import get_language, to_locale
 from django.utils.translation import gettext as _
+from django.urls import reverse
 from opaque_keys.edx.keys import CourseKey
 from pytz import UTC
 from web_fragments.fragment import Fragment
-
 from common.djangoapps.course_modes.models import CourseMode
 from lms.djangoapps.courseware.courses import get_course_date_blocks, get_course_with_access
 from lms.djangoapps.course_goals.api import (
@@ -156,8 +156,10 @@ def _register_course_home_messages(request, course, user_access, course_start_da
                 Text(_(
                     '{open_enroll_link}Enroll now{close_enroll_link} to access the full course.'
                 )).format(
-                    open_enroll_link=HTML('<button class="enroll-btn btn-link">'),
-                    close_enroll_link=HTML('</button>')
+                    open_enroll_link=HTML('<a href="{course_about_url}" class"enrollment-link">').format(
+                        course_about_url=reverse('about_course', args=[course.id])
+                    ),
+                    close_enroll_link=HTML('</a>')
                 ),
                 title=title
             )
