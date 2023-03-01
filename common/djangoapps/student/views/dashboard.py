@@ -969,74 +969,70 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
         except Exception as e:
             courses_enrollments.append(course_enrollment)
 
-    programs = get_programs(request.site)
     enrolled_programs = list()
     programs_info_dict = dict()
     today = datetime.datetime.now()
-    for program in programs:
-        if PathEnrollment.objects.filter(
-            user=request.user, program_id=program.get("uuid"), is_enrolled=True
-        ).exists():
-            is_program_started = False
-            try:
-                start_date = datetime.datetime.strptime(
-                    program.get("start_date"), "%d %B %Y"
-                )
-                if start_date.date() < today.date():
-                    is_program_started = True
-            except Exception as e:
-                is_program_started = False
-
-            try:
-                certificate = PathCertificate.objects.get(
-                    user=user, path_id=program["uuid"]
-                )
-                path_certificate = "/path/certificate/{certificate}".format(
-                    certificate=certificate.uuid.hex
-                )
-            except:
-                path_certificate = None
-
-            program_dict = {
-                "uuid": program.get("uuid"),
-                "title": program.get("title"),
-                "detail_url": reverse_lazy(
-                    "program_marketing_view", kwargs={"program_uuid": program["uuid"]}
-                ),
-                "card_image_url": program.get("card_image_url"),
-                "start_date": program.get("start_date"),
-                "title": program.get("title"),
-                "is_program_started": is_program_started,
-                "path_certificate": path_certificate,
-            }
-            enrolled_programs.append(program_dict)
-            course_keys = [CourseKey.from_string(key) for key in course_run_keys_for_program(program)]
-            completed = 0
-            in_progress = 0
-            not_started = 0
-            for course_key in course_keys:
-                if GeneratedCertificate.objects.filter(
-                    user=request.user,
-                    course_id=course_key,
-                    status=CertificateStatuses.downloadable,
-                ).exists():
-                    completed += 1
-                elif CourseEnrollment.objects.filter(
-                    user=request.user, course_id=course_key, is_active=True
-                ).exists():
-                    in_progress += 1
-                else:
-                    not_started += 1
-
-            programs_info_dict.update(
-                {
-                    program.get("uuid"): {
-                        "completed": completed,
-                        "in_progress": in_progress,
-                        "not_started": not_started,
-                    }
-                }
+    for program in meter.engaged_programs:
+        is_program_started = False
+        try:
+            start_date = datetime.datetime.strptime(
+                program.get("start_date"), "%d %B %Y"
             )
+            if start_date.date() < today.date():
+                is_program_started = True
+        except Exception as e:
+            is_program_started = False
+
+        try:
+            certificate = PathCertificate.objects.get(
+                user=user, path_id=program["uuid"]
+            )
+            path_certificate = "/path/certificate/{certificate}".format(
+                certificate=certificate.uuid.hex
+            )
+        except:
+            path_certificate = None
+
+        program_dict = {
+            "uuid": program.get("uuid"),
+            "title": program.get("title"),
+            "detail_url": reverse_lazy(
+                "program_marketing_view", kwargs={"program_uuid": program["uuid"]}
+            ),
+            "card_image_url": program.get("card_image_url"),
+            "start_date": program.get("start_date"),
+            "title": program.get("title"),
+            "is_program_started": is_program_started,
+            "path_certificate": path_certificate,
+        }
+        enrolled_programs.append(program_dict)
+        course_keys = [CourseKey.from_string(key) for key in course_run_keys_for_program(program)]
+        completed = 0
+        in_progress = 0
+        not_started = 0
+        for course_key in course_keys:
+            if GeneratedCertificate.objects.filter(
+                user=request.user,
+                course_id=course_key,
+                status=CertificateStatuses.downloadable,
+            ).exists():
+                completed += 1
+            elif CourseEnrollment.objects.filter(
+                user=request.user, course_id=course_key, is_active=True
+            ).exists():
+                in_progress += 1
+            else:
+                not_started += 1
+
+        programs_info_dict.update(
+            {
+                program.get("uuid"): {
+                    "completed": completed,
+                    "in_progress": in_progress,
+                    "not_started": not_started,
+                }
+            }
+        )
 
     get_course_progress_ids = [i.course_id for i in course_enrollments]
     try:

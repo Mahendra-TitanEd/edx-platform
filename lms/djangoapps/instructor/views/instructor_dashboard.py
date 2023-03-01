@@ -467,6 +467,7 @@ def _section_membership(course, access):
         'section_key': 'membership',
         'section_display_name': _('Membership'),
         'access': access,
+        'is_self_paced': course.self_paced,
         'ccx_is_enabled': ccx_enabled,
         'enroll_button_url': reverse('students_update_enrollment', kwargs={'course_id': str(course_key)}),
         'unenroll_button_url': reverse('students_update_enrollment', kwargs={'course_id': str(course_key)}),

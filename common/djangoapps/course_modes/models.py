@@ -79,7 +79,8 @@ class CourseMode(models.Model):
         verbose_name=_("Upgrade Deadline"),
         help_text=_(
             "OPTIONAL: After this date/time, users will no longer be able to enroll in this mode. "
-            "Leave this blank if users can enroll in this mode until enrollment closes for the course."
+            "Leave this blank if users can enroll in this mode until enrollment closes for the course. "
+            "NOTE: Upgrade Deadline date must be later than the course enrollment end date in studio."
         ),
         db_column='expiration_datetime',
     )

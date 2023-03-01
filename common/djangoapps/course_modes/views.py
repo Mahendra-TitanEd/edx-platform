@@ -45,7 +45,7 @@ from openedx.features.enterprise_support.api import enterprise_customer_for_requ
 from common.djangoapps.student.models import CourseEnrollment
 from common.djangoapps.util.db import outer_atomic
 from xmodule.modulestore.django import modulestore  # lint-amnesty, pylint: disable=wrong-import-order
-
+from openedx.core.djangoapps.programs.utils import ProgramProgressMeter
 LOG = logging.getLogger(__name__)
 
 # .. toggle_name: course_modes.use_new_track_selection
@@ -195,6 +195,13 @@ class ChooseModeView(View):
         except Exception as e:
             buy_to_access = False
 
+        try:
+            meter = ProgramProgressMeter(request.site, request.user)
+            inverted_programs = meter.invert_programs()
+            related_programs = inverted_programs.get(course_key)
+        except Exception as e:
+            related_programs = None
+
         context = {
             "course_modes_choose_url": reverse(
                 "course_modes_choose",
@@ -216,6 +223,8 @@ class ChooseModeView(View):
             "buy_to_access": buy_to_access,   #Added by Mahendra
             "subscription_url": subscription_url,   #Added by Mahendra
             "is_self_paced": is_self_paced,  #Added by Mahendra
+            "course": course,  #Added by Mahendra
+            "related_programs": related_programs,  #Added by Mahendra
         }
         context.update(
             get_experiment_user_metadata_context(
