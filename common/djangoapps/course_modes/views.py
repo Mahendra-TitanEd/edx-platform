@@ -196,10 +196,12 @@ class ChooseModeView(View):
             buy_to_access = False
 
         try:
+            LOG.info("Request site: {}".format(request.site))
             meter = ProgramProgressMeter(request.site, request.user)
             inverted_programs = meter.invert_programs()
             related_programs = inverted_programs.get(course_key)
         except Exception as e:
+            LOG.info("Failded to get related programs. Error:{}".format(str(e)))
             related_programs = None
 
         context = {
@@ -233,12 +235,9 @@ class ChooseModeView(View):
             )
         )
 
-        title_content = ''
-        if enrollment_mode:
-            title_content = _("Congratulations!  You are now enrolled in {course_name}").format(
-                course_name=course.display_name_with_default
-            )
-
+        title_content = _("Congratulations!  You are now enrolled in {course_name}").format(
+            course_name=course.display_name_with_default
+        )
         context["title_content"] = title_content
 
         if "verified" in modes:
