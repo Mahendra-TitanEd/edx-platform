@@ -7,7 +7,7 @@ Does not include any access control, be sure to check access before calling.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from django.conf import settings
@@ -50,12 +50,13 @@ from lms.djangoapps.instructor.message_types import (
 from openedx.core.djangoapps.lang_pref import LANGUAGE_KEY
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.user_api.models import UserPreference
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangolib.markup import Text
 from xmodule.modulestore.django import modulestore  # lint-amnesty, pylint: disable=wrong-import-order
 from xmodule.modulestore.exceptions import ItemNotFoundError  # lint-amnesty, pylint: disable=wrong-import-order
-
 log = logging.getLogger(__name__)
 
+today = datetime.now()
 
 class EmailEnrollmentState:
     """ Store the complete enrollment state of an email in a class """
@@ -161,7 +162,26 @@ def enroll_email(course_id, student_email, auto_enroll=False, email_students=Fal
             if previous_state.enrollment:
                 course_mode = previous_state.mode
 
-        enrollment_obj = CourseEnrollment.enroll_by_email(student_email, course_id, course_mode)
+        try:
+            user = User.objects.get(email=student_email)
+        except Exception as e:
+            user = None
+            log.error("Tried to enroll email {} into course {}, but user not found".format(student_email, course_id))
+
+        if user:
+            purchase_start_date = today.date()
+            course_overview = CourseOverview.objects.get(id=course_id)
+            enrollment_obj = CourseEnrollment.enroll_by_email(student_email, course_id, course_mode)
+            enrollment_obj.is_purchased = True
+            enrollment_obj.purchase_start_date = purchase_start_date
+            if course_overview.self_paced:
+                purchase_end_date = purchase_start_date + timedelta(days=365)
+            else:
+                purchase_end_date = course_overview.end
+            enrollment_obj.purchase_end_date = purchase_end_date
+            enrollment_obj.save()
+        else:
+            enrollment_obj = CourseEnrollment.enroll_by_email(student_email, course_id, course_mode)
         if email_students:
             email_params['message_type'] = 'enrolled_enroll'
             email_params['email_address'] = student_email
@@ -181,7 +201,6 @@ def enroll_email(course_id, student_email, auto_enroll=False, email_students=Fal
             send_mail_to_student(student_email, email_params, language=language)
 
     after_state = EmailEnrollmentState(course_id, student_email)
-
     return previous_state, after_state, enrollment_obj
 
 
