@@ -196,10 +196,9 @@ class ChooseModeView(View):
             buy_to_access = False
 
         try:
-            LOG.info("Request site: {}".format(request.site))
             meter = ProgramProgressMeter(request.site, request.user)
             inverted_programs = meter.invert_programs()
-            related_programs = inverted_programs.get(course_key)
+            related_programs = inverted_programs.get(course_id)
         except Exception as e:
             LOG.info("Failded to get related programs. Error:{}".format(str(e)))
             related_programs = None
