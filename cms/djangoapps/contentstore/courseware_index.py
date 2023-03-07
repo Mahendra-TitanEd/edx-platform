@@ -829,7 +829,10 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 course_info["content"]["chapter_id"] = section.location.block_id
                 course_info["id"] = subsection.location.block_id
                 course_info["subsection_id"] = subsection.location.block_id
-                course_info.update({"all": ["Subtopics"]})
+                if course.invitation_only:
+                    course_info.update({'all':["Invitation_subtopic"]})
+                else:
+                    course_info.update({'all': ["Subtopics"]})
                 course_info["number"] = None
                 course_info["org"] = None
                 course_info["content"]["number"] = None
