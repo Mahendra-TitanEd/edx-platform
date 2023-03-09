@@ -23,8 +23,9 @@ class CourseOverviewAdmin(admin.ModelAdmin):
         'enrollment_end',
         'created',
         'modified',
+        'self_paced'
     ]
-
+    list_filter = ['self_paced']
     search_fields = ['id', 'display_name']
 
 

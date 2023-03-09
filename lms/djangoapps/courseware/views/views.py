@@ -839,10 +839,10 @@ class CourseTabView(EdxFragmentView):
                     PageLevelMessages.register_warning_message(
                         request,
                         Text(enroll_message).format(
-                            enroll_link_start=HTML(
-                                '<button class="enroll-btn btn-link">'
+                            enroll_link_start=HTML('<a href="{course_about_url}" class"enrollment-link">').format(
+                                course_about_url=reverse('about_course', args=[course.id])
                             ),
-                            enroll_link_end=HTML("</button>"),
+                            enroll_link_end=HTML("</a>"),
                         ),
                     )
                 else:
