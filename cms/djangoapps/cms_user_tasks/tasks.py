@@ -46,7 +46,7 @@ def send_task_complete_email(self, task_name, task_state_text, dest_addr, detail
 
     from_address = configuration_helpers.get_value(
         'email_from_address',
-        settings.DEFAULT_FROM_EMAIL
+        settings.NO_REPLY_EMAIL
     )
 
     try:
