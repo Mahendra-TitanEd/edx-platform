@@ -32,7 +32,7 @@ from openedx.core.djangoapps.plugin_api.views import EdxFragmentView
 from openedx.core.djangolib.markup import HTML, Text
 from openedx.features.course_experience import CourseHomeMessages
 from common.djangoapps.student.models import CourseEnrollment
-from xmodule.course_module import COURSE_VISIBILITY_PUBLIC  # lint-amnesty, pylint: disable=wrong-import-order
+from xmodule.course_module import COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE  # lint-amnesty, pylint: disable=wrong-import-order
 
 
 class CourseHomeMessageFragmentView(EdxFragmentView):
@@ -151,18 +151,31 @@ def _register_course_home_messages(request, course, user_access, course_start_da
                 title=title
             )
         elif not course_is_invitation_only(course):
-            CourseHomeMessages.register_info_message(
-                request,
-                Text(_(
-                    '{open_enroll_link}Enroll now{close_enroll_link} to access the full course.'
-                )).format(
-                    open_enroll_link=HTML('<a href="{course_about_url}" class"enrollment-link">').format(
-                        course_about_url=reverse('about_course', args=[course.id])
+            allow_anonymous = check_public_access(course, [COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE])
+            if allow_anonymous:
+                CourseHomeMessages.register_info_message(
+                    request,
+                    Text(_(
+                        '{open_enroll_link}Enroll now{close_enroll_link} to access the full course.'
+                    )).format(
+                        open_enroll_link=HTML('<button class="enroll-btn btn-link">'),
+                        close_enroll_link=HTML('</button>')
                     ),
-                    close_enroll_link=HTML('</a>')
-                ),
-                title=title
-            )
+                    title=title
+                )
+            else:
+                CourseHomeMessages.register_info_message(
+                    request,
+                    Text(_(
+                        '{open_enroll_link}Enroll now{close_enroll_link} to access the full course.'
+                    )).format(
+                        open_enroll_link=HTML('<a href="{course_about_url}" class"enrollment-link">').format(
+                            course_about_url=reverse('about_course', args=[course.id])
+                        ),
+                        close_enroll_link=HTML('</a>')
+                    ),
+                    title=title
+                )
         else:
             CourseHomeMessages.register_info_message(
                 request,
