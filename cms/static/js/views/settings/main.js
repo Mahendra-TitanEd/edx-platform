@@ -190,6 +190,16 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    } else {
                        this.$('#' + this.fieldToSelectorMap.show_outline).removeAttr('checked');
                    }
+                   if ((this.model.get('is_upcoming') == 'true')) {
+                       this.$('#' + this.fieldToSelectorMap.is_upcoming).attr('checked','checked');
+                   } else {
+                       this.$('#' + this.fieldToSelectorMap.is_upcoming).removeAttr('checked');
+                   }
+                   if ((this.model.get('is_talks') == 'true')) {
+                       this.$('#' + this.fieldToSelectorMap.is_talks).attr('checked','checked');
+                   } else {
+                       this.$('#' + this.fieldToSelectorMap.is_talks).removeAttr('checked');
+                   }
                    return this;
                },
                fieldToSelectorMap: {
@@ -228,6 +238,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    add_course_quote_info: 'add-course-quote-info', // Added by Mahendra
                    assignment_due_date: 'assignment-due', // Added by Mahendra
                    show_outline: 'show-outline', // Added by Mahendra
+                   is_upcoming: 'is-upcoming', // Added by Mahendra
+                   is_talks: 'is-talks', // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -350,6 +362,22 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                            this.model.set('show_outline', 'true');
                        } else {
                            this.model.set('show_outline', 'false');
+                       }
+                       this.setField(event);
+                       break;
+                   case 'is-upcoming':
+                       if ($(event.currentTarget).is(':checked')) {
+                           this.model.set('is_upcoming', 'true');
+                       } else {
+                           this.model.set('is_upcoming', 'false');
+                       }
+                       this.setField(event);
+                       break;
+                   case 'is-talks':
+                       if ($(event.currentTarget).is(':checked')) {
+                           this.model.set('is_talks', 'true');
+                       } else {
+                           this.model.set('is_talks', 'false');
                        }
                        this.setField(event);
                        break;

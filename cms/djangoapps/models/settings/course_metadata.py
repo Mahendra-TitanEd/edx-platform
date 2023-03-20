@@ -84,6 +84,8 @@ class CourseMetadata:
         'certificate_overview',
         'assignment_due_date',
         'show_outline',
+        'is_upcoming',
+        'is_talks',
     ]
 
     @classmethod

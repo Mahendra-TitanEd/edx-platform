@@ -1083,6 +1083,22 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='true',
         scope=Scope.settings,
     )
+    is_upcoming = String(
+        display_name=_("Is Upcoming Course"),
+        help=_(
+            "Specify to is upcoming course."
+        ),
+        default='false',
+        scope=Scope.settings,
+    )
+    is_talks = String(
+        display_name=_("Is Talks"),
+        help=_(
+            "Specify to is it talks or course"
+        ),
+        default='false',
+        scope=Scope.settings,
+    )
 
 class CourseBlock(
     CourseFields,
