@@ -7,7 +7,7 @@ import time
 import warnings
 from collections import namedtuple
 from functools import partial
-
+from urllib.parse import quote_plus
 import yaml
 
 from lazy import lazy
@@ -40,8 +40,9 @@ from xmodule.exceptions import UndefinedContext
 from xmodule.fields import RelativeTime
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.util.xmodule_django import add_webpack_to_fragment
-from openedx.core.djangolib.markup import HTML
-
+from openedx.core.djangolib.markup import HTML, Text
+from django.urls import reverse
+from openedx.features.course_experience import course_home_url_name
 from common.djangoapps.xblock_django.constants import (
     ATTR_KEY_ANONYMOUS_USER_ID,
     ATTR_KEY_REQUEST_COUNTRY_CODE,
@@ -83,9 +84,11 @@ STUDIO_VIEW = 'studio_view'
 # Views that present a "preview" view of an xblock (as opposed to an editing view).
 PREVIEW_VIEWS = [STUDENT_VIEW, PUBLIC_VIEW, AUTHOR_VIEW]
 
-DEFAULT_PUBLIC_VIEW_MESSAGE = (
-    'This content is only accessible to enrolled learners. '
-    'Sign in or register, and enroll in this course to view it.'
+DEFAULT_PUBLIC_VIEW_MESSAGE = Text(
+    "This content is only accessible to enrolled learners. Sign in or register, and {open_enroll_link}enroll{close_enroll_link} in this course to view it."
+).format(
+    open_enroll_link=HTML('<button class="enroll-btn btn-link">'),
+    close_enroll_link=HTML("</button>"),
 )
 
 # Make '_' a no-op so we can scrape strings. Using lambda instead of
@@ -820,17 +823,52 @@ class XModuleMixin(XModuleFields, XBlock):
             '<span class="icon icon-alert fa fa fa-warning" aria-hidden="true"></span>'
             '<div class="message-content">{}</div></div></div>'
         )
-
-        if self.display_name:
-            display_text = _(
-                '{display_name} is only accessible to enrolled learners. '
-                'Sign in or register, and enroll in this course to view it.'
-            ).format(
-                display_name=self.display_name
-            )
+        # Added by mahendra
+        if self.runtime.user_id:
+            if self.display_name:
+                display_text = Text(
+                    "{display_name} is only accessible to enrolled learners. Sign in or register, and {open_enroll_link}enroll{close_enroll_link} in this course to view it."
+                ).format(
+                    display_name=self.display_name,
+                    open_enroll_link=HTML('<button class="courseware-enroll-btn">'),
+                    close_enroll_link=HTML("</button>"),
+                )
+            else:
+                display_text = _(DEFAULT_PUBLIC_VIEW_MESSAGE)
         else:
-            display_text = _(DEFAULT_PUBLIC_VIEW_MESSAGE)  # lint-amnesty, pylint: disable=translation-of-non-string
-
+            if self.display_name:
+                display_text = Text(
+                    "{display_name} is only accessible to enrolled learners. {sign_in_link} or {register_link}, and enroll in this course to view it."
+                ).format(
+                    display_name=self.display_name,
+                    sign_in_link=HTML(
+                            '<a href="/login?next={current_url}">{sign_in_label}</a>'
+                    ).format(
+                        sign_in_label=_("Sign in"),
+                        current_url=quote_plus(reverse(course_home_url_name(self.location.course_key), args=[str(self.location.course_key)]))
+                    ),
+                    register_link=HTML(
+                            '<a href="/register?next={current_url}">{register_label}</a>'
+                    ).format(
+                        register_label=_("register"),
+                        current_url=quote_plus(reverse(course_home_url_name(self.location.course_key), args=[str(self.location.course_key)]))
+                    )
+                )
+            else:
+                display_text = Text(
+                    "This is only accessible to enrolled learners. {sign_in_link} or {register_link}, and enroll in this course to view it."
+                ).format(
+                    sign_in_link=HTML(
+                            '<a href="/login">{sign_in_label}</a>'
+                    ).format(
+                        sign_in_label=_("Sign in"),
+                    ),
+                    register_link=HTML(
+                            '<a href="/register">{register_label}</a>'
+                    ).format(
+                        register_label=_("register"),
+                    )
+                )
         return Fragment(alert_html.format(display_text))
 
 
