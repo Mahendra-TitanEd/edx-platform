@@ -34,6 +34,7 @@ from lms.djangoapps.gating.api import (
     get_entrance_exam_usage_key,
 )
 from lms.djangoapps.grades.api import CourseGradeFactory
+from lms.djangoapps.course_goals.models import UserActivity
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.crawlers.models import CrawlersConfig
 from openedx.core.djangoapps.lang_pref import LANGUAGE_KEY
@@ -168,6 +169,8 @@ class CoursewareIndex(View):
                 )
                 self._setup_masquerade_for_effective_user()
 
+                # Added by Mahendra
+                UserActivity.record_user_activity(request.user, self.course_key, request=request, only_if_mobile_app=False)
                 return self.render(request)
         except Exception as exception:  # pylint: disable=broad-except
             return CourseTabView.handle_exceptions(

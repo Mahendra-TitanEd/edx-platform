@@ -85,8 +85,8 @@ class CourseHomeMessageFragmentView(EdxFragmentView):
         # verified statuses.
         user_goal = get_course_goal(auth.get_user(request), course_key)
         is_already_verified = CourseEnrollment.is_enrolled_as_verified(request.user, course_key)
-        if has_course_goal_permission(request, course_id, user_access) and not is_already_verified and not user_goal:
-            _register_course_goal_message(request, course)
+        # if has_course_goal_permission(request, course_id, user_access) and not is_already_verified and not user_goal:
+        #     _register_course_goal_message(request, course)
 
         # Grab the relevant messages
         course_home_messages = list(CourseHomeMessages.user_messages(request))
