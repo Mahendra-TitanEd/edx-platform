@@ -1068,6 +1068,162 @@ def course_about(request, course_id):
             reverse(course_home_url_name(course_key), args=[str(course_key)])
         )
 
+    try:
+        from ebc_course.models import EbcCourseConfiguration
+        course_config = EbcCourseConfiguration.objects.get(
+            course__course_key=course_key,
+        )
+        course_slug = course_config.slug
+        if course_slug and course_slug != "":
+            return redirect(reverse('about_course_with_slug', args=[course_config.slug]))
+    except Exception as e:
+        logging.info("Failed to get course slug for course id: {}. Error: {}".format(course_id, str(e)))
+
+    with modulestore().bulk_operations(course_key):
+        permission = get_permission_for_course_about()
+        course = get_course_with_access(request.user, permission, course_key)
+        course_details = CourseDetails.populate(course)
+        modes = CourseMode.modes_for_course_dict(course_key)
+        registered = registered_for_course(course, request.user)
+
+        staff_access = bool(has_access(request.user, "staff", course))
+        studio_url = get_studio_url(course, "settings/details")
+
+        if request.user.has_perm(VIEW_COURSE_HOME, course):
+            if course_home_legacy_is_active(course.id):
+                course_target = reverse(
+                    course_home_url_name(course.id), args=[str(course.id)]
+                )
+            else:
+                course_target = get_learning_mfe_home_url(
+                    course_key=course.id, url_fragment="home"
+                )
+        else:
+            course_target = reverse("about_course", args=[str(course.id)])
+
+        show_courseware_link = bool(
+            (request.user.has_perm(VIEW_COURSEWARE, course))
+            or settings.FEATURES.get("ENABLE_LMS_MIGRATION")
+        )
+
+        # If the ecommerce checkout flow is enabled and the mode of the course is
+        # professional or no id professional, we construct links for the enrollment
+        # button to add the course to the ecommerce basket.
+        ecomm_service = EcommerceService()
+        ecommerce_checkout = ecomm_service.is_enabled(request.user)
+        ecommerce_checkout_link = ""
+        ecommerce_bulk_checkout_link = ""
+        single_paid_mode = None
+        if ecommerce_checkout:
+            if len(modes) == 1 and list(modes.values())[0].min_price:
+                single_paid_mode = list(modes.values())[0]
+            else:
+                # have professional ignore other modes for historical reasons
+                single_paid_mode = modes.get(CourseMode.PROFESSIONAL)
+
+            if single_paid_mode and single_paid_mode.sku:
+                ecommerce_checkout_link = ecomm_service.get_checkout_page_url(
+                    single_paid_mode.sku
+                )
+            if single_paid_mode and single_paid_mode.bulk_sku:
+                ecommerce_bulk_checkout_link = ecomm_service.get_checkout_page_url(
+                    single_paid_mode.bulk_sku
+                )
+
+        registration_price, course_price = get_course_prices(
+            course
+        )  # lint-amnesty, pylint: disable=unused-variable
+
+        # Used to provide context to message to student if enrollment not allowed
+        can_enroll = bool(request.user.has_perm(ENROLL_IN_COURSE, course))
+        invitation_only = course_is_invitation_only(course)
+        is_course_full = CourseEnrollment.objects.is_course_full(course)
+
+        # Register button should be disabled if one of the following is true:
+        # - Student is already registered for course
+        # - Course is already full
+        # - Student cannot enroll in course
+        active_reg_button = not (registered or is_course_full or not can_enroll)
+
+        is_shib_course = uses_shib(course)
+        # get prerequisite courses display names
+        pre_requisite_courses = get_prerequisite_courses_display(course)
+
+        # Overview
+        overview = CourseOverview.get_from_id(course.id)
+
+        sidebar_html_enabled = course_experience_waffle().is_enabled(
+            ENABLE_COURSE_ABOUT_SIDEBAR_HTML
+        )
+
+        allow_anonymous = check_public_access(
+            course, [COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE]
+        )
+
+        context = {
+            "course": course,
+            "course_details": course_details,
+            "staff_access": staff_access,
+            "studio_url": studio_url,
+            "registered": registered,
+            "course_target": course_target,
+            "is_cosmetic_price_enabled": settings.FEATURES.get(
+                "ENABLE_COSMETIC_DISPLAY_PRICE"
+            ),
+            "course_price": course_price,
+            "ecommerce_checkout": ecommerce_checkout,
+            "ecommerce_checkout_link": ecommerce_checkout_link,
+            "ecommerce_bulk_checkout_link": ecommerce_bulk_checkout_link,
+            "single_paid_mode": single_paid_mode,
+            "show_courseware_link": show_courseware_link,
+            "is_course_full": is_course_full,
+            "can_enroll": can_enroll,
+            "invitation_only": invitation_only,
+            "active_reg_button": active_reg_button,
+            "is_shib_course": is_shib_course,
+            # We do not want to display the internal courseware header, which is used when the course is found in the
+            # context. This value is therefore explicitly set to render the appropriate header.
+            "disable_courseware_header": True,
+            "pre_requisite_courses": pre_requisite_courses,
+            "course_image_urls": overview.image_urls,
+            "sidebar_html_enabled": sidebar_html_enabled,
+            "allow_anonymous": allow_anonymous,
+        }
+        # Added by Mahendra
+        from ebc_course.helpers import get_course_config_details
+        get_course_config_details(request, context, course, overview)
+        return render_to_response("courseware/course_about.html", context)
+
+
+# Added by Mahendra
+@ensure_csrf_cookie
+@ensure_valid_course_key
+@cache_if_anonymous()
+def course_about_with_slug(request, slug_id):
+    """
+    Display the course's about page.
+    """
+    try:
+        from ebc_course.models import EbcCourseConfiguration
+        course_config = EbcCourseConfiguration.objects.get(slug=slug_id)
+        course_key = course_config.course.course_key
+    except Exception as e:
+        logging.info("Failed to get course using slug id: {}. Error: {}".format(slug_id, str(e)))
+        raise Http404
+
+    # course_key = CourseKey.from_string(course_id)
+
+    # If a user is not able to enroll in a course then redirect
+    # them away from the about page to the dashboard.
+    if not can_self_enroll_in_course(course_key):
+        return redirect(reverse("dashboard"))
+
+    # If user needs to be redirected to course home then redirect
+    if _course_home_redirect_enabled():
+        return redirect(
+            reverse(course_home_url_name(course_key), args=[str(course_key)])
+        )
+
     with modulestore().bulk_operations(course_key):
         permission = get_permission_for_course_about()
         course = get_course_with_access(request.user, permission, course_key)

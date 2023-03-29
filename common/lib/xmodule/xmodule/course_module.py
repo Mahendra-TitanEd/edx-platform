@@ -1099,6 +1099,15 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='false',
         scope=Scope.settings,
     )
+    course_slug = String(
+        display_name=_("Course Unique Slug"),
+        help=_(
+            "Specify Course unique slug, it'll used in course about page url"
+        ),
+        default='',
+        scope=Scope.settings,
+    )
+
 
 class CourseBlock(
     CourseFields,

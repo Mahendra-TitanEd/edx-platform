@@ -281,6 +281,7 @@ class CourseOverview(TimeStampedModel):
             show_outline = CourseDetails.fetch_about_attribute(course.id, 'show_outline')
             is_upcoming = CourseDetails.fetch_about_attribute(course.id, 'is_upcoming')
             is_talks = CourseDetails.fetch_about_attribute(course.id, 'is_talks')
+            course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
             data_dict = {
                 'topic': course_topic,
                 'subject': course_subject,
@@ -289,6 +290,7 @@ class CourseOverview(TimeStampedModel):
                 'show_outline': show_outline,
                 'is_upcoming': is_upcoming,
                 'is_talks': is_talks,
+                'course_slug': course_slug or display_name
             }
             course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
             if certificate_overview:

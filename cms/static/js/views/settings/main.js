@@ -37,6 +37,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#course_topic').val(this.model.get('course_topic'));
                    this.$el.find('#course_subject').val(this.model.get('course_subject'));
                    this.$el.find('#course_level').val(this.model.get('course_level'));
+                   this.$el.find('#course_slug').val(this.model.get('course_slug'));
                    this.$el.find('#overview_2').val(this.model.get('overview_2'));
                    this.$el.find('#certificate_overview').val(this.model.get('certificate_overview'));
                    this.$el.find('#course-organization').val(this.model.get('org'));
@@ -179,6 +180,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['course_topic']).val(this.model.get('course_topic'));
                    this.$el.find('#' + this.fieldToSelectorMap['course_subject']).val(this.model.get('course_subject'));
                    this.$el.find('#' + this.fieldToSelectorMap['course_level']).val(this.model.get('course_level'));
+                   this.$el.find('#' + this.fieldToSelectorMap['course_slug']).val(this.model.get('course_slug'));
 
                    this.$el.find('#' + this.fieldToSelectorMap.overview_2).val(this.model.get('overview_2'));
                    this.codeMirrorize(null, $('#overview_2')[0]);
@@ -233,6 +235,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_topic: 'course_topic',    // Added by Mahendra
                    course_subject: 'course_subject', // Added by Mahendra
                    course_level: 'course_level', // Added by Mahendra
+                   course_slug: 'course_slug', // Added by Mahendra
                    overview_2: 'overview_2', // Added by Mahendra
                    certificate_overview: 'certificate_overview', // Added by Mahendra
                    add_course_quote_info: 'add-course-quote-info', // Added by Mahendra
@@ -428,6 +431,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_topic':
                    case 'course_subject':
                    case 'course_level':
+                   case 'course_slug':
                    case 'overview_2':
                    case 'certificate_overview':
                    case 'course-short-description':

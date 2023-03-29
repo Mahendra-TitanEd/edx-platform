@@ -86,6 +86,7 @@ class CourseMetadata:
         'show_outline',
         'is_upcoming',
         'is_talks',
+        'course_slug'
     ]
 
     @classmethod

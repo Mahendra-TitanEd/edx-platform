@@ -40,7 +40,8 @@ ABOUT_ATTRIBUTES = [
     'assignment_due_date',
     'show_outline',
     'is_upcoming',
-    'is_talks'    ,
+    'is_talks',
+    'course_slug',
 ]
 
 
@@ -99,6 +100,7 @@ class CourseDetails:
         self.show_outline = ""
         self.is_upcoming = ""
         self.is_talks = ""
+        self.course_slug = ""
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -162,7 +164,14 @@ class CourseDetails:
         course_details.show_outline = course_descriptor.show_outline
         course_details.is_upcoming = course_descriptor.is_upcoming
         course_details.is_talks = course_descriptor.is_talks
-
+        course_slug = course_descriptor.course_slug
+        if course_slug == "":
+            try:
+                from ebc_course.models import EbcCourseConfiguration
+                course_slug = EbcCourseConfiguration.get_course_slug(course_descriptor.id, course_descriptor.display_name)
+            except Exception as e:
+                pass
+        course_details.course_slug = course_slug
         # Default course license is "All Rights Reserved"
         course_details.license = getattr(course_descriptor, "license", "all-rights-reserved")
 

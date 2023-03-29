@@ -134,6 +134,30 @@ define(['backbone', 'underscore', 'gettext', 'js/models/validation_helpers', 'js
                         ), range, true);
                     }
                 }
+                // Added by Mahendra
+                var slug_exists = false
+                if(newattrs.course_slug != ""){
+                    var data_dict = {
+                        'course_slug': newattrs.course_slug,
+                        'course_id': newattrs.course_id,
+                        'org': newattrs.org,
+                        'run': newattrs.run,
+                    }
+                    $.ajax({
+                        type: "POST",
+                        async: false,
+                        data: data_dict,
+                        url: "/verify/course/slug/",
+                        success: function(data) {
+                            slug_exists = data.is_slug_exists
+                        }
+                    });
+                }
+                if(slug_exists){
+                    errors.course_slug = gettext(
+                      'The course already exist with this slug. Please use different slug.'
+                    );
+                }
                 if (!_.isEmpty(errors)) return errors;
         // NOTE don't return empty errors as that will be interpreted as an error state
             },

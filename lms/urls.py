@@ -363,6 +363,13 @@ urlpatterns += [
         courseware_views.course_about,
         name='about_course',
     ),
+    # Added by Mahendra
+    re_path(
+        r'^courses/(?P<slug_id>[-\w]+)/$',
+        courseware_views.course_about_with_slug,
+        name='about_course_with_slug',
+    ),
+
     path(
         'courses/yt_video_metadata',
         courseware_views.yt_video_metadata,
