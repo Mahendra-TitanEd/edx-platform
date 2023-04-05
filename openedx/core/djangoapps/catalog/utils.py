@@ -106,7 +106,7 @@ def get_programs(site=None, uuid=None, uuids=None, course=None, catalog_course_u
         list of dict, representing programs.
         dict, if a specific program is requested.
     """
-    if len([arg for arg in (site, uuid, uuids, course, catalog_course_uuid, organization) if arg is not None]) != 1:
+    if len([arg for arg in (site, uuid, uuids, course, catalog_course_uuid, organization, marketing_slug) if arg is not None]) != 1:
         raise TypeError('get_programs takes exactly one argument')
 
     if uuid:

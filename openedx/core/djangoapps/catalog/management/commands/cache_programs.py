@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.management import BaseCommand
-
+from django.utils.text import slugify
 from openedx.core.djangoapps.catalog.cache import (
     COURSE_PROGRAMS_CACHE_KEY_TPL,
     CATALOG_COURSE_PROGRAMS_CACHE_KEY_TPL,
@@ -64,6 +64,7 @@ class Command(BaseCommand):
         catalog_courses = {}
         programs_by_type = {}
         programs_by_type_slug = {}
+        programs_by_marketing_slug = {}
         organizations = {}
         for site in Site.objects.all():
             site_config = getattr(site, 'configuration', None)
@@ -305,14 +306,14 @@ class Command(BaseCommand):
         return organizations
 
 
-    def get_programs_by_marketing_slug(self, site, programs):
+    def get_programs_by_marketing_slug(self, programs):
         """
         Returns a dictionary mapping site-aware cache keys corresponding to program marketing
         to lists of program uuids with that type.
         """
         programs_by_marketing_slug = defaultdict(list)
         for program in programs.values():
-            program_slug = program.get('marketing_slug')
-            cache_key = PROGRAMS_BY_MARKETING_SLUG_CACHE_KEY_TPL.format(marketing_slug=marketing_slug)
+            marketing_slug = program.get('marketing_slug')
+            cache_key = PROGRAMS_BY_MARKETING_SLUG_CACHE_KEY_TPL.format(marketing_slug=slugify(marketing_slug))
             programs_by_marketing_slug[cache_key].append(program['uuid'])
         return programs_by_marketing_slug

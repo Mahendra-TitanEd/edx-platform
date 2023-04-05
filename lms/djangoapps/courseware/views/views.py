@@ -1354,7 +1354,7 @@ def program_marketing(request, program_uuid):
     try:
         marketing_slug = program_data.get("marketing_slug")
         if marketing_slug and marketing_slug != "":
-            return redirect(reverse('program_marketing_view_with_slug', args=[marketing_slug]))
+            return redirect(reverse('program_marketing_view_with_slug', args=[slugify(marketing_slug)]))
     except Exception as e:
         logging.info("Failed to get marketing_slug for program_uuid: {}. Error: {}".format(program_uuid, str(e)))
 
