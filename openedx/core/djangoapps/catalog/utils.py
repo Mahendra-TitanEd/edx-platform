@@ -22,6 +22,7 @@ from openedx.core.djangoapps.catalog.cache import (
     PROGRAM_CACHE_KEY_TPL,
     PROGRAMS_BY_TYPE_CACHE_KEY_TPL,
     PROGRAMS_BY_TYPE_SLUG_CACHE_KEY_TPL,
+    PROGRAMS_BY_MARKETING_SLUG_CACHE_KEY_TPL,
     SITE_PATHWAY_IDS_CACHE_KEY_TPL,
     SITE_PROGRAM_UUIDS_CACHE_KEY_TPL
 )
@@ -87,7 +88,8 @@ def check_catalog_integration_and_get_user(error_message_field):
 
 
 # pylint: disable=redefined-outer-name
-def get_programs(site=None, uuid=None, uuids=None, course=None, catalog_course_uuid=None, organization=None):
+# Updated by Mahendra
+def get_programs(site=None, uuid=None, uuids=None, course=None, catalog_course_uuid=None, organization=None, marketing_slug=None):
     """Read programs from the cache.
 
     The cache is populated by a management command, cache_programs.
@@ -139,6 +141,12 @@ def get_programs(site=None, uuid=None, uuids=None, course=None, catalog_course_u
         if not uuids:
             return []
 
+    elif marketing_slug:
+        program = cache.get(PROGRAMS_BY_MARKETING_SLUG_CACHE_KEY_TPL.format(marketing_slug=marketing_slug))
+        if not program:
+            logger.warning(missing_details_msg_tpl.format(uuid=marketing_slug))
+
+        return program
     return get_programs_by_uuids(uuids)
 
 

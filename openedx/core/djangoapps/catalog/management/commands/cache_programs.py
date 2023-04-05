@@ -18,6 +18,7 @@ from openedx.core.djangoapps.catalog.cache import (
     PROGRAMS_BY_ORGANIZATION_CACHE_KEY_TPL,
     PROGRAMS_BY_TYPE_CACHE_KEY_TPL,
     PROGRAMS_BY_TYPE_SLUG_CACHE_KEY_TPL,
+    PROGRAMS_BY_MARKETING_SLUG_CACHE_KEY_TPL,
     SITE_PATHWAY_IDS_CACHE_KEY_TPL,
     SITE_PROGRAM_UUIDS_CACHE_KEY_TPL
 )
@@ -28,7 +29,6 @@ from openedx.core.djangoapps.catalog.utils import (
     create_catalog_api_client,
     normalize_program_type
 )
-
 logger = logging.getLogger(__name__)
 User = get_user_model()  # pylint: disable=invalid-name
 
@@ -97,6 +97,7 @@ class Command(BaseCommand):
             catalog_courses.update(self.get_catalog_courses(new_programs))
             programs_by_type.update(self.get_programs_by_type(site, new_programs))
             programs_by_type_slug.update(self.get_programs_by_type_slug(site, new_programs))
+            programs_by_marketing_slug.update(self.get_programs_by_marketing_slug(new_programs))
             organizations.update(self.get_programs_by_organization(new_programs))
 
             logger.info('Caching UUIDs for {total} programs for site {site_name}.'.format(
@@ -129,6 +130,9 @@ class Command(BaseCommand):
 
         logger.info(str(f'Caching program UUIDs by {len(programs_by_type_slug)} program type slugs.'))
         cache.set_many(programs_by_type_slug, None)
+
+        logger.info(str(f'Caching program UUIDs by {len(programs_by_marketing_slug)} program marketing slugs.'))
+        cache.set_many(programs_by_marketing_slug, None)
 
         logger.info(f'Caching programs uuids for {len(organizations)} organizations')
         cache.set_many(organizations, None)
@@ -299,3 +303,16 @@ class Command(BaseCommand):
                 org_cache_key = PROGRAMS_BY_ORGANIZATION_CACHE_KEY_TPL.format(org_key=org['key'])
                 organizations[org_cache_key].append(program['uuid'])
         return organizations
+
+
+    def get_programs_by_marketing_slug(self, site, programs):
+        """
+        Returns a dictionary mapping site-aware cache keys corresponding to program marketing
+        to lists of program uuids with that type.
+        """
+        programs_by_marketing_slug = defaultdict(list)
+        for program in programs.values():
+            program_slug = program.get('marketing_slug')
+            cache_key = PROGRAMS_BY_MARKETING_SLUG_CACHE_KEY_TPL.format(marketing_slug=marketing_slug)
+            programs_by_marketing_slug[cache_key].append(program['uuid'])
+        return programs_by_marketing_slug

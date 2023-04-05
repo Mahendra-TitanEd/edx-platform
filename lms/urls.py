@@ -540,6 +540,13 @@ urlpatterns += [
         name='program_marketing_view',
     ),
 
+    # Added by Mahendra
+    re_path(
+        r'^programs/(?P<slug_id>[-\w]+)/about',
+        courseware_views.program_marketing_with_slug,
+        name='program_marketing_view_with_slug',
+    ),
+
     # For the instructor
     re_path(
         r'^courses/{}/instructor$'.format(

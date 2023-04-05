@@ -1351,11 +1351,51 @@ def program_marketing(request, program_uuid):
     if not program_data:
         raise Http404
 
+    try:
+        marketing_slug = program_data.get("marketing_slug")
+        if marketing_slug and marketing_slug != "":
+            return redirect(reverse('program_marketing_view_with_slug', args=[marketing_slug]))
+    except Exception as e:
+        logging.info("Failed to get marketing_slug for program_uuid: {}. Error: {}".format(program_uuid, str(e)))
+
     program = ProgramMarketingDataExtender(program_data, request.user).extend()
     program["type_slug"] = slugify(program["type"])
     skus = program.get("skus")
     ecommerce_service = EcommerceService()
 
+    context = {"program": program}
+
+    if program.get("is_learner_eligible_for_one_click_purchase") and skus:
+        context["buy_button_href"] = ecommerce_service.get_checkout_page_url(
+            *skus, program_uuid=program_uuid
+        )
+
+    context["uses_bootstrap"] = True
+
+    # Added by Mahendra
+    from ebc_path_enrollment.helpers import get_program_more_context
+    get_program_more_context(request, program_uuid, program, context)
+
+    return render_to_response("courseware/program_marketing.html", context)
+
+
+# Added by Mahendra
+@ensure_csrf_cookie
+# @cache_if_anonymous()
+def program_marketing_with_slug(request, slug_id):
+    """
+    Display the program marketing page.
+    """
+    program_data = get_programs(marketing_slug=slug_id)
+
+    if not program_data:
+        raise Http404
+
+    program = ProgramMarketingDataExtender(program_data, request.user).extend()
+    program["type_slug"] = slugify(program["type"])
+    skus = program.get("skus")
+    ecommerce_service = EcommerceService()
+    program_uuid = program_data.get("uuid")
     context = {"program": program}
 
     if program.get("is_learner_eligible_for_one_click_purchase") and skus:
