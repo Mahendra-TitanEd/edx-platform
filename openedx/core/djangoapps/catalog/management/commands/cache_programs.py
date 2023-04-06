@@ -311,9 +311,9 @@ class Command(BaseCommand):
         Returns a dictionary mapping site-aware cache keys corresponding to program marketing
         to lists of program uuids with that type.
         """
-        programs_by_marketing_slug = defaultdict(list)
+        programs_by_marketing_slug = {}
         for program in programs.values():
             marketing_slug = program.get('marketing_slug')
             cache_key = PROGRAMS_BY_MARKETING_SLUG_CACHE_KEY_TPL.format(marketing_slug=slugify(marketing_slug))
-            programs_by_marketing_slug[cache_key].append(program['uuid'])
+            programs_by_marketing_slug[cache_key] = program
         return programs_by_marketing_slug
