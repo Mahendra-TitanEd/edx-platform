@@ -47,7 +47,8 @@
                 public_invitation_only:'',
                 enroll_end_date: '',
                 course_price: '',
-                is_enrolled: ''
+                is_enrolled: '',
+                about_url: ''
             }
         });
     });

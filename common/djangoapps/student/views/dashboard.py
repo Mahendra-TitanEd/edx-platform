@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from django.conf import settings
 from django.contrib import messages
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
@@ -993,12 +994,20 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
         except:
             path_certificate = None
 
+        path_about_url = reverse_lazy("program_marketing_view", kwargs={"program_uuid": program["uuid"]})
+        try:
+            marketing_slug = program.get("marketing_slug")
+            if marketing_slug and marketing_slug != "":
+                path_about_url = reverse_lazy("program_marketing_view_with_slug", args=[slugify(marketing_slug)])
+        except Exception as e:
+            log.info(
+                "Failed to get marketing_slug for program_uuid: {}. Error: {}".format(program["uuid"], str(e))
+            )
+
         program_dict = {
             "uuid": program.get("uuid"),
             "title": program.get("title"),
-            "detail_url": reverse_lazy(
-                "program_marketing_view", kwargs={"program_uuid": program["uuid"]}
-            ),
+            "detail_url": path_about_url,
             "card_image_url": program.get("card_image_url"),
             "start_date": program.get("start_date"),
             "title": program.get("title"),

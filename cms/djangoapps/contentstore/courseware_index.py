@@ -676,6 +676,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             "enroll_end_date": enroll_date,  # Added by Mahendra
             "course_price": course_price,  # Added by Mahendra
             "a_date": advertised_start,  # Added by Mahendra
+            "about_url": "/courses/{}/about".format(course.id), # Added by Mahendra
         }
 
         # load data for all of the 'about' modules for this course into a dictionary
@@ -801,6 +802,14 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 course_info.update({"price": ["IN SUBSCRIPTION", "INDIVIDUALLY PRICED"]})
             else:
                 course_info.update({"price": ["INDIVIDUALLY PRICED"]})
+
+            try:
+                course_slug = ebc_course_configuration.slug
+                if course_slug and course_slug != "":
+                    about_url = "/courses/{}/".format(course_slug)
+                    course_info.update({"about_url": about_url})
+            except Exception as e:
+                log.info("Failed to get course slug for course id: {}. Error: {}".format(course_id, str(e)))
 
             searcher.index([course_info])
         except Exception as e:
