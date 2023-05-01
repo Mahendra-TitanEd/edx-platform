@@ -83,6 +83,7 @@ from .views import CourseTabView
 # Added by Mahendra
 from hit_counter.models import HitSendMail
 from hit_counter.views import courseware_hit_counter
+from openedx.core.djangoapps.models.course_details import CourseDetails
 
 log = logging.getLogger("edx.courseware.views.index")
 
@@ -491,6 +492,13 @@ class CoursewareIndex(View):
         )
         staff_access = self.is_staff
 
+        # Added By Mahendra
+        try:
+            course_details = CourseDetails.populate(self.course)
+            course_seo_title = course_details.title or self.course.display_name
+        except Exception as e:
+            course_seo_title = self.course.display_name
+
         courseware_context = {
             "csrf": csrf(self.request)["csrf_token"],
             "course": self.course,
@@ -519,6 +527,7 @@ class CoursewareIndex(View):
             ),
             "show_search": show_search,
             "render_course_wide_assets": True,
+            "course_seo_title": course_seo_title
         }
         courseware_context.update(
             get_experiment_user_metadata_context(
