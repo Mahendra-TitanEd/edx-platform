@@ -196,18 +196,19 @@ def index(request, extra_context=None, user=AnonymousUser()):
     if extra_context is None:
         extra_context = {}
 
-    courses = get_courses(user)
+    # Commented by Mahendra
+    # courses = get_courses(user)
 
-    if configuration_helpers.get_value(
-        "ENABLE_COURSE_SORTING_BY_START_DATE",
-        settings.FEATURES["ENABLE_COURSE_SORTING_BY_START_DATE"],
-    ):
-        courses = sort_by_start_date(courses)
-    else:
-        courses = sort_by_announcement(courses)
+    # if configuration_helpers.get_value(
+    #     "ENABLE_COURSE_SORTING_BY_START_DATE",
+    #     settings.FEATURES["ENABLE_COURSE_SORTING_BY_START_DATE"],
+    # ):
+    #     courses = sort_by_start_date(courses)
+    # else:
+    #     courses = sort_by_announcement(courses)
 
-    context = {"courses": courses}
-
+    # context = {"courses": courses}
+    context = dict()
     context["homepage_overlay_html"] = configuration_helpers.get_value(
         "homepage_overlay_html"
     )
@@ -292,11 +293,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
     context["weekly_series"] = weekly_series
     context["testimonial_list"] = Testimonial.objects.order_by("-modified")
 
-    video = HomepageVideo.objects.filter(is_active=True)
-    if video:
-        homepage_video = video[0]
-    else:
-        homepage_video = None
+    homepage_video = HomepageVideo.objects.filter(is_active=True).first()
     context["homepage_video"] = homepage_video
     return render_to_response("index.html", context)
 
