@@ -10,6 +10,7 @@ from collections import namedtuple
 
 from django.conf import settings
 from django.contrib import messages
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import (
     AnonymousUser,
@@ -140,10 +141,7 @@ from lms.djangoapps.courseware.courses import get_course_with_access
 from homepage_video.models import HomepageVideo
 from ebc_testimonial.models import Testimonial
 from ebc_course.models import EbcCourseConfiguration
-from hit_counter.views import (
-    sort_weekly_series_by_courseware_hit,
-    sort_path_by_courseware_hit,
-)
+from hit_counter.views import get_new_programs
 from subscription.views import verify_subscription
 
 today = UTC.localize(datetime.datetime.now())
@@ -236,7 +234,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
     context["homepage_promo_video_youtube_id"] = youtube_video_id
 
     # allow for theme override of the courses list
-    context["courses_list"] = theming_helpers.get_template_path("courses_list.html")
+    # context["courses_list"] = theming_helpers.get_template_path("courses_list.html")
 
     # Insert additional context for use in the template
     context.update(extra_context)
@@ -248,8 +246,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
 
     # Added by Mahendra
     programs = get_programs(request.site)
-    programs, new_programs = sort_path_by_courseware_hit(programs)
-    context["programs"] = programs
+    new_programs = get_new_programs(programs)
     context["new_programs"] = new_programs
 
     # added template for new courses section on index page
@@ -259,14 +256,12 @@ def index(request, extra_context=None, user=AnonymousUser()):
     context["upcoming_courses_html"] = theming_helpers.get_template_path(
         "upcoming_courses.html"
     )
-    # added template for weekly series
-    context["weekly_series_list"] = theming_helpers.get_template_path(
-        "weekly_series_list.html"
-    )
     # added template for path
-    context["path_list"] = theming_helpers.get_template_path("path_list.html")
     upcoming_courses = list()
-    all_courses = CourseOverview.objects.filter(invitation_only=False)
+    all_courses = CourseOverview.objects.filter(
+        Q(invitation_only=False)
+        & (Q(self_paced=True) | Q(enrollment_end__isnull=True) | Q(enrollment_end__date__gte=today.date()))
+    )
     new_courses = list()
     # added for new course on index page
     for course in all_courses:
@@ -286,11 +281,8 @@ def index(request, extra_context=None, user=AnonymousUser()):
             log.info(str(e))
 
     upcoming_courses = list(set(upcoming_courses))
-    weekly_series, monthly_top_courses = sort_weekly_series_by_courseware_hit(all_courses)
     context["new_courses"] = new_courses
     context["upcomming_courses"] = upcoming_courses
-    context["courses"] = monthly_top_courses
-    context["weekly_series"] = weekly_series
     context["testimonial_list"] = Testimonial.objects.order_by("-modified")
 
     homepage_video = HomepageVideo.objects.filter(is_active=True).first()
