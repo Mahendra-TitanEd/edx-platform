@@ -85,7 +85,6 @@ from common.djangoapps.student.helpers import (
 from openedx.core.djangoapps.ace_common.template_context import (
     get_base_template_context,
 )
-from openedx.core.djangoapps.catalog.utils import get_programs_with_type, get_programs
 from openedx.core.djangoapps.embargo import api as embargo_api
 from openedx.core.djangoapps.lang_pref import LANGUAGE_KEY
 from openedx.core.djangoapps.programs.models import (
@@ -141,7 +140,6 @@ from lms.djangoapps.courseware.courses import get_course_with_access
 from homepage_video.models import HomepageVideo
 from ebc_testimonial.models import Testimonial
 from ebc_course.models import EbcCourseConfiguration
-from hit_counter.views import get_new_programs
 from subscription.views import verify_subscription
 
 today = UTC.localize(datetime.datetime.now())
@@ -239,49 +237,19 @@ def index(request, extra_context=None, user=AnonymousUser()):
     # Insert additional context for use in the template
     context.update(extra_context)
 
-    # Add marketable programs to the context.
-    context["programs_list"] = get_programs_with_type(
-        request.site, include_hidden=False
-    )
-
-    # Added by Mahendra
-    programs = get_programs(request.site)
-    new_programs = get_new_programs(programs)
-    context["new_programs"] = new_programs
-
-    # added template for new courses section on index page
-    context["new_courses_list"] = theming_helpers.get_template_path(
-        "new_courses_list.html"
-    )
     context["upcoming_courses_html"] = theming_helpers.get_template_path(
         "upcoming_courses.html"
     )
     # added template for path
     upcoming_courses = list()
-    all_courses = CourseOverview.objects.filter(
-        Q(invitation_only=False)
+    course_ids = EbcCourseConfiguration.objects.filter(is_upcoming=True).values_list(
+        "course__course_key", flat=True
+    )
+    upcoming_courses = CourseOverview.objects.filter(
+        Q(id__in=course_ids)
+        & Q(invitation_only=False)
         & (Q(self_paced=True) | Q(enrollment_end__isnull=True) | Q(enrollment_end__date__gte=today.date()))
     )
-    new_courses = list()
-    # added for new course on index page
-    for course in all_courses:
-        if not course.self_paced:
-            if course.enrollment_end and course.enrollment_end.date() < today.date():
-                continue
-        try:
-            course_item = modulestore().get_course(course.id,  depth=0)
-            course_config = EbcCourseConfiguration.objects.get(
-                course__course_key=course.id
-            )
-            if course_config.is_upcoming:
-                upcoming_courses.append(course)
-            elif course_item.is_new:
-                new_courses.append(course)
-        except Exception as e:
-            log.info(str(e))
-
-    upcoming_courses = list(set(upcoming_courses))
-    context["new_courses"] = new_courses
     context["upcomming_courses"] = upcoming_courses
     context["testimonial_list"] = Testimonial.objects.order_by("-modified")
 
