@@ -1333,6 +1333,7 @@ def course_about_with_slug(request, slug_id):
             "course_image_urls": overview.image_urls,
             "sidebar_html_enabled": sidebar_html_enabled,
             "allow_anonymous": allow_anonymous,
+            "overview": overview
         }
         # Added by Mahendra
         from ebc_course.helpers import get_course_config_details
