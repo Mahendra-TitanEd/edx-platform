@@ -53,6 +53,7 @@ from openedx.features.course_experience.url_helpers import (
 from openedx.features.enterprise_support.api import data_sharing_consent_required
 from common.djangoapps.student.models import CourseEnrollment
 from common.djangoapps.util.views import ensure_valid_course_key
+from xmodule.course_module import COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE
 from xmodule.course_module import (
     COURSE_VISIBILITY_PUBLIC,
 )  # lint-amnesty, pylint: disable=wrong-import-order
@@ -499,6 +500,7 @@ class CoursewareIndex(View):
         except Exception as e:
             course_seo_title = self.course.display_name
 
+        is_public_course = check_public_access(self.course, [COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE])
         courseware_context = {
             "csrf": csrf(self.request)["csrf_token"],
             "course": self.course,
@@ -527,7 +529,8 @@ class CoursewareIndex(View):
             ),
             "show_search": show_search,
             "render_course_wide_assets": True,
-            "course_seo_title": course_seo_title
+            "course_seo_title": course_seo_title,
+            "is_public_course": is_public_course
         }
         courseware_context.update(
             get_experiment_user_metadata_context(

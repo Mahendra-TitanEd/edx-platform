@@ -12,9 +12,9 @@
   </div>
 
   <div class="field text field-course-instructor-organization">
-    <label for="course-instructor-organization-<%- index %>"><%- gettext("Organization") %></label>
-    <input type="text" class="long" id="course-instructor-organization-<%- index %>" value = "<%- data['organization'] %>" data-index=<%- index %> data-field="organization" placeholder="<%- gettext('Organization Name') %>" />
-    <span class="tip tip-stacked"><%- gettext("Please add the institute where the instructor is associated")%></span>
+    <label for="course-instructor-organization-<%- index %>"><%- gettext("Designation") %></label>
+    <input type="text" class="long" id="course-instructor-organization-<%- index %>" value = "<%- data['organization'] %>" data-index=<%- index %> data-field="organization" placeholder="<%- gettext('Designation') %>" />
+    <span class="tip tip-stacked"><%- gettext("Please add the instructor's designation")%></span>
   </div>
 
   <div class="field text field-course-instructor-bio">
