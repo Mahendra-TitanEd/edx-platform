@@ -1,14 +1,15 @@
 <li class="field-group">
-  <div class="field text field-course-instructor-name">
-  	<label for="course-instructor-name-<%- index %>"><%- gettext("Name") %></label>
-  	<input type="text" class="long" id="course-instructor-name-<%- index %>" value="<%- data['name'] %>" data-index=<%- index %> data-field="name" placeholder="<%- gettext('Instructor Name') %>"  />
-  	<span class="tip tip-stacked"><%- gettext("Please add the instructor's name")%></span>
-  </div>
 
   <div class="field text field-course-instructor-title">
     <label for="course-instructor-title-<%- index %>"><%- gettext("Title") %></label>
     <input type="text" class="long" id="course-instructor-title-<%- index %>" value="<%- data['title'] %>" data-index=<%- index %> data-field="title" placeholder="<%- gettext('Instructor Title') %>" />
     <span class="tip tip-stacked"><%- gettext("Please add the instructor's title")%></span>
+  </div>
+
+  <div class="field text field-course-instructor-name">
+  	<label for="course-instructor-name-<%- index %>"><%- gettext("Name") %></label>
+  	<input type="text" class="long" id="course-instructor-name-<%- index %>" value="<%- data['name'] %>" data-index=<%- index %> data-field="name" placeholder="<%- gettext('Instructor Name') %>"  />
+  	<span class="tip tip-stacked"><%- gettext("Please add the instructor's name")%></span>
   </div>
 
   <div class="field text field-course-instructor-organization">
