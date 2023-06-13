@@ -537,12 +537,27 @@ def render_cert_by_uuid(request, certificate_uuid):
         raise Http404 from e
 
 
+# Added by Mahendra
+def render_pdf_cert_by_uuid(request, certificate_uuid):
+    """
+    This public view generates an HTML representation of the specified certificate for pdf
+    """
+    template = "certificates/certificate_for_pdf.html"
+    try:
+        certificate = GeneratedCertificate.eligible_certificates.get(
+            verify_uuid=certificate_uuid, status=CertificateStatuses.downloadable
+        )
+        return render_html_view(request, str(certificate.course_id), certificate, template=template)
+    except GeneratedCertificate.DoesNotExist as e:
+        raise Http404
+
+
 @handle_500(
     template_path="certificates/server-error.html",
     test_func=lambda request: request.GET.get('preview', None)
 )
 @pluggable_override('OVERRIDE_RENDER_CERTIFICATE_VIEW')
-def render_html_view(request, course_id, certificate=None):
+def render_html_view(request, course_id, certificate=None, template=None):
     """
     This public view generates an HTML representation of the specified user and course
     If a certificate is not available, we display a "Sorry!" screen instead
@@ -674,7 +689,7 @@ def render_html_view(request, course_id, certificate=None):
         _track_certificate_events(request, course, user, user_certificate)
 
         # Render the certificate
-        return _render_valid_certificate(request, context, custom_template)
+        return _render_valid_certificate(request, context, custom_template, template)
 
 
 def _get_catalog_data_for_course(course_key):
@@ -746,7 +761,7 @@ def _render_invalid_certificate(request, course_id, platform_name, configuration
     return render_to_response(cert_path, context)
 
 
-def _render_valid_certificate(request, context, custom_template=None):
+def _render_valid_certificate(request, context, custom_template=None, template=None):
     """
     Renders certificate
     """
@@ -760,5 +775,7 @@ def _render_valid_certificate(request, context, custom_template=None):
         )
         context = RequestContext(request, context)
         return HttpResponse(template.render(context))
+    elif template:
+        return render_to_response(template, context)
     else:
         return render_to_response("certificates/valid.html", context)

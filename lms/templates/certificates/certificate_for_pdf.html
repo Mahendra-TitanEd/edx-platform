@@ -1,0 +1,80 @@
+<%namespace name='static' file='/static_content.html'/>
+<% online_help_token = self.online_help_token() if hasattr(self, 'online_help_token') else None %>
+
+<%! 
+    from django.utils.translation import ugettext as _ 
+    from django.conf import settings
+%>
+
+<%
+    course_mode_class = course_mode if course_mode else ''
+%>
+
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head dir="ltr">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>${document_title}</title>
+
+    <link href="${static.url('custom_css/bootstrap.min.css')}" rel="stylesheet">
+    <link href="${static.url('custom_css/custom-navigation.css')}" rel="stylesheet">
+    <link href="${static.url('custom_css/docs.css')}" rel="stylesheet">
+    <link href="${static.url('custom_css/custom-certificate.css')}" rel="stylesheet">
+    <link href="${static.url('custom_css/print-certificate.css')}" rel="stylesheet" media="print">
+    <link href="${static.url('custom_css/ebc_footer_edited.css')}" rel="stylesheet">
+    <link href='${static.url("css/vendor/font-awesome.css")}' rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="${static.url('images/favicon.ico')}"/>
+    <link href='${static.url("custom_css/nutmeg_override.css")}' rel="stylesheet">
+    <script type="text/javascript" src="${static.url('js/jquery.min.js')}"></script>
+    <style type="text/css">
+        .certificate-block{padding: 0}
+    </style>
+</head>
+
+<body class="layout-accomplishment view-valid-accomplishment ltr certificate certificate-${course_mode_class}" data-view="valid-accomplishment">
+    <div id="wrapper" dir="ltr">        
+        <section class="certificate-block">
+            <div class="container">
+                <div class="certificate-bg">
+                    <div class="certificate-col" style="padding: 25px 86px;">
+                        <div class="certificate-logo"><img src="${static.url('images/ebc-logo.svg')}" alt=""></div>
+                        <div class="certificate-ribbon" style="margin-bottom: 10px;background-repeat: no-repeat;background-position: center top;text-align: center;height: 135px;width: 100%;font-size: 18px;color: #fff;padding-top: 30px;">
+                            <div class="certificate-container">
+                            </div>
+                        </div>
+                        <div class="certificate-detail">
+                            <div class="certificate-username" style="font-size: 45px;line-height: 60px;">${accomplishment_copy_name | h}</div>
+                            <p class="description-div" style="font-size: 20px;line-height: 31px;">
+                                successfully completed and was awarded this ${settings.PLATFORM_NAME} ${certificate_type} Certificate of Completion in 
+                            </p>
+                            <h2 style="font-size: 45px;display: block;width: auto;">
+                                ${accomplishment_copy_course_name}
+                            </h2>
+                            <div class="certificate-links" style="display: block;width: auto; font-size: 18px;">A course on ${settings.PLATFORM_NAME} | ebclearning.com</div>
+                            <div>${certificate_date_issued_title} ${certificate_date_issued}</div>
+                        </div>
+                        <div class="certificate-addressrow" style="padding-right: 50px;">
+                            <div class="certificate-address coltwo" style="float: right;width: 45%;text-align: left;">
+                                <h5 style="color: black;font-size: 16px;margin-bottom: 4px;">${certificate_id_number_title}:</h5>
+                                <p style="font-size: 16px;line-height: 20px;">${certificate_id_number}</p>
+                                <div class="ebc-courcelogo" style="padding-bottom: 25px;"><img src="${static.url('images/ebc-learning-logo.svg')}" alt=""></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+    <script type="text/javascript" src="${static.url('js/bootstrap.min.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/slick.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/jquery.selectbox-0.2.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/clamp.min.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/custom.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/jquery.matchHeight.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/jquery-placeholder.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/utils/navigation.js')}" charset="utf-8"></script>
+</html>

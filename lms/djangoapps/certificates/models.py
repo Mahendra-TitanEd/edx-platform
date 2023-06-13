@@ -225,7 +225,7 @@ class GeneratedCertificate(models.Model):
     course_id = CourseKeyField(max_length=255, blank=True, default=None)
     verify_uuid = models.CharField(max_length=32, blank=True, default='', db_index=True)
     download_uuid = models.CharField(max_length=32, blank=True, default='')
-    download_url = models.CharField(max_length=128, blank=True, default='')
+    download_url = models.CharField(max_length=1024, blank=True, default='')
     grade = models.CharField(max_length=5, blank=True, default='')
     key = models.CharField(max_length=32, blank=True, default='')
     distinction = models.BooleanField(default=False)
@@ -1348,3 +1348,19 @@ def handle_certificate_date_override_delete(sender, instance, **kwargs):    # py
     an object is not necessarily called when deleting objects in bulk.)
     """
     transaction.on_commit(instance.send_course_cert_changed_signal)
+
+
+# Added by Mahendra
+@receiver(COURSE_CERT_AWARDED, sender=GeneratedCertificate)
+def generate_cert_pdf(sender, user, course_key, status, **kwargs):
+    """
+    Generated pdf file for awarded certificate
+    """
+    from .tasks import generate_course_cert_pdf
+    context = dict()
+    if status == "downloadable":
+        certificate = GeneratedCertificate.objects.get(
+            user=user, course_id=course_key, status=status
+        )
+        if not certificate.download_url:
+            generate_course_cert_pdf(certificate.verify_uuid)
