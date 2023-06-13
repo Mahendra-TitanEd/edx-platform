@@ -96,7 +96,7 @@ def get_course_static_tabs(course_item: CourseBlock, user: User) -> Iterable[Cou
             # static tab needs its locator information to render itself as an xmodule
             static_tab_loc = course_item.id.make_usage_key("static_tab", tab.url_slug)
             tab.locator = static_tab_loc
-            yield tab
+        yield tab
 
 
 def update_tabs_handler(course_item: CourseBlock, tabs_data: Dict, user: User) -> None:
