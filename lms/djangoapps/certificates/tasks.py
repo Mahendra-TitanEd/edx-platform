@@ -1,8 +1,6 @@
 """
 Tasks that generate a course certificate for a user
 """
-
-import pdfkit
 from logging import getLogger
 from celery import shared_task
 from celery_utils.persist_on_failure import LoggedPersistOnFailureTask
@@ -77,6 +75,7 @@ def generate_course_cert_pdf(certificate_id):
         "load-media-error-handling": "skip",
     }
     try:
+        import pdfkit
         pdfkit.from_url(cert_url, file_path, options=pdfkit_options)
         log.info("Certificate PDF generated successfully using cert_url")
         certificate_url = "{lms_root}{media_url}certificate/{filename}.pdf".format(

@@ -1351,7 +1351,7 @@ def handle_certificate_date_override_delete(sender, instance, **kwargs):    # py
 
 
 # Added by Mahendra
-@receiver(COURSE_CERT_AWARDED, sender=GeneratedCertificate)
+# @receiver(COURSE_CERT_AWARDED, sender=GeneratedCertificate)
 def generate_cert_pdf(sender, user, course_key, status, **kwargs):
     """
     Generated pdf file for awarded certificate
