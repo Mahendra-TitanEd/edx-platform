@@ -295,6 +295,9 @@ class CourseOverview(TimeStampedModel):
             course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
             if certificate_overview:
                 CourseAboutCertificate.create_or_update(course_config, certificate_overview)
+            else:
+                # Remove course about cerificate block
+                CourseAboutCertificate.objects.filter(course_configuration=course_config).delete()
 
             if overview_2:
                 CourseAboutOverview.create_or_update(course_config, overview_2)
