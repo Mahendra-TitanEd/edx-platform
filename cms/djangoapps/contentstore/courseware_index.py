@@ -677,6 +677,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             "course_price": course_price,  # Added by Mahendra
             "a_date": advertised_start,  # Added by Mahendra
             "about_url": "/courses/{}/about".format(course.id), # Added by Mahendra
+            "catalog_visibility": course.catalog_visibility,
         }
 
         # load data for all of the 'about' modules for this course into a dictionary
