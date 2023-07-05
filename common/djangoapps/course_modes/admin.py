@@ -188,10 +188,8 @@ class CourseModeAdmin(admin.ModelAdmin):
         'mode_display_name',
         'min_price',
         'currency',
-        '_expiration_datetime',
-        # 'verification_deadline',
-        # 'sku',
-        # 'bulk_sku'
+        'tax_info',
+        '_expiration_datetime'
     )
 
     search_fields = ('course__id',)
@@ -201,9 +199,7 @@ class CourseModeAdmin(admin.ModelAdmin):
         'course',
         'mode_slug',
         'min_price',
-        'expiration_datetime_custom',
-        # 'sku',
-        # 'bulk_sku'
+        'expiration_datetime_custom'
     )
 
     def expiration_datetime_custom(self, obj):

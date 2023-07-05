@@ -36,6 +36,7 @@ Mode = namedtuple('Mode',
                       'description',
                       'sku',
                       'bulk_sku',
+                      'tax_info',
                   ])
 
 
@@ -69,6 +70,8 @@ class CourseMode(models.Model):
     # the currency these prices are in, using lower case ISO currency codes
     currency = models.CharField(default="inr", max_length=8)
 
+    # Added by Mahendra
+    tax_info = models.CharField(default="Price not inclusive of GST", max_length=512, verbose_name=_("Tax Information"), null=True, blank=True)
     # The datetime at which the course mode will expire.
     # This is used to implement "upgrade" deadlines.
     # For example, if there is a verified mode that expires on 1/1/2015,
@@ -152,6 +155,7 @@ class CourseMode(models.Model):
         settings.COURSE_MODE_DEFAULTS['description'],
         settings.COURSE_MODE_DEFAULTS['sku'],
         settings.COURSE_MODE_DEFAULTS['bulk_sku'],
+        settings.COURSE_MODE_DEFAULTS.get('tax_info'),
     )
     DEFAULT_MODE_SLUG = settings.COURSE_MODE_DEFAULTS['slug']
 
@@ -818,7 +822,8 @@ class CourseMode(models.Model):
             self.expiration_datetime,
             self.description,
             self.sku,
-            self.bulk_sku
+            self.bulk_sku,
+            self.tax_info
         )
 
     def __str__(self):
