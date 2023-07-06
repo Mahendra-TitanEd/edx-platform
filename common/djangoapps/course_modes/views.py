@@ -182,6 +182,7 @@ class ChooseModeView(View):
         #Added by Mahendra
         is_self_paced = course.self_paced
         subscription_url = settings.EBC_LINKS.get("subscription", "#")
+        is_webstore_purchase = True
         try:
             from ebc_course.models import EbcCourseConfiguration
             ebc_course_configuration = EbcCourseConfiguration.objects.get(
@@ -191,7 +192,8 @@ class ChooseModeView(View):
                 buy_to_access = settings.EBC_LINKS.get("course_purchase", "#")
                 buy_to_access = buy_to_access + ebc_course_configuration.purchase_product_id
             else:
-                buy_to_access = False
+                buy_to_access = ebc_course_configuration.purchase_url
+                is_webstore_purchase = False
         except Exception as e:
             buy_to_access = False
 
@@ -226,6 +228,7 @@ class ChooseModeView(View):
             "is_self_paced": is_self_paced,  #Added by Mahendra
             "course": course,  #Added by Mahendra
             "related_programs": related_programs,  #Added by Mahendra
+            "is_webstore_purchase": is_webstore_purchase
         }
         context.update(
             get_experiment_user_metadata_context(
