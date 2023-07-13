@@ -183,11 +183,15 @@ class ChooseModeView(View):
         is_self_paced = course.self_paced
         subscription_url = settings.EBC_LINKS.get("subscription", "#")
         is_webstore_purchase = True
+        coursemode_text = ""
+        show_enrollment_notes = True
         try:
             from ebc_course.models import EbcCourseConfiguration
             ebc_course_configuration = EbcCourseConfiguration.objects.get(
                 course__course_key=course_key,
             )
+            coursemode_text = ebc_course_configuration.coursemode_text
+            show_enrollment_notes = ebc_course_configuration.show_enrollment_notes
             if ebc_course_configuration.purchase_product_id:
                 buy_to_access = settings.EBC_LINKS.get("course_purchase", "#")
                 buy_to_access = buy_to_access + ebc_course_configuration.purchase_product_id
@@ -228,7 +232,9 @@ class ChooseModeView(View):
             "is_self_paced": is_self_paced,  #Added by Mahendra
             "course": course,  #Added by Mahendra
             "related_programs": related_programs,  #Added by Mahendra
-            "is_webstore_purchase": is_webstore_purchase
+            "is_webstore_purchase": is_webstore_purchase,   #Added by Mahendra
+            "coursemode_text": coursemode_text,   #Added by Mahendra
+            "show_enrollment_notes": show_enrollment_notes,   #Added by Mahendra
         }
         context.update(
             get_experiment_user_metadata_context(
