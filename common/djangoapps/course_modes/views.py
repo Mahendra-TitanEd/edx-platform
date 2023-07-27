@@ -192,6 +192,7 @@ class ChooseModeView(View):
             )
             coursemode_text = ebc_course_configuration.coursemode_text
             show_enrollment_notes = ebc_course_configuration.show_enrollment_notes
+            price_text = ebc_course_configuration.price_text
             if ebc_course_configuration.purchase_product_id:
                 buy_to_access = settings.EBC_LINKS.get("course_purchase", "#")
                 buy_to_access = buy_to_access + ebc_course_configuration.purchase_product_id
@@ -200,6 +201,7 @@ class ChooseModeView(View):
                 is_webstore_purchase = False
         except Exception as e:
             buy_to_access = False
+            price_text = None
 
         try:
             meter = ProgramProgressMeter(request.site, request.user)
@@ -208,7 +210,6 @@ class ChooseModeView(View):
         except Exception as e:
             LOG.info("Failded to get related programs. Error:{}".format(str(e)))
             related_programs = None
-
         context = {
             "course_modes_choose_url": reverse(
                 "course_modes_choose",
@@ -235,6 +236,7 @@ class ChooseModeView(View):
             "is_webstore_purchase": is_webstore_purchase,   #Added by Mahendra
             "coursemode_text": coursemode_text,   #Added by Mahendra
             "show_enrollment_notes": show_enrollment_notes,   #Added by Mahendra
+            "price_text": price_text,   #Added by Mahendra
         }
         context.update(
             get_experiment_user_metadata_context(
