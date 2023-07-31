@@ -434,6 +434,22 @@ class UserChangeForm(BaseUserChangeForm):
                 ),
             )
 
+class HasLoggedInFilter(admin.SimpleListFilter):
+    title = 'LMS Users'
+    parameter_name = 'last_login'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('Yes', 'Yes'),
+            ('No', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'Yes':
+            return queryset.exclude(last_login__isnull=True)
+        elif self.value() == 'No':
+            return queryset.filter(last_login__isnull=True)
+
 
 class UserAdmin(BaseUserAdmin):
     """Admin interface for the User model."""
@@ -441,7 +457,8 @@ class UserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline, AccountRecoveryInline)
     form = UserChangeForm
     actions = ("export_as_csv",)
-
+    list_filter = BaseUserAdmin.list_filter + (HasLoggedInFilter,)
+    
     def get_readonly_fields(self, request, obj=None):
         """
         Allows editing the users while skipping the username check, so we can have Unicode username with no problems.
