@@ -138,21 +138,6 @@ class Command(BaseCommand):
         logger.info(f'Caching programs uuids for {len(organizations)} organizations')
         cache.set_many(organizations, None)
 
-        # Added by Mahendra
-        try:
-            # Remove programs from elastic search before index new programs
-            from search.search_engine_base import SearchEngine
-            result_ids = list()
-            searcher = SearchEngine.get_search_engine("course_info")
-            queries = ["all:Self-Paced-Programme", "all:Instructor-Led-Programme"]
-            for query in queries:
-                response = searcher.search(query)
-                result_ids += [result["data"]["id"] for result in response["results"]]
-            program_ids = [result_id for result_id in result_ids if "course-v1" not in result_id]
-            searcher.remove(program_ids)
-        except Exception as e:
-            logger.info("Failed to remove programs from index. Error: {}".format(str(e)))
-
         try:
             from ebc_course.index import index_programs_information
             index_programs_information("course_info")
@@ -168,7 +153,7 @@ class Command(BaseCommand):
         try:
             querystring = {
                 'exclude_utm': 1,
-                'status': ('active', 'retired'),
+                'status': ('active', 'retired', 'unpublished'),
                 'uuids_only': 1,
             }
 
