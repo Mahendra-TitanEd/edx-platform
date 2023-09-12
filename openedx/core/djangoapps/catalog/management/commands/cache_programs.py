@@ -144,6 +144,12 @@ class Command(BaseCommand):
         except Exception as e:
             logger.info("Failed to reindex program. Error: {}".format(str(e)))
 
+        try:
+            from ebc_path_enrollment.sync_programs import synchronize_programs
+            synchronize_programs()
+        except Exception as e:
+            logger.info("Failed to sync program with lms table. Error: {}".format(str(e)))
+
         if failure:
             sys.exit(1)
 
