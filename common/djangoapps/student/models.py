@@ -956,7 +956,7 @@ def user_post_save_callback(sender, **kwargs):
         user._changed_fields
     )  # lint-amnesty, pylint: disable=protected-access
 
-    if "is_active" in changed_fields or "email" in changed_fields:
+    if "is_active" in changed_fields or "email" in changed_fields or kwargs.get("created"):
         if user.is_active:
             ceas = CourseEnrollmentAllowed.for_user(user).filter(auto_enroll=True)
 
