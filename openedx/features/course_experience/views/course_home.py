@@ -187,7 +187,7 @@ class CourseHomeFragmentView(EdxFragmentView):
         goal_options = get_course_goal_options()
 
         # Get the course goals api endpoint
-        goal_api_url = request.build_absolute_uri(reverse('course_goals_api:v0:course_goal-list'))
+        goal_api_url = reverse('course_goals_api:v0:course_goal-list')
 
         # Grab the course home messages fragment to render any relevant django messages
         course_home_message_fragment = CourseHomeMessageFragmentView().render_to_fragment(
