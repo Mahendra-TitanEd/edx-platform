@@ -92,7 +92,7 @@ class CourseHomeMessageFragmentView(EdxFragmentView):
         course_home_messages = list(CourseHomeMessages.user_messages(request))
 
         # Pass in the url used to set a course goal
-        goal_api_url = get_goal_api_url(request)
+        goal_api_url = reverse('course_goals_api:v0:course_goal-list')
 
         # Grab the logo
         image_src = 'course_experience/images/home_message_author.png'
