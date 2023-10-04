@@ -182,13 +182,12 @@ class CourseHomeFragmentView(EdxFragmentView):
 
         # Check if the user can access the course goal functionality
         has_goal_permission = has_course_goal_permission(request, course_id, user_access)
-
         # Grab the current course goal and the acceptable course goal keys mapped to translated values
         current_goal = get_course_goal(request.user, course_key)
         goal_options = get_course_goal_options()
 
         # Get the course goals api endpoint
-        goal_api_url = get_goal_api_url(request)
+        goal_api_url = request.build_absolute_uri(reverse('course_goals_api:v0:course_goal-list'))
 
         # Grab the course home messages fragment to render any relevant django messages
         course_home_message_fragment = CourseHomeMessageFragmentView().render_to_fragment(
