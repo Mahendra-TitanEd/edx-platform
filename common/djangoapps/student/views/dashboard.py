@@ -994,16 +994,9 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
         except:
             path_certificate = None
 
-        path_about_url = reverse_lazy("program_marketing_view", kwargs={"program_uuid": program["uuid"]})
-        try:
-            marketing_slug = program.get("marketing_slug")
-            if marketing_slug and marketing_slug != "":
-                path_about_url = reverse_lazy("program_marketing_view_with_slug", args=[slugify(marketing_slug)])
-        except Exception as e:
-            log.info(
-                "Failed to get marketing_slug for program_uuid: {}. Error: {}".format(program["uuid"], str(e))
-            )
-
+        marketing_slug = program.get("marketing_slug")
+        path_about_url = reverse_lazy("program_marketing_view_with_slug", args=[slugify(marketing_slug)])
+        path_progress_url = reverse_lazy("ebc_path_enrollment:program-progress-view", args=[slugify(marketing_slug)])
         program_dict = {
             "uuid": program.get("uuid"),
             "title": program.get("title"),
@@ -1013,6 +1006,7 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
             "title": program.get("title"),
             "is_program_started": is_program_started,
             "path_certificate": path_certificate,
+            "path_progress_url": path_progress_url,
         }
         enrolled_programs.append(program_dict)
         course_keys = [CourseKey.from_string(key) for key in course_run_keys_for_program(program)]
