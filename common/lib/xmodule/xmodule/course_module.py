@@ -529,6 +529,7 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
     advanced_modules = List(
         display_name=_("Advanced Module List"),
         help=_("Enter the names of the advanced modules to use in your course."),
+        default=["azure_media_services", "done", "google-document", "google-calendar", "lti_consumer", "poll", "survey", "edx_sga", "vectordraw", "freetextresponse", "launchcontainer", "pdf", "ubcpi", "problem-builder", "word_cloud"],
         scope=Scope.settings
     )
     has_children = True
