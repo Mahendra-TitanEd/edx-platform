@@ -952,6 +952,11 @@ def user_post_save_callback(sender, **kwargs):
     """
     user = kwargs["instance"]
 
+    try:
+        UserProfile.objects.get_or_create(user=user)
+    except Exception as e:
+        log.info("Failed to create userprofile for {}. Error: {}".format(user.username, str(e)))
+
     changed_fields = (
         user._changed_fields
     )  # lint-amnesty, pylint: disable=protected-access
@@ -3034,12 +3039,6 @@ def get_user(email):
 
 def user_info(email):  # lint-amnesty, pylint: disable=missing-function-docstring
     user, u_prof = get_user(email)
-    print("User id", user.id)
-    print("Username", user.username)
-    print("E-mail", user.email)
-    print("Name", u_prof.name)
-    print("Location", u_prof.location)
-    print("Language", u_prof.language)
     return user, u_prof
 
 
