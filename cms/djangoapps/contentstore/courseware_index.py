@@ -651,7 +651,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
 
         if not course.self_paced:
             if course.enrollment_end:
-                if course.enrollment_end.date() > today_date:
+                if course.enrollment_end.date() >= today_date:
                     enroll_date = "Enroll by {}".format(
                         course.enrollment_end.strftime("%b %d, %Y")
                     )
