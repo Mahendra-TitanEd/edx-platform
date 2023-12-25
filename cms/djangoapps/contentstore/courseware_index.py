@@ -658,7 +658,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                 else:
                     enroll_date = "Enrollment is Closed"
             else:
-                enroll_date = "Coming Soon"
+                enroll_date = ""
         else:
             enroll_date = "Available Now"
 
