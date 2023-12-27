@@ -276,6 +276,7 @@ class CourseOverview(TimeStampedModel):
             course_subject = CourseDetails.fetch_about_attribute(course.id, 'course_subject')
             course_level = CourseDetails.fetch_about_attribute(course.id, 'course_level')
             overview_2 = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
+            introduction_video = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
             certificate_overview = CourseDetails.fetch_about_attribute(course.id, 'certificate_overview')
             assignment_due_date = CourseDetails.fetch_about_attribute(course.id, 'assignment_due_date')
             show_outline = CourseDetails.fetch_about_attribute(course.id, 'show_outline')
@@ -290,7 +291,8 @@ class CourseOverview(TimeStampedModel):
                 'show_outline': show_outline,
                 'is_upcoming': is_upcoming,
                 'is_talks': is_talks,
-                'course_slug': course_slug or display_name
+                'course_slug': course_slug or display_name,
+                'introduction_video': introduction_video,
             }
             course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
             if certificate_overview:

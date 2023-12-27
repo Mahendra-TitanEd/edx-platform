@@ -1108,7 +1108,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='',
         scope=Scope.settings,
     )
-
+    introduction_video = String(
+        display_name=_("Brightcove Course Introduction Video"),
+        help=_("Enter Brightcove video embed code here."),
+        default='',
+        scope=Scope.settings
+    )
 
 class CourseBlock(
     CourseFields,

@@ -18,6 +18,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    'focus #course-overview': 'codeMirrorize',
                    'focus #course-about-sidebar-html': 'codeMirrorize',
                    'focus #overview_2': 'codeMirrorize',
+                   'focus #introduction_video': 'codeMirrorize',
                    'focus #certificate_overview': 'codeMirrorize',
                    'mouseover .timezone': 'updateTime',
         // would love to move to a general superclass, but event hashes don't inherit in backbone :-(
@@ -39,6 +40,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#course_level').val(this.model.get('course_level'));
                    this.$el.find('#course_slug').val(this.model.get('course_slug'));
                    this.$el.find('#overview_2').val(this.model.get('overview_2'));
+                   this.$el.find('#introduction_video').val(this.model.get('introduction_video'));
                    this.$el.find('#certificate_overview').val(this.model.get('certificate_overview'));
                    this.$el.find('#course-organization').val(this.model.get('org'));
                    this.$el.find('#course-number').val(this.model.get('course_id'));
@@ -187,6 +189,10 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                    this.$el.find('#' + this.fieldToSelectorMap.certificate_overview).val(this.model.get('certificate_overview'));
                    this.codeMirrorize(null, $('#certificate_overview')[0]);
+
+                   this.$el.find('#' + this.fieldToSelectorMap.introduction_video).val(this.model.get('introduction_video'));
+                   this.codeMirrorize(null, $('#introduction_video')[0]);
+
                    if ((this.model.get('show_outline') == 'true')) {
                        this.$('#' + this.fieldToSelectorMap.show_outline).attr('checked','checked');
                    } else {
@@ -237,6 +243,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_level: 'course_level', // Added by Mahendra
                    course_slug: 'course_slug', // Added by Mahendra
                    overview_2: 'overview_2', // Added by Mahendra
+                   introduction_video: 'introduction_video', // Added by Mahendra
                    certificate_overview: 'certificate_overview', // Added by Mahendra
                    add_course_quote_info: 'add-course-quote-info', // Added by Mahendra
                    assignment_due_date: 'assignment-due', // Added by Mahendra
@@ -433,6 +440,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_level':
                    case 'course_slug':
                    case 'overview_2':
+                   case 'introduction_video':
                    case 'certificate_overview':
                    case 'course-short-description':
                        this.setField(event);
