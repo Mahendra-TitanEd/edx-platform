@@ -132,6 +132,7 @@ from xmodule.modulestore.django import (
 
 # Added by Mahendra
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from openedx.core.djangoapps.catalog.utils import get_programs
 from lms.djangoapps.courseware.courses import get_course_by_id
 from lms.djangoapps.courseware.models import StudentModule
 from lms.djangoapps.certificates.models import GeneratedCertificate
@@ -141,6 +142,7 @@ from homepage_video.models import HomepageVideo
 from ebc_testimonial.models import Testimonial
 from ebc_course.models import EbcCourseConfiguration
 from subscription.views import verify_subscription
+from hit_counter.views import get_upcoming_programs
 
 today = UTC.localize(datetime.datetime.now())
 today = today.replace(tzinfo=UTC)
@@ -251,6 +253,9 @@ def index(request, extra_context=None, user=AnonymousUser()):
         & (Q(self_paced=True) | Q(enrollment_end__isnull=True) | Q(enrollment_end__date__gte=today.date()))
     )
     context["upcomming_courses"] = upcoming_courses
+    programs = get_programs(request.site)
+    upcoming_programs = get_upcoming_programs(programs)
+    context["upcoming_programs"] = upcoming_programs
     context["testimonial_list"] = Testimonial.objects.order_by("-modified")
 
     homepage_video = HomepageVideo.objects.filter(is_active=True).first()
