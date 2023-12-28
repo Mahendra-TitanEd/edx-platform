@@ -276,7 +276,7 @@ class CourseOverview(TimeStampedModel):
             course_subject = CourseDetails.fetch_about_attribute(course.id, 'course_subject')
             course_level = CourseDetails.fetch_about_attribute(course.id, 'course_level')
             overview_2 = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
-            introduction_video = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
+            introduction_video = CourseDetails.fetch_about_attribute(course.id, 'introduction_video')
             certificate_overview = CourseDetails.fetch_about_attribute(course.id, 'certificate_overview')
             assignment_due_date = CourseDetails.fetch_about_attribute(course.id, 'assignment_due_date')
             show_outline = CourseDetails.fetch_about_attribute(course.id, 'show_outline')
