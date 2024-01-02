@@ -1007,6 +1007,8 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
             "is_program_started": is_program_started,
             "path_certificate": path_certificate,
             "path_progress_url": path_progress_url,
+            "is_upcoming": program.get("is_upcoming"),
+            "advertised_start": program.get("advertised_start"),
         }
         enrolled_programs.append(program_dict)
         course_keys = [CourseKey.from_string(key) for key in course_run_keys_for_program(program)]
