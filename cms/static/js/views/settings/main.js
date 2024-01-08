@@ -39,6 +39,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#course_subject').val(this.model.get('course_subject'));
                    this.$el.find('#course_level').val(this.model.get('course_level'));
                    this.$el.find('#course_slug').val(this.model.get('course_slug'));
+                   this.$el.find('#access_duration').val(this.model.get('access_duration'));
                    this.$el.find('#overview_2').val(this.model.get('overview_2'));
                    this.$el.find('#introduction_video').val(this.model.get('introduction_video'));
                    this.$el.find('#certificate_overview').val(this.model.get('certificate_overview'));
@@ -183,7 +184,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['course_subject']).val(this.model.get('course_subject'));
                    this.$el.find('#' + this.fieldToSelectorMap['course_level']).val(this.model.get('course_level'));
                    this.$el.find('#' + this.fieldToSelectorMap['course_slug']).val(this.model.get('course_slug'));
-
+                   this.$el.find('#' + this.fieldToSelectorMap['access_duration']).val(this.model.get('access_duration'));
                    this.$el.find('#' + this.fieldToSelectorMap.overview_2).val(this.model.get('overview_2'));
                    this.codeMirrorize(null, $('#overview_2')[0]);
 
@@ -242,6 +243,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_subject: 'course_subject', // Added by Mahendra
                    course_level: 'course_level', // Added by Mahendra
                    course_slug: 'course_slug', // Added by Mahendra
+                   access_duration: 'access_duration', // Added by Mahendra
                    overview_2: 'overview_2', // Added by Mahendra
                    introduction_video: 'introduction_video', // Added by Mahendra
                    certificate_overview: 'certificate_overview', // Added by Mahendra
@@ -439,6 +441,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_subject':
                    case 'course_level':
                    case 'course_slug':
+                   case 'access_duration':
                    case 'overview_2':
                    case 'introduction_video':
                    case 'certificate_overview':

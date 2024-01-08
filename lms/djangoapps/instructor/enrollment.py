@@ -142,6 +142,10 @@ def enroll_email(course_id, student_email, auto_enroll=False, email_students=Fal
     """
     previous_state = EmailEnrollmentState(course_id, student_email)
     enrollment_obj = None
+    # Added by Mahendra
+    from ebc_course.models import EbcCourseConfiguration
+    course_config = EbcCourseConfiguration.objects.get(course__course_key=course_id)
+    access_duration = course_config.access_duration
     if previous_state.user and previous_state.user.is_active:
         # if the student is currently unenrolled, don't enroll them in their
         # previous mode
@@ -173,11 +177,12 @@ def enroll_email(course_id, student_email, auto_enroll=False, email_students=Fal
             course_overview = CourseOverview.objects.get(id=course_id)
             enrollment_obj = CourseEnrollment.enroll_by_email(student_email, course_id, course_mode)
             enrollment_obj.is_purchased = True
-            enrollment_obj.purchase_start_date = purchase_start_date
             if course_overview.self_paced:
-                purchase_end_date = purchase_start_date + timedelta(days=365)
+                purchase_end_date = purchase_start_date + timedelta(days=access_duration)
             else:
-                purchase_end_date = course_overview.end
+                purchase_start_date = course_overview.start.date()
+                purchase_end_date = purchase_start_date + timedelta(days=access_duration)
+            enrollment_obj.purchase_start_date = purchase_start_date
             enrollment_obj.purchase_end_date = purchase_end_date
             enrollment_obj.save()
         else:

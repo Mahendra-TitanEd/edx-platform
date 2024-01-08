@@ -42,7 +42,8 @@ ABOUT_ATTRIBUTES = [
     'is_upcoming',
     'is_talks',
     'course_slug',
-    'introduction_video'
+    'introduction_video',
+    'access_duration'
 ]
 
 
@@ -103,6 +104,7 @@ class CourseDetails:
         self.is_talks = ""
         self.course_slug = ""
         self.introduction_video = ""
+        self.access_duration = ""
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -167,6 +169,7 @@ class CourseDetails:
         course_details.is_upcoming = course_descriptor.is_upcoming
         course_details.is_talks = course_descriptor.is_talks
         course_details.introduction_video = course_descriptor.introduction_video
+        course_details.access_duration = course_descriptor.access_duration
         course_slug = course_descriptor.course_slug
         if course_slug == "":
             try:

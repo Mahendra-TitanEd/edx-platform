@@ -1108,6 +1108,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='',
         scope=Scope.settings,
     )
+    access_duration = String(
+        display_name=_("Access Duration (in days)"),
+        help=_("Enter the duration of the course in days."),
+        default="365",
+        scope=Scope.settings,
+    )
     introduction_video = String(
         display_name=_("Brightcove Course Introduction Video"),
         help=_("Enter Brightcove video embed code here."),
