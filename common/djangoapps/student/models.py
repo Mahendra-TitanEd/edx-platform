@@ -127,6 +127,7 @@ SessionStore = import_module(
     settings.SESSION_ENGINE
 ).SessionStore  # pylint: disable=invalid-name
 
+today = datetime.now()
 
 # ENROLL signal used for free enrollment only
 class EnrollStatusChange:
@@ -978,6 +979,21 @@ def user_post_save_callback(sender, **kwargs):
                     continue
 
                 enrollment = CourseEnrollment.enroll(user, cea.course_id)
+                # Added by Mahendra
+                from ebc_course.models import EbcCourseConfiguration
+                course_config = EbcCourseConfiguration.objects.get(course__course_key=cea.course_id)
+                access_duration = course_config.access_duration
+                purchase_start_date = today.date()
+                if enrollment.course.self_paced:
+                    purchase_end_date = purchase_start_date + timedelta(days=access_duration)
+                else:
+                    purchase_start_date = enrollment.course.start.date()
+                    purchase_end_date = purchase_start_date + timedelta(days=access_duration)
+                enrollment.is_purchased = True
+                enrollment.purchase_start_date = purchase_start_date
+                enrollment.purchase_end_date = purchase_end_date
+                enrollment.mode = cea.enrollment_mode
+                enrollment.save()
 
                 manual_enrollment_audit = (
                     ManualEnrollmentAudit.get_manual_enrollment_by_email(user.email)
@@ -2891,7 +2907,7 @@ class CourseEnrollmentAllowed(DeletableByUserValue, models.Model):
         "Once set, it won't change.",
         on_delete=models.CASCADE,
     )
-
+    enrollment_mode = models.CharField(max_length=64,default="audit")
     created = models.DateTimeField(auto_now_add=True, null=True, db_index=True)
 
     class Meta:

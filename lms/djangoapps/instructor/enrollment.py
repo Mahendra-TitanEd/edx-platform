@@ -195,7 +195,8 @@ def enroll_email(course_id, student_email, auto_enroll=False, email_students=Fal
             send_mail_to_student(student_email, email_params, language=language)
 
     elif not is_email_retired(student_email):
-        cea, _ = CourseEnrollmentAllowed.objects.get_or_create(course_id=course_id, email=student_email)
+        course_mode = enrollment_mode or CourseMode.AUDIT
+        cea, _ = CourseEnrollmentAllowed.objects.get_or_create(course_id=course_id, email=student_email, enrollment_mode=course_mode)
         cea.auto_enroll = auto_enroll
         cea.save()
         if email_students:
