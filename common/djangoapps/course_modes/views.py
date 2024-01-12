@@ -22,6 +22,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, to_locale
 from django.utils.translation import gettext as _
 from django.views.generic.base import View
+from openedx.core.djangolib.markup import HTML, Text
 from edx_django_utils.monitoring.utils import increment
 from ipware.ip import get_client_ip
 from opaque_keys.edx.keys import CourseKey
@@ -46,6 +47,9 @@ from common.djangoapps.student.models import CourseEnrollment
 from common.djangoapps.util.db import outer_atomic
 from xmodule.modulestore.django import modulestore  # lint-amnesty, pylint: disable=wrong-import-order
 from openedx.core.djangoapps.programs.utils import ProgramProgressMeter
+from openedx.features.course_experience import CourseHomeMessages
+
+
 LOG = logging.getLogger(__name__)
 
 # .. toggle_name: course_modes.use_new_track_selection
@@ -141,6 +145,30 @@ class ChooseModeView(View):
         # If there isn't a verified mode available, then there's nothing
         # to do on this page.  Send the user to the dashboard.
         if not CourseMode.has_verified_mode(modes):
+            # Added by Mahendra
+            upgrade_deadline_msg = Text(
+                _(
+                    "{container_start_tag} Sorry, the deadline to upgrade your enrollment has passed. {container_end_tag}"
+                )
+            ).format(
+                container_start_tag=HTML('<div class="upgrade-deadline-container">'),
+                container_end_tag=HTML("</div>"),
+            )
+            upgrade_deadline_title = Text(
+                _("{container_start_tag} Upgrade Deadline Passed. {container_end_tag}")
+            ).format(
+                container_start_tag=HTML('<div class="upgrade-deadline-title">'),
+                container_end_tag=HTML("</div>"),
+            )
+            CourseHomeMessages.register_info_message(
+                request,
+                HTML("{upgrade_deadline_msg}").format(
+                    upgrade_deadline_msg=upgrade_deadline_msg,
+                ),
+                title=HTML("{upgrade_deadline_title}").format(
+                    upgrade_deadline_title=upgrade_deadline_title,
+                ),
+            )
             return self._redirect_to_course_or_dashboard(course, course_key, request.user)
 
         # If a user has already paid, redirect them to the dashboard.
