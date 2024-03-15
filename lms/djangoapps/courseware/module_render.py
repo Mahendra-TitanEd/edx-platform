@@ -1110,8 +1110,9 @@ def handle_xblock_callback(request, course_id, usage_id, handler, suffix=None):
 
     # NOTE (CCB): Allow anonymous GET calls (e.g. for transcripts). Modifying this view is simpler than updating
     # the XBlocks to use `handle_xblock_callback_noauth`, which is practically identical to this view.
-    if request.method != "GET" and not (request.user and request.user.is_authenticated):
+    if request.method != "GET" and not (request.user and request.user.is_authenticated) and handler != "publish_event":
         return HttpResponseForbidden("Unauthenticated")
+
 
     request.user.known = request.user.is_authenticated
 
@@ -1130,8 +1131,19 @@ def handle_xblock_callback(request, course_id, usage_id, handler, suffix=None):
             request, course_id, usage_id
         )
         item_affects_course_progress(request, course_key, suffix, handler, instance)
+
+        # Get user's ip address
+        try:
+            x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+            if x_forwarded_for:
+                ip_address = x_forwarded_for.split(",")[0]
+            else:
+                ip_address = request.META.get("REMOTE_ADDR")
+        except Exception as e:
+            ip_address = None
+
         log_video_play_event(
-            request.user, course_key, instance.display_name, usage_id, saved_position
+            request.user, course_key, instance.display_name, usage_id, saved_position, ip_address=ip_address
         )
 
     with modulestore().bulk_operations(course_key):
@@ -1253,7 +1265,6 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, course
         handler (str): The name of the handler to invoke
         suffix (str): The suffix to pass to the handler when invoked
     """
-
     # Check submitted files
     files = request.FILES or {}
     error_msg = _check_files_limits(files)
@@ -1287,7 +1298,6 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, course
         will_recheck_access = handler_method and getattr(
             handler_method, "will_recheck_access", False
         )
-
         instance, tracking_context = get_module_by_usage_id(
             request,
             course_id,
@@ -1296,9 +1306,10 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, course
             will_recheck_access=will_recheck_access,
         )
         # Added by Mahendra
-        affects = item_affects_course_progress(
-            request, course_key, suffix, handler, instance
-        )
+        if request.user.is_authenticated:
+            affects = item_affects_course_progress(
+                request, course_key, suffix, handler, instance
+            )
 
         # Name the transaction so that we can view XBlock handlers separately in
         # New Relic. The suffix is necessary for XModule handlers because the
@@ -1333,11 +1344,6 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, course
                         )
                     }
                     resp = append_data_to_webob_response(resp, ee_data)
-            # Added by Mahendra
-            # if affects:
-            #     block_fields = ['type', 'display_name', 'children']
-            #     course_usage_key = modulestore().make_course_usage_key(course_key)
-            #     course_struct = get_blocks(request, course_usage_key, request.user, 'all', requested_fields=block_fields)
 
         except NoSuchHandlerError:
             log.exception(
