@@ -799,7 +799,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             allow_anonymous = check_public_access(course, [COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE])
             if allow_anonymous:
                 course_info.update({"price": ["PUBLIC"]})
-            elif course.self_paced:
+            elif ebc_course_configuration.in_subscription:
                 course_info.update({"price": ["IN SUBSCRIPTION", "INDIVIDUALLY PRICED"]})
             else:
                 course_info.update({"price": ["INDIVIDUALLY PRICED"]})

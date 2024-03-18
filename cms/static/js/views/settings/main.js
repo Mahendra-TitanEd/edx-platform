@@ -204,6 +204,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    } else {
                        this.$('#' + this.fieldToSelectorMap.is_upcoming).removeAttr('checked');
                    }
+                   if ((this.model.get('in_subscription') == 'true')) {
+                       this.$('#' + this.fieldToSelectorMap.in_subscription).attr('checked','checked');
+                   } else {
+                       this.$('#' + this.fieldToSelectorMap.in_subscription).removeAttr('checked');
+                   }
                    if ((this.model.get('is_talks') == 'true')) {
                        this.$('#' + this.fieldToSelectorMap.is_talks).attr('checked','checked');
                    } else {
@@ -251,6 +256,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    assignment_due_date: 'assignment-due', // Added by Mahendra
                    show_outline: 'show-outline', // Added by Mahendra
                    is_upcoming: 'is-upcoming', // Added by Mahendra
+                   in_subscription: 'in-subscription', // Added by Mahendra
                    is_talks: 'is-talks', // Added by Mahendra
                },
 
@@ -382,6 +388,14 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                            this.model.set('is_upcoming', 'true');
                        } else {
                            this.model.set('is_upcoming', 'false');
+                       }
+                       this.setField(event);
+                       break;
+                   case 'in-subscription':
+                       if ($(event.currentTarget).is(':checked')) {
+                           this.model.set('in_subscription', 'true');
+                       } else {
+                           this.model.set('in_subscription', 'false');
                        }
                        this.setField(event);
                        break;

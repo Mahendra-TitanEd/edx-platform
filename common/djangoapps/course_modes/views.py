@@ -208,7 +208,7 @@ class ChooseModeView(View):
         is_single_mode = len(modes) == 1
 
         #Added by Mahendra
-        is_self_paced = course.self_paced
+        in_subscription = False
         subscription_url = settings.EBC_LINKS.get("subscription", "#")
         is_webstore_purchase = True
         coursemode_text = ""
@@ -221,6 +221,7 @@ class ChooseModeView(View):
             coursemode_text = ebc_course_configuration.coursemode_text
             show_enrollment_notes = ebc_course_configuration.show_enrollment_notes
             price_text = ebc_course_configuration.price_text
+            in_subscription = ebc_course_configuration.in_subscription
             if ebc_course_configuration.purchase_product_id:
                 buy_to_access = settings.EBC_LINKS.get("course_purchase", "#")
                 buy_to_access = buy_to_access + ebc_course_configuration.purchase_product_id
@@ -258,7 +259,7 @@ class ChooseModeView(View):
             "search_courses_url": urljoin(settings.MKTG_URLS.get('ROOT'), '/search?tab=course'),
             "buy_to_access": buy_to_access,   #Added by Mahendra
             "subscription_url": subscription_url,   #Added by Mahendra
-            "is_self_paced": is_self_paced,  #Added by Mahendra
+            "in_subscription": in_subscription,  #Added by Mahendra
             "course": course,  #Added by Mahendra
             "related_programs": related_programs,  #Added by Mahendra
             "is_webstore_purchase": is_webstore_purchase,   #Added by Mahendra

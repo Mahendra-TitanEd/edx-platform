@@ -40,6 +40,7 @@ ABOUT_ATTRIBUTES = [
     'assignment_due_date',
     'show_outline',
     'is_upcoming',
+    'in_subscription',
     'is_talks',
     'course_slug',
     'introduction_video',
@@ -101,6 +102,7 @@ class CourseDetails:
         self.assignment_due_date = None
         self.show_outline = ""
         self.is_upcoming = ""
+        self.in_subscription = ""
         self.is_talks = ""
         self.course_slug = ""
         self.introduction_video = ""
@@ -167,6 +169,7 @@ class CourseDetails:
         course_details.assignment_due_date = course_descriptor.assignment_due_date
         course_details.show_outline = course_descriptor.show_outline
         course_details.is_upcoming = course_descriptor.is_upcoming
+        course_details.in_subscription = course_descriptor.in_subscription
         course_details.is_talks = course_descriptor.is_talks
         course_details.introduction_video = course_descriptor.introduction_video
         course_details.access_duration = course_descriptor.access_duration

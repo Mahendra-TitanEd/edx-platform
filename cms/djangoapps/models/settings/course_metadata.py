@@ -85,6 +85,7 @@ class CourseMetadata:
         'assignment_due_date',
         'show_outline',
         'is_upcoming',
+        'in_subscription',
         'is_talks',
         'course_slug',
         'introduction_video',

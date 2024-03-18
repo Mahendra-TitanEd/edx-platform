@@ -1092,6 +1092,14 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='false',
         scope=Scope.settings,
     )
+    in_subscription = String(
+        display_name=_("Include course in subscription?"),
+        help=_(
+            "Specify to include course in subscription"
+        ),
+        default='false',
+        scope=Scope.settings,
+    )
     is_talks = String(
         display_name=_("Is Talks"),
         help=_(

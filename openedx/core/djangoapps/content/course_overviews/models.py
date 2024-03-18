@@ -281,6 +281,7 @@ class CourseOverview(TimeStampedModel):
             assignment_due_date = CourseDetails.fetch_about_attribute(course.id, 'assignment_due_date')
             show_outline = CourseDetails.fetch_about_attribute(course.id, 'show_outline')
             is_upcoming = CourseDetails.fetch_about_attribute(course.id, 'is_upcoming')
+            in_subscription = CourseDetails.fetch_about_attribute(course.id, 'in_subscription')
             is_talks = CourseDetails.fetch_about_attribute(course.id, 'is_talks')
             course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
             access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
@@ -291,6 +292,7 @@ class CourseOverview(TimeStampedModel):
                 'assignment_due_date': assignment_due_date,
                 'show_outline': show_outline,
                 'is_upcoming': is_upcoming,
+                'in_subscription': in_subscription,
                 'is_talks': is_talks,
                 'course_slug': course_slug or display_name,
                 'introduction_video': introduction_video,
