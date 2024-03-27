@@ -791,6 +791,13 @@ class SequenceBlock(
             item_type = get_icon(item)
             usage_id = item.scope_ids.usage_id
 
+            # Added by Mahendra
+            page_title = getattr(item, 'tooltip_title', '')
+            if item.has_children and item.get_children():
+                child_unit = item.get_children()[0]
+                if child_unit.category == "bcp_xblock":
+                    page_title = "Video on {}".format(child_unit.display_name)
+
             show_bookmark_button = False
             is_bookmarked = False
 
@@ -817,7 +824,7 @@ class SequenceBlock(
                 ) is not None
             iteminfo = {
                 'content': content,
-                'page_title': getattr(item, 'tooltip_title', ''),
+                'page_title': page_title,
                 'type': item_type,
                 'id': str(usage_id),
                 'bookmarked': is_bookmarked,
