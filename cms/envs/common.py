@@ -118,6 +118,10 @@ from lms.envs.common import (
     # Methods to derive settings
     _make_mako_template_dirs,
     _make_locale_paths,
+    
+    # Added by Mahendra
+    BC_CLIENT_ID,
+    BC_CLIENT_SECRET,
 )
 from path import Path as path
 from django.urls import reverse_lazy
