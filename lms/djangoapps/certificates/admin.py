@@ -2,16 +2,18 @@
 django admin pages for certificates models
 """
 
+import csv
 
+from io import StringIO
 from operator import itemgetter
-
 from config_models.admin import ConfigurationModelAdmin
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 from organizations.api import get_organizations
-
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from lms.djangoapps.certificates.models import (
     CertificateDateOverride,
     CertificateGenerationConfiguration,
@@ -81,7 +83,44 @@ class GeneratedCertificateAdmin(admin.ModelAdmin):
     show_full_result_count = False
     search_fields = ('course_id', 'user__username')
     list_display = ('id', 'course_id', 'mode', 'user')
+    actions = ("export_as_csv",)  # Added by Mahendra
 
+    # Added by Mahendra
+    def export_as_csv(self, request, queryset):
+        csv_buffer = StringIO()
+        csv_writer = csv.writer(csv_buffer)
+        csv_writer.writerow(
+            [
+                "Course ID",
+                "Course Name",
+                "Email",
+                "Full Name",
+                "Enrollment Mode",
+                "Generated On",
+            ]
+        )
+
+        for certificate in queryset:
+            try:
+                course = CourseOverview.get_from_id(certificate.course_id)
+                csv_writer.writerow(
+                    [
+                        certificate.course_id,
+                        course.display_name,
+                        certificate.user.email,
+                        certificate.user.get_full_name()
+                        or certificate.user.profile.name,
+                        certificate.mode,
+                        certificate.created_date.strftime("%d-%m-%Y %H:%M"),
+                    ]
+                )
+            except Exception as e:
+                continue
+
+        csv_filename = "Generated_Certificates.csv"
+        response = HttpResponse(csv_buffer.getvalue(), content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{csv_filename}"'
+        return response
 
 class CertificateGenerationCourseSettingAdmin(admin.ModelAdmin):
     """
