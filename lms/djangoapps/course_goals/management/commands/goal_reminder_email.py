@@ -10,6 +10,8 @@ from django.core.management.base import BaseCommand
 from edx_ace import ace
 from edx_ace.message import Message
 from edx_ace.recipient import Recipient
+from django.urls import reverse
+from urllib.parse import urljoin
 
 from common.djangoapps.student.models import CourseEnrollment
 from lms.djangoapps.certificates.api import get_certificate_for_user_id
@@ -23,7 +25,7 @@ from openedx.core.djangoapps.site_configuration import helpers as configuration_
 from openedx.core.djangoapps.user_api.preferences.api import get_user_preference
 from openedx.core.lib.celery.task_utils import emulate_http_request
 from openedx.features.course_duration_limits.access import get_user_course_expiration_date
-from openedx.features.course_experience import ENABLE_COURSE_GOALS
+from openedx.features.course_experience import ENABLE_COURSE_GOALS, course_home_url_name
 from openedx.features.course_experience.url_helpers import get_learning_mfe_home_url
 
 log = logging.getLogger(__name__)
@@ -50,7 +52,8 @@ def send_ace_message(goal):
     site = Site.objects.get_current()
     message_context = get_base_template_context(site)
 
-    course_home_url = get_learning_mfe_home_url(course_key=goal.course_key, url_fragment='home')
+    # Updated by Mahendra
+    course_home_url = urljoin(settings.LMS_ROOT_URL, reverse(course_home_url_name(goal.course_key), args=[str(goal.course_key)]))
 
     goals_unsubscribe_url = f'{settings.LEARNING_MICROFRONTEND_URL}/goal-unsubscribe/{goal.unsubscribe_token}'
 
