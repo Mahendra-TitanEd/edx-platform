@@ -141,6 +141,7 @@ from lms.djangoapps.courseware.courses import get_course_with_access
 from homepage_video.models import HomepageVideo
 from ebc_testimonial.models import Testimonial
 from ebc_course.models import EbcCourseConfiguration
+from ebc_course.helpers import get_allow_audit_enrollment
 from subscription.views import verify_subscription
 from hit_counter.views import get_upcoming_programs
 
@@ -492,7 +493,6 @@ def change_enrollment(request, check_access=True):
         subscription_info = verify_subscription(request)
         overview = CourseOverview.get_from_id(course_id)
         # Added by Mahendra
-        from ebc_course.models import EbcCourseConfiguration
         ebc_course_configuration = EbcCourseConfiguration.objects.get(course__course_key=course_id)
         if CourseMode.can_auto_enroll(course_id):
             # Enroll the user using the default mode (audit)
@@ -503,13 +503,14 @@ def change_enrollment(request, check_access=True):
             # to "audit".
             try:
                 enroll_mode = CourseMode.auto_enroll_mode(course_id, available_modes)
+                allow_audit_enrollment, max_audit_enrollment = get_allow_audit_enrollment(user)
                 if enroll_mode:
                     # Added by Mahendra
                     if subscription_info.get("is_subscription_active") and ebc_course_configuration.in_subscription:
                         CourseEnrollment.enroll(
                             user, course_id, check_access=check_access, mode=CourseMode.VERIFIED
                         )
-                    else:
+                    elif allow_audit_enrollment:
                         CourseEnrollment.enroll(
                             user, course_id, check_access=check_access, mode=enroll_mode
                         )

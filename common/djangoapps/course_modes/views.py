@@ -104,7 +104,8 @@ class ChooseModeView(View):
 
         """
         course_key = CourseKey.from_string(course_id)
-
+        from ebc_course.models import EbcCourseConfiguration
+        from ebc_course.helpers import get_allow_audit_enrollment
         # Check whether the user has access to this course
         # based on country access rules.
         embargo_redirect = embargo_api.redirect_if_blocked(
@@ -214,7 +215,6 @@ class ChooseModeView(View):
         coursemode_text = ""
         show_enrollment_notes = True
         try:
-            from ebc_course.models import EbcCourseConfiguration
             ebc_course_configuration = EbcCourseConfiguration.objects.get(
                 course__course_key=course_key,
             )
@@ -239,6 +239,8 @@ class ChooseModeView(View):
         except Exception as e:
             LOG.info("Failded to get related programs. Error:{}".format(str(e)))
             related_programs = None
+
+        allow_audit_enrollment, max_audit_enrollment = get_allow_audit_enrollment(request.user)
         context = {
             "course_modes_choose_url": reverse(
                 "course_modes_choose",
@@ -266,6 +268,9 @@ class ChooseModeView(View):
             "coursemode_text": coursemode_text,   #Added by Mahendra
             "show_enrollment_notes": show_enrollment_notes,   #Added by Mahendra
             "price_text": price_text,   #Added by Mahendra
+            "allow_audit_enrollment": allow_audit_enrollment,
+            "max_audit_enrollment": max_audit_enrollment,
+            "enrollment_mode": enrollment_mode
         }
         context.update(
             get_experiment_user_metadata_context(
@@ -273,10 +278,14 @@ class ChooseModeView(View):
                 request.user,
             )
         )
-
-        title_content = _("Congratulations!  You are now enrolled in {course_name}").format(
-            course_name=course.display_name_with_default
-        )
+        if enrollment_mode or allow_audit_enrollment:
+            title_content = _("Congratulations! You are now enrolled in {course_name}").format(
+                course_name=course.display_name_with_default
+            )
+        else:
+            title_content = _("Congratulations! You can now enrolled in {course_name}").format(
+                course_name=course.display_name_with_default
+            )
         context["title_content"] = title_content
 
         if "verified" in modes:
