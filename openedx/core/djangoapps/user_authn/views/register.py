@@ -226,10 +226,11 @@ def create_account_with_params(request, params):  # pylint: disable=too-many-sta
         third_party_provider, running_pipeline = _link_user_to_third_party_provider(
             is_third_party_auth_enabled, third_party_auth_credentials_in_api, user, request, params,
         )
-
         new_user = authenticate_new_user(request, user.username, form.cleaned_data['password'])
-        django_login(request, new_user)
-        request.session.set_expiry(0)
+        # Modified by Mahendra
+        if not 'creating_user_from_site_admin' in params:
+            django_login(request, new_user)
+            request.session.set_expiry(0)
 
     # Sites using multiple languages need to record the language used during registration.
     # If not, compose_and_send_activation_email will be sent in site's default language only.

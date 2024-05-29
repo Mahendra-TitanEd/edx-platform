@@ -28,6 +28,7 @@ from common.djangoapps.student.models import (
     CourseEnrollmentAllowed,
     UserProfile,
     email_exists_or_retired,
+    State, Country #Added by Mahendra
 )
 from common.djangoapps.util.password_policy_validators import (
     password_validators_instruction_texts,
@@ -65,7 +66,6 @@ def validate_username(username):
     username_re = slug_re
     flags = None
     message = accounts.USERNAME_INVALID_CHARS_ASCII
-
     if settings.FEATURES.get("ENABLE_UNICODE_USERNAME"):
         username_re = fr"^{settings.USERNAME_REGEX_PARTIAL}$"
         flags = re.UNICODE
@@ -313,29 +313,27 @@ class RegistrationFormFactory:
     Construct Registration forms and associated fields.
     """
 
-    DEFAULT_FIELDS = ["email", "name", "username", "password"]
-
+    # Modified by Mahendra
+    DEFAULT_FIELDS = ["email", "password"]
     EXTRA_FIELDS = [
-        "confirm_email",
         "first_name",
         "last_name",
         "city",
-        "state",
-        "country",
+        "name",
         "gender",
         "year_of_birth",
         "level_of_education",
         "company",
-        "job_title",
         "title",
         "mailing_address",
         "goals",
         "honor_code",
+        "state",
+        "new_country",
+        "mobile_number",
         "terms_of_service",
-        "profession",
-        "specialty",
-        "marketing_emails_opt_in",
     ]
+
 
     def _is_field_visible(self, field_name):
         """Check whether a field is visible based on Django settings. """
@@ -836,22 +834,101 @@ class RegistrationFormFactory:
             }
         )
 
-    def _add_state_field(self, form_desc, required=False):
-        """Add a State/Province/Region field to a form description.
+    # Added by Mahendra
+    def _add_mobile_number_field(self, form_desc, required=False):
+        """Add a goals field to a form description.
+
         Arguments:
             form_desc: A form description
-        Keyword Arguments:
-            required (bool): Whether this field is required; defaults to False
-        """
-        # Translators: This label appears above a field on the registration form
-        # which allows the user to input the State/Province/Region in which they live.
-        state_label = _("State/Province/Region")
 
+        Keyword Arguments:
+            required (bool): Whether this field is required; defaults to True
+
+        """
+        # Translators: This phrase appears above a field on the registration form
+        # meant to hold the user's reasons for registering with edX.
+        mobile_number_label = _("Mobile Number")
+
+        form_desc.add_field(
+            "mobile_number",
+            label=mobile_number_label,
+            required=False
+        )
+
+    def _add_new_country_field(self, form_desc, required=False):
+        """Add a goals field to a form description.
+
+        Arguments:
+            form_desc: A form description
+
+        Keyword Arguments:
+            required (bool): Whether this field is required; defaults to True
+
+        """
+        # Translators: This phrase appears above a field on the registration form
+        # meant to hold the user's reasons for registering with edX.
+        country_label = _("Country")
+
+        country_list = Country.objects.all()
+        COUNTRY_CHOICES = []
+
+        for country in country_list:
+            COUNTRY_CHOICES.append((int(country.id), country.country_name))
+        options = tuple(COUNTRY_CHOICES)
+        # options = [(name, _(label)) for name, label in State]
+        form_desc.add_field(
+            "new_country",
+            label=country_label,
+            field_type="select",
+            options=options,
+            required=False
+        )
+
+    def _add_state_field(self, form_desc, required=False):
+        """Add a goals field to a form description.
+
+        Arguments:
+            form_desc: A form description
+
+        Keyword Arguments:
+            required (bool): Whether this field is required; defaults to True
+
+        """
+        # Translators: This phrase appears above a field on the registration form
+        # meant to hold the user's reasons for registering with edX.
+        state_label = _("State")
+
+        state_list = State.objects.all()
+        STATE_CHOICES = []
+
+        for state in state_list:
+            STATE_CHOICES.append((int(state.id), state.zone_name))
+        options = tuple(STATE_CHOICES)
+        # options = [(name, _(label)) for name, label in State]
         form_desc.add_field(
             "state",
             label=state_label,
-            required=required
+            field_type="select",
+            options=options,
+            required=False
         )
+
+    # def _add_state_field(self, form_desc, required=False):
+    #     """Add a State/Province/Region field to a form description.
+    #     Arguments:
+    #         form_desc: A form description
+    #     Keyword Arguments:
+    #         required (bool): Whether this field is required; defaults to False
+    #     """
+    #     # Translators: This label appears above a field on the registration form
+    #     # which allows the user to input the State/Province/Region in which they live.
+    #     state_label = _("State/Province/Region")
+
+    #     form_desc.add_field(
+    #         "state",
+    #         label=state_label,
+    #         required=required
+    #     )
 
     def _add_company_field(self, form_desc, required=False):
         """Add a Company field to a form description.

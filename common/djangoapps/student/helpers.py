@@ -733,13 +733,23 @@ def do_create_account(form, custom_form=None):
 
     registration.register(user)
 
+    # Modified by Mahendra
     profile_fields = [
-        "name", "level_of_education", "gender", "mailing_address", "city", "country", "goals",
-        "year_of_birth"
+        "name", "level_of_education", "gender", "mobile_number", "mailing_address", "city",  "goals",
+        "year_of_birth", 'state_id', 'new_country_id'
     ]
-    profile = UserProfile(
+    if form.cleaned_data['state']:
+        form.cleaned_data['state_id'] = form.cleaned_data['state']
+
+    if form.cleaned_data['new_country']:
+        form.cleaned_data['new_country_id'] = form.cleaned_data['new_country']
+
+
+    profile_data = {key: form.cleaned_data.get(key) for key in profile_fields if form.cleaned_data.get(key) is not None}
+
+    profile, created = UserProfile.objects.update_or_create(
         user=user,
-        **{key: form.cleaned_data.get(key) for key in profile_fields}
+        defaults=profile_data
     )
     extended_profile = form.cleaned_extended_profile
     if extended_profile:

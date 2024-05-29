@@ -958,6 +958,15 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
     from course_progress.helpers import get_courses_progress
     from ebc_path_enrollment.models import PathEnrollment
     from path_certificate.models import PathCertificate
+    from course_playlist.models import PlaylistStudentEnrollment
+
+    playlist_id = list()
+    playlists = PlaylistStudentEnrollment.objects.filter(student=request.user,is_active=True)
+    for ply in playlists:
+        playlist_id.append(ply.playlist.id)
+
+    playlist_dict = dict(zip(playlist_id, playlists))
+    unique_playlist = playlist_dict.values()
 
     talk_enrollments = []
     courses_enrollments = []
@@ -1065,6 +1074,7 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
             "progress_list": get_courses_progress(user, get_course_progress_ids),
             "programs_data": enrolled_programs,
             "programs_info_dict": programs_info_dict,
+            "playlists": unique_playlist,
         }
     )
 
