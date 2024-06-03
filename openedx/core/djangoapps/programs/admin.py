@@ -66,4 +66,4 @@ class ProgramLiveConfigurationAdmin(SimpleHistoryAdmin):
 
 admin.site.register(ProgramsApiConfig, ProgramsApiConfigAdmin)
 admin.site.register(ProgramDiscussionsConfiguration, ProgramDiscussionsConfigurationAdmin)
-admin.site.register(ProgramLiveConfiguration, ProgramLiveConfigurationAdmin)
+# admin.site.register(ProgramLiveConfiguration, ProgramLiveConfigurationAdmin)

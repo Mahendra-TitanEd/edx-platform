@@ -22,4 +22,4 @@ class CourseLiveConfigurationAdmin(SimpleHistoryAdmin):
     )
 
 
-admin.site.register(CourseLiveConfiguration, CourseLiveConfigurationAdmin)
+# admin.site.register(CourseLiveConfiguration, CourseLiveConfigurationAdmin)
