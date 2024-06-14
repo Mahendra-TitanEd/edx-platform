@@ -138,7 +138,7 @@ from lms.djangoapps.courseware.models import StudentModule
 from lms.djangoapps.certificates.models import GeneratedCertificate
 from lms.djangoapps.courseware.courses import get_course_with_access
 
-from homepage_video.models import HomepageVideo
+from homepage_video.models import HomepageVideo, Banner
 from ebc_testimonial.models import Testimonial
 from ebc_course.models import EbcCourseConfiguration
 from ebc_course.helpers import get_allow_audit_enrollment
@@ -261,6 +261,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
 
     homepage_video = HomepageVideo.objects.filter(is_active=True).first()
     context["homepage_video"] = homepage_video
+    context["banners"] = Banner.objects.filter(is_active=True)
     return render_to_response("index.html", context)
 
 
