@@ -5181,6 +5181,9 @@ COURSE_DISCOVERY_MEANINGS = {
     'org': {
         'name' : 'Organization'
     },
+    'tags': {
+        'name': 'Tags'
+    },
 }
 IS_PRODUCTION_ENV = False
 BC_CLIENT_ID = ""
@@ -5195,3 +5198,5 @@ API_GROUP_JWT_KEY = ""
 API_COURSE_PURCHASE_JWT_KEY = ""
 RECAPTCHA_SITE_KEY = ""
 RECAPTCHA_SECRET_KEY = ""
+GOOGLE_ANALYTICS_4_ID = ""
+GA4_MEASUREMENT_PROTOCOL_SECRET = ""

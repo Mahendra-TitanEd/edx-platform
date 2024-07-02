@@ -285,10 +285,17 @@ class CourseOverview(TimeStampedModel):
             is_talks = CourseDetails.fetch_about_attribute(course.id, 'is_talks')
             course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
             access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
+            course_tags = CourseDetails.fetch_about_attribute(course.id, 'course_tags')
+            try:
+                course_tags = json.loads(course_tags)
+            except Exception as e:
+                course_tags = []
+
             data_dict = {
                 'topic': course_topic,
                 'subject': course_subject,
                 'level': course_level,
+                'tags' : course_tags,
                 'assignment_due_date': assignment_due_date,
                 'show_outline': show_outline,
                 'is_upcoming': is_upcoming,

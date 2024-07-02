@@ -1128,6 +1128,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='',
         scope=Scope.settings
     )
+    course_tags = String(
+        display_name=_("Course Tags"),
+        help=_("Select tags for the course."),
+        default='',
+        scope=Scope.settings
+    )
 
 class CourseBlock(
     CourseFields,

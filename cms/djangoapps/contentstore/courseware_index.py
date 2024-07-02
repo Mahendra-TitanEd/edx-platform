@@ -743,6 +743,13 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             ebc_course_configuration = EbcCourseConfiguration.objects.get(
                 course__course_key=course.id
             )
+            if ebc_course_configuration.tags.all():
+                tags = [tag.name for tag in ebc_course_configuration.tags.all()]
+                course_info.update(
+                    {
+                        "tags": tags,
+                    }
+                )
             if ebc_course_configuration.subject:
                 course_info.update(
                     {

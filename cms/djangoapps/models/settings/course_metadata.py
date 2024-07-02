@@ -89,7 +89,8 @@ class CourseMetadata:
         'is_talks',
         'course_slug',
         'introduction_video',
-        'access_duration'
+        'access_duration',
+        'course_tags'
     ]
 
     @classmethod

@@ -1073,7 +1073,7 @@ REST_FRAMEWORK.update(ENV_TOKENS.get('REST_FRAMEWORK', {}))
 # Setting for overriding default filtering facets for Course discovery
 ########################## Course Discovery #######################
 ALL_LANGUAGES = ENV_TOKENS.get('ALL_LANGUAGES', ALL_LANGUAGES)
-COURSE_DISCOVERY_FILTERS = ["all","course_status", "subject", "topic", "price", "level", "language", "is_new"]
+COURSE_DISCOVERY_FILTERS = ["all","course_status", "subject", "topic", "price", "level", "language", "is_new", "tags"]
 COURSE_DISCOVERY_AGGREGATIONS = {
     'all': {}, 
     'course_status': {},
@@ -1083,6 +1083,7 @@ COURSE_DISCOVERY_AGGREGATIONS = {
     'level': {},
     'price': {},
     'is_new': {},
+    'tags': {'size': 1000},
 }
 LANGUAGE_MAP = {'terms': {lang: display for lang, display in ALL_LANGUAGES}, 'name': 'Language'}
 COURSE_DISCOVERY_MEANINGS = {
@@ -1108,6 +1109,9 @@ COURSE_DISCOVERY_MEANINGS = {
     'is_new': {
         'name' : 'New'
     },
+    'tags': {
+        'name': 'Tags'
+    },
 }
 IS_PRODUCTION_ENV = ENV_TOKENS.get('IS_PRODUCTION_ENV', False)
 BC_CLIENT_ID = ENV_TOKENS.get('BC_CLIENT_ID', False)
@@ -1122,3 +1126,5 @@ API_GROUP_JWT_KEY = ENV_TOKENS.get('API_GROUP_JWT_KEY', "")
 API_COURSE_PURCHASE_JWT_KEY = ENV_TOKENS.get('API_COURSE_PURCHASE_JWT_KEY', "")
 RECAPTCHA_SITE_KEY = ENV_TOKENS.get('RECAPTCHA_SITE_KEY', "")
 RECAPTCHA_SECRET_KEY = ENV_TOKENS.get('RECAPTCHA_SECRET_KEY', "")
+GOOGLE_ANALYTICS_4_ID = ENV_TOKENS.get('GOOGLE_ANALYTICS_4_ID', "")
+GA4_MEASUREMENT_PROTOCOL_SECRET = ENV_TOKENS.get('GA4_MEASUREMENT_PROTOCOL_SECRET', "")

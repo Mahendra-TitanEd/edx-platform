@@ -86,6 +86,9 @@
                 if(grouped.is_new){
                     newGrouped['is_new'] = grouped.is_new
                 }
+                if(grouped.tags){
+                    newGrouped['tags'] = grouped.tags
+                }
                 var htmlSnippet = HtmlUtils.joinHtml.apply(
                     this, _.map(newGrouped, function(options, facetKey) {
                         if (options.length > 0) {

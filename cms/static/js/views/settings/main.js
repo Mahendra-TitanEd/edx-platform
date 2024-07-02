@@ -27,7 +27,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    'click .action-upload-image': 'uploadImage',
                    'click .add-course-learning-info': 'addLearningFields',
                    'click .add-course-instructor-info': 'addInstructorFields',
-                   'click .add-course-quote-info': 'addQuoteFields'
+                   'click .add-course-quote-info': 'addQuoteFields',
+                   'change select#course_tags': 'addCourseTags',
                },
 
                initialize: function(options) {
@@ -41,6 +42,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#course_slug').val(this.model.get('course_slug'));
                    this.$el.find('#access_duration').val(this.model.get('access_duration'));
                    this.$el.find('#overview_2').val(this.model.get('overview_2'));
+                   this.$el.find('#course_tags').val(this.safeJSONParse(this.model.get('course_tags'))).trigger("chosen:updated");
                    this.$el.find('#introduction_video').val(this.model.get('introduction_video'));
                    this.$el.find('#certificate_overview').val(this.model.get('certificate_overview'));
                    this.$el.find('#course-organization').val(this.model.get('org'));
@@ -187,7 +189,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['access_duration']).val(this.model.get('access_duration'));
                    this.$el.find('#' + this.fieldToSelectorMap.overview_2).val(this.model.get('overview_2'));
                    this.codeMirrorize(null, $('#overview_2')[0]);
-
+                   this.$el.find('#' + this.fieldToSelectorMap['course_tags']).val(this.safeJSONParse(this.model.get('course_tags'))).trigger("chosen:updated");
                    this.$el.find('#' + this.fieldToSelectorMap.certificate_overview).val(this.model.get('certificate_overview'));
                    this.codeMirrorize(null, $('#certificate_overview')[0]);
 
@@ -258,6 +260,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    is_upcoming: 'is-upcoming', // Added by Mahendra
                    in_subscription: 'in-subscription', // Added by Mahendra
                    is_talks: 'is-talks', // Added by Mahendra
+                   course_tags: 'course_tags',    // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -282,6 +285,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        bio: ''
                    });
                    this.model.set('instructor_info', {instructors: instructors});
+               },
+
+               addCourseTags: function() {
+                   var topics = $("#course_tags").val();
+                   this.model.set('course_tags', JSON.stringify(topics));
                },
 
                addQuoteFields: function() {
@@ -457,6 +465,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_slug':
                    case 'access_duration':
                    case 'overview_2':
+                   case 'course_tags':
                    case 'introduction_video':
                    case 'certificate_overview':
                    case 'course-short-description':
@@ -586,6 +595,15 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                                                           _.bind(this.saveView, this),
                                                           _.bind(this.revertView, this));
                },
+
+                // Added by Mahendra
+                safeJSONParse: function(value) {
+                    try {
+                        return JSON.parse(value);
+                    } catch (e) {
+                        return [];
+                    }
+                },
 
                uploadImage: function(event) {
                    event.preventDefault();

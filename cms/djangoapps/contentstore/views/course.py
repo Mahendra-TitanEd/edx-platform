@@ -117,7 +117,7 @@ from .library import (
 )
 
 from ebc_course.helpers import clone_course_config
-from ebc_course.models import CourseTopics, COURSE_LEVEL, CourseCategory
+from ebc_course.models import CourseTopics, COURSE_LEVEL, CourseCategory, CourseTag
 
 log = logging.getLogger(__name__)
 User = get_user_model()
@@ -1218,9 +1218,11 @@ def settings_handler(request, course_key_string):  # lint-amnesty, pylint: disab
                     )
             topics = CourseTopics.objects.all().order_by('name')
             subjects = CourseCategory.objects.all().order_by('name')
+            tags = CourseTag.objects.all().order_by('name')
             settings_context.update({
                 'topics': topics,
                 'subjects': subjects,
+                'tags': tags,
                 'levels': COURSE_LEVEL,
             })
             return render_to_response('settings.html', settings_context)
