@@ -5143,11 +5143,11 @@ TINYMCE_DEFAULT_CONFIG = {
 
 # Setting for overriding default filtering facets for Course discovery
 ########################## Course Discovery #######################
-COURSE_DISCOVERY_FILTERS = ["all","course_status", "subject", "topic", "level", "language", "is_new", "org"]
+COURSE_DISCOVERY_FILTERS = ["all","course_status", "categories", "topic", "level", "language", "is_new", "org"]
 COURSE_DISCOVERY_AGGREGATIONS = {
     'all': {}, 
     'course_status': {},
-    'subject': {'size': 1000}, 
+    'categories': {'size': 1000}, 
     'topic': {'size': 1000}, 
     'language': {'size': 100}, 
     'level': {},
@@ -5162,8 +5162,8 @@ COURSE_DISCOVERY_MEANINGS = {
     'course_status' : {
         'name': 'Status',
     },
-    'subject': {
-        'name': 'Purpose'
+    'categories': {
+        'name': 'Categories'
     },
     'topic': {
         'name': 'Topics'

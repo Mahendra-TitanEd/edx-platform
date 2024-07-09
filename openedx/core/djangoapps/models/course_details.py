@@ -33,7 +33,6 @@ ABOUT_ATTRIBUTES = [
     'about_sidebar_html',
     # Added by Mahendra
     'course_topic',
-    'course_subject',
     'course_level',
     'overview_2',
     'certificate_overview',
@@ -45,7 +44,8 @@ ABOUT_ATTRIBUTES = [
     'course_slug',
     'introduction_video',
     'access_duration',
-    'course_tags'
+    'course_tags',
+    'course_categories'
 ]
 
 
@@ -95,7 +95,6 @@ class CourseDetails:
         self.instructor_info = []
         # Added by Mahendra
         self.course_topic = ""
-        self.course_subject = ""
         self.course_level = ""
         self.overview_2 = ""
         self.certificate_overview = ""
@@ -109,6 +108,7 @@ class CourseDetails:
         self.introduction_video = ""
         self.access_duration = ""
         self.course_tags = ""
+        self.course_categories = ""
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -163,7 +163,6 @@ class CourseDetails:
         course_details.instructor_info = course_descriptor.instructor_info
         # Added by Mahendra
         course_details.course_topic = course_descriptor.course_topic
-        course_details.course_subject = course_descriptor.course_subject
         course_details.course_level = course_descriptor.course_level
         course_details.overview_2 = course_descriptor.overview_2
         course_details.certificate_overview = course_descriptor.certificate_overview
@@ -176,6 +175,7 @@ class CourseDetails:
         course_details.introduction_video = course_descriptor.introduction_video
         course_details.access_duration = course_descriptor.access_duration
         course_details.course_tags = course_descriptor.course_tags
+        course_details.course_categories = course_descriptor.course_categories
         course_slug = course_descriptor.course_slug
         if course_slug == "":
             try:

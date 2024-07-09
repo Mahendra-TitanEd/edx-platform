@@ -273,7 +273,6 @@ class CourseOverview(TimeStampedModel):
             from ebc_course.models import EbcCourseConfiguration
             from course_about.models import CourseAboutCertificate, CourseAboutOverview, CourseAboutQuote
             course_topic = CourseDetails.fetch_about_attribute(course.id, 'course_topic')
-            course_subject = CourseDetails.fetch_about_attribute(course.id, 'course_subject')
             course_level = CourseDetails.fetch_about_attribute(course.id, 'course_level')
             overview_2 = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
             introduction_video = CourseDetails.fetch_about_attribute(course.id, 'introduction_video')
@@ -286,16 +285,22 @@ class CourseOverview(TimeStampedModel):
             course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
             access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
             course_tags = CourseDetails.fetch_about_attribute(course.id, 'course_tags')
+            course_categories = CourseDetails.fetch_about_attribute(course.id, 'course_categories')
             try:
                 course_tags = json.loads(course_tags)
             except Exception as e:
                 course_tags = []
 
+            try:
+                course_categories = json.loads(course_categories)
+            except Exception as e:
+                course_categories = []
+
             data_dict = {
                 'topic': course_topic,
-                'subject': course_subject,
                 'level': course_level,
                 'tags' : course_tags,
+                'categories': course_categories,
                 'assignment_due_date': assignment_due_date,
                 'show_outline': show_outline,
                 'is_upcoming': is_upcoming,

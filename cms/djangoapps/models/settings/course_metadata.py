@@ -78,7 +78,6 @@ class CourseMetadata:
         'discussions_settings',
         # Added by Mahendra
         'course_topic',
-        'course_subject',
         'course_level',
         'overview_2',
         'certificate_overview',
@@ -90,7 +89,8 @@ class CourseMetadata:
         'course_slug',
         'introduction_video',
         'access_duration',
-        'course_tags'
+        'course_tags',
+        'course_categories'
     ]
 
     @classmethod

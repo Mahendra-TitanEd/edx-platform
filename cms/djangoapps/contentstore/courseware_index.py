@@ -750,10 +750,11 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
                         "tags": tags,
                     }
                 )
-            if ebc_course_configuration.subject:
+            if ebc_course_configuration.categories.all():
+                categories = [category.name for category in ebc_course_configuration.categories.all()]
                 course_info.update(
                     {
-                        "subject": ebc_course_configuration.subject.name,
+                        "categories": categories,
                     }
                 )
             if ebc_course_configuration.topic:

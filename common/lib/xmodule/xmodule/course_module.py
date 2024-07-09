@@ -1043,12 +1043,6 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='',
         scope=Scope.settings
     )
-    course_subject = String(
-        display_name=_("Course Subject"),
-        help=_("Select one of the subject for the course."),
-        default='',
-        scope=Scope.settings
-    )
     course_level = String(
         display_name=_("Course level"),
         help=_("Select one of the level for the course."),
@@ -1131,6 +1125,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
     course_tags = String(
         display_name=_("Course Tags"),
         help=_("Select tags for the course."),
+        default='',
+        scope=Scope.settings
+    )
+    course_categories = String(
+        display_name=_("Course Categories"),
+        help=_("Select categories for the course."),
         default='',
         scope=Scope.settings
     )

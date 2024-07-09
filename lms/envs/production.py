@@ -1073,11 +1073,11 @@ REST_FRAMEWORK.update(ENV_TOKENS.get('REST_FRAMEWORK', {}))
 # Setting for overriding default filtering facets for Course discovery
 ########################## Course Discovery #######################
 ALL_LANGUAGES = ENV_TOKENS.get('ALL_LANGUAGES', ALL_LANGUAGES)
-COURSE_DISCOVERY_FILTERS = ["all","course_status", "subject", "topic", "price", "level", "language", "is_new", "tags"]
+COURSE_DISCOVERY_FILTERS = ["all","course_status", "categories", "topic", "price", "level", "language", "is_new", "tags"]
 COURSE_DISCOVERY_AGGREGATIONS = {
     'all': {}, 
     'course_status': {},
-    'subject': {'size': 1000}, 
+    'categories': {'size': 1000}, 
     'topic': {'size': 1000}, 
     'language': {'size': 100}, 
     'level': {},
@@ -1093,8 +1093,8 @@ COURSE_DISCOVERY_MEANINGS = {
     'course_status' : {
         'name': 'Status',
     },
-    'subject': {
-        'name': 'Purpose'
+    'categories': {
+        'name': 'Categories'
     },
     'topic': {
         'name': 'Topics'

@@ -42,7 +42,7 @@
             },
 
             renderFacet: function(facetKey, options) {
-                if(facetKey=='subject'){
+                if(facetKey=='categories'){
                     return this.facetTpl({
                         name: facetKey,
                         displayName: this.facetName(facetKey),
@@ -68,8 +68,8 @@
                 if(grouped.all){
                     newGrouped['all'] = grouped.all
                 }
-                if(grouped.subject){
-                    newGrouped['subject'] = grouped.subject
+                if(grouped.categories){
+                    newGrouped['categories'] = grouped.categories
                 }
                 if(grouped.price){
                     newGrouped['price'] = grouped.price
