@@ -47,7 +47,7 @@
                         name: facetKey,
                         displayName: this.facetName(facetKey),
                         optionsHtml: this.renderOptions(options),
-                        listIsHuge: (options.length > 3)
+                        listIsHuge: (options.length > 6)
                     });
                 }else{
                     return this.facetTpl({
