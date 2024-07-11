@@ -62,14 +62,14 @@
             render: function() {
                 var grouped = this.collection.groupBy('facet');
                 var newGrouped = {};
+                if(grouped.categories){
+                    newGrouped['categories'] = grouped.categories
+                }
                 if(grouped.topic){
                     newGrouped['topic'] = grouped.topic
                 }
                 if(grouped.all){
                     newGrouped['all'] = grouped.all
-                }
-                if(grouped.categories){
-                    newGrouped['categories'] = grouped.categories
                 }
                 if(grouped.price){
                     newGrouped['price'] = grouped.price
