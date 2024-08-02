@@ -457,6 +457,7 @@ class UserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline, AccountRecoveryInline)
     form = UserChangeForm
     actions = ("export_as_csv",)
+    list_display = ["username", "email", "first_name", "last_name", "is_staff", "is_active", "date_joined", "last_login"]
     list_filter = BaseUserAdmin.list_filter + (HasLoggedInFilter,)
     
     def get_readonly_fields(self, request, obj=None):
