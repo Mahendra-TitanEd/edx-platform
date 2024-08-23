@@ -90,7 +90,9 @@ class CourseMetadata:
         'introduction_video',
         'access_duration',
         'course_tags',
-        'course_categories'
+        'course_categories',
+        'program_only_purchase',
+        'program_only_purchase_notes',
     ]
 
     @classmethod

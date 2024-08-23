@@ -286,6 +286,8 @@ class CourseOverview(TimeStampedModel):
             access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
             course_tags = CourseDetails.fetch_about_attribute(course.id, 'course_tags')
             course_categories = CourseDetails.fetch_about_attribute(course.id, 'course_categories')
+            program_only_purchase = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase')
+            program_only_purchase_notes = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase_notes')
             try:
                 course_tags = json.loads(course_tags)
             except Exception as e:
@@ -308,7 +310,9 @@ class CourseOverview(TimeStampedModel):
                 'is_talks': is_talks,
                 'course_slug': course_slug or display_name,
                 'introduction_video': introduction_video,
-                'access_duration': access_duration
+                'access_duration': access_duration,
+                'program_only_purchase': program_only_purchase,
+                'program_only_purchase_notes': program_only_purchase_notes,
             }
             course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
             if certificate_overview:

@@ -52,6 +52,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#course-name').val(this.model.get('run'));
                    this.$el.find('.set-date').datepicker({ dateFormat: 'm/d/yy' });
                    this.$el.find("#certificates-display-behavior").val(this.model.get("certificates_display_behavior"));
+                   this.$el.find('#program_only_purchase_notes').val(this.model.get('program_only_purchase_notes'));
                    this.updateCertificatesDisplayBehavior();
 
         // Avoid showing broken image on mistyped/nonexistent image
@@ -198,6 +199,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                    this.$el.find('#' + this.fieldToSelectorMap.introduction_video).val(this.model.get('introduction_video'));
                    this.codeMirrorize(null, $('#introduction_video')[0]);
+                   this.$el.find('#' + this.fieldToSelectorMap['program_only_purchase_notes']).val(this.model.get('program_only_purchase_notes'));
 
                    if ((this.model.get('show_outline') == 'true')) {
                        this.$('#' + this.fieldToSelectorMap.show_outline).attr('checked','checked');
@@ -218,6 +220,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        this.$('#' + this.fieldToSelectorMap.is_talks).attr('checked','checked');
                    } else {
                        this.$('#' + this.fieldToSelectorMap.is_talks).removeAttr('checked');
+                   }
+                   if ((this.model.get('program_only_purchase') == 'true')) {
+                       this.$('#' + this.fieldToSelectorMap.program_only_purchase).attr('checked','checked');
+                   } else {
+                       this.$('#' + this.fieldToSelectorMap.program_only_purchase).removeAttr('checked');
                    }
                    return this;
                },
@@ -265,6 +272,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    is_talks: 'is-talks', // Added by Mahendra
                    course_tags: 'course_tags',    // Added by Mahendra
                    course_categories: 'course_categories',    // Added by Mahendra
+                   program_only_purchase: 'program-only-purchase',    // Added by Mahendra
+                   program_only_purchase_notes: 'program_only_purchase_notes',    // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -424,6 +433,14 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        }
                        this.setField(event);
                        break;
+                   case 'program-only-purchase':
+                       if ($(event.currentTarget).is(':checked')) {
+                           this.model.set('program_only_purchase', 'true');
+                       } else {
+                           this.model.set('program_only_purchase', 'false');
+                       }
+                       this.setField(event);
+                       break;
                    case 'entrance-exam-minimum-score-pct':
             // If the val is an empty string then update model with default value.
                        if ($(event.currentTarget).val() === '') {
@@ -478,6 +495,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_categories':
                    case 'introduction_video':
                    case 'certificate_overview':
+                   case 'program_only_purchase_notes':
                    case 'course-short-description':
                        this.setField(event);
                        break;

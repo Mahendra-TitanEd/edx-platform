@@ -1134,6 +1134,22 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='',
         scope=Scope.settings
     )
+    program_only_purchase = String(
+        display_name=_("Program-Only Purchase"),
+        help=_(
+            "Enable this option to restrict the purchase of this course to program bundles only. If enabled, users will not be able to purchase this course individually."
+        ),
+        default='false',
+        scope=Scope.settings,
+    )
+    program_only_purchase_notes = String(
+        display_name=_("Program-Only Purchase Message"),
+        help=_("This message will be shown to users when individual purchase is disabled"),
+        default="This course is part of a program and cannot be purchased individually.",
+        scope=Scope.settings
+    )
+
+
 
 class CourseBlock(
     CourseFields,

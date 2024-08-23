@@ -45,7 +45,9 @@ ABOUT_ATTRIBUTES = [
     'introduction_video',
     'access_duration',
     'course_tags',
-    'course_categories'
+    'course_categories',
+    'program_only_purchase',
+    'program_only_purchase_notes',
 ]
 
 
@@ -109,6 +111,8 @@ class CourseDetails:
         self.access_duration = ""
         self.course_tags = ""
         self.course_categories = ""
+        self.program_only_purchase = ""
+        self.program_only_purchase_notes = ""
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -176,6 +180,8 @@ class CourseDetails:
         course_details.access_duration = course_descriptor.access_duration
         course_details.course_tags = course_descriptor.course_tags
         course_details.course_categories = course_descriptor.course_categories
+        course_details.program_only_purchase = course_descriptor.program_only_purchase
+        course_details.program_only_purchase_notes = course_descriptor.program_only_purchase_notes
         course_slug = course_descriptor.course_slug
         if course_slug == "":
             try:
