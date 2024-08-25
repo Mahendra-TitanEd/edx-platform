@@ -1216,14 +1216,36 @@ def settings_handler(request, course_key_string):  # lint-amnesty, pylint: disab
                             'show_min_grade_warning': show_min_grade_warning,
                         }
                     )
+
+            # Added by Mahendra
+            from django.contrib.sites.models import Site
+            from ebc_course.models import EbcCourseConfiguration
+            from openedx.core.djangoapps.catalog.utils import get_programs
             topics = CourseTopics.objects.all().order_by('name')
             subjects = CourseCategory.objects.all().order_by('name')
             tags = CourseTag.objects.all().order_by('name')
+            course_config = EbcCourseConfiguration.objects.get(
+                course__course_key=course_key,
+            )
+            site = Site.objects.get(name=settings.LMS_BASE)
+            programs_data = get_programs(site)
+            path_data = []
+            for program in programs_data:
+                if program.get("status") == "active":
+                    for course in program.get("courses", list()):
+                        for course_run in course.get("course_runs", list()):
+                            if str(course_key) == course_run.get("key"):
+                                path_data.append({"id": program["uuid"]})
+
+            allow_program_only_purchase = False
+            if len(path_data) == 1 or course_config.program_only_purchase:
+                allow_program_only_purchase = True
             settings_context.update({
                 'topics': topics,
                 'subjects': subjects,
                 'tags': tags,
                 'levels': COURSE_LEVEL,
+                'allow_program_only_purchase': allow_program_only_purchase,
             })
             return render_to_response('settings.html', settings_context)
         elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
