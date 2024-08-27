@@ -305,7 +305,7 @@ class CoursewareIndex(View):
                 mail = HitSendMail.objects.all().first()
                 exclude_email_list = list()
                 if mail:
-                    exclude_email_list = json.loads(mail.csv_email)
+                    exclude_email_list = mail.csv_email
                 if str(self.request.user.email) not in exclude_email_list:
                     courseware_hit_counter(self.request.user, self.course_key)
             except:
