@@ -1148,6 +1148,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="This course is part of a program and cannot be purchased individually.",
         scope=Scope.settings
     )
+    price_text = String(
+        display_name=_("Price Note"),
+        help=_("This note will be shown to users on course about page"),
+        default="",
+        scope=Scope.settings
+    )
 
 
 

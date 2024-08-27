@@ -53,6 +53,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('.set-date').datepicker({ dateFormat: 'm/d/yy' });
                    this.$el.find("#certificates-display-behavior").val(this.model.get("certificates_display_behavior"));
                    this.$el.find('#program_only_purchase_notes').val(this.model.get('program_only_purchase_notes'));
+                   this.$el.find('#price_text').val(this.model.get('price_text'));
                    this.updateCertificatesDisplayBehavior();
 
         // Avoid showing broken image on mistyped/nonexistent image
@@ -200,6 +201,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap.introduction_video).val(this.model.get('introduction_video'));
                    this.codeMirrorize(null, $('#introduction_video')[0]);
                    this.$el.find('#' + this.fieldToSelectorMap['program_only_purchase_notes']).val(this.model.get('program_only_purchase_notes'));
+                   this.$el.find('#' + this.fieldToSelectorMap['price_text']).val(this.model.get('price_text'));
 
                    if ((this.model.get('show_outline') == 'true')) {
                        this.$('#' + this.fieldToSelectorMap.show_outline).attr('checked','checked');
@@ -274,6 +276,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_categories: 'course_categories',    // Added by Mahendra
                    program_only_purchase: 'program-only-purchase',    // Added by Mahendra
                    program_only_purchase_notes: 'program_only_purchase_notes',    // Added by Mahendra
+                   price_text: 'price_text',    // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -496,6 +499,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'introduction_video':
                    case 'certificate_overview':
                    case 'program_only_purchase_notes':
+                   case 'price_text':
                    case 'course-short-description':
                        this.setField(event);
                        break;
