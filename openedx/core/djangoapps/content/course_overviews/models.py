@@ -289,6 +289,7 @@ class CourseOverview(TimeStampedModel):
             program_only_purchase = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase')
             program_only_purchase_notes = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase_notes')
             price_text = CourseDetails.fetch_about_attribute(course.id, 'price_text')
+            offer_text = CourseDetails.fetch_about_attribute(course.id, 'offer_text')
             try:
                 course_tags = json.loads(course_tags)
             except Exception as e:
@@ -315,6 +316,7 @@ class CourseOverview(TimeStampedModel):
                 'program_only_purchase': program_only_purchase,
                 'program_only_purchase_notes': program_only_purchase_notes,
                 'price_text': price_text,
+                'offer_text': offer_text
             }
             course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
             if certificate_overview:

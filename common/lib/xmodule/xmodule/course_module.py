@@ -1154,7 +1154,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="",
         scope=Scope.settings
     )
-
+    offer_text = String(
+        display_name=_("Offer Note"),
+        help=_("This note will be shown to users on course about page below course price."),
+        default="",
+        scope=Scope.settings
+    )
 
 
 class CourseBlock(
