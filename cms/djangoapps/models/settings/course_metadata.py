@@ -94,7 +94,8 @@ class CourseMetadata:
         'program_only_purchase',
         'program_only_purchase_notes',
         'price_text',
-        'offer_text'
+        'offer_text',
+        'recently_updated'
     ]
 
     @classmethod

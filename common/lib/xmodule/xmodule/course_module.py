@@ -1160,6 +1160,15 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="",
         scope=Scope.settings
     )
+    recently_updated = String(
+        display_name=_("Course Recently Updated"),
+        help=_(
+            "Enter true or false. If true, 'Recently Updated' ribbon will be appears on the course"
+        ),
+        default='false',
+        scope=Scope.settings,
+    )
+
 
 
 class CourseBlock(

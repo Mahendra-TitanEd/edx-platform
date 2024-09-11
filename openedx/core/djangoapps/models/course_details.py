@@ -50,6 +50,7 @@ ABOUT_ATTRIBUTES = [
     'program_only_purchase_notes',
     'price_text',
     'offer_text',
+    'recently_updated',
 ]
 
 
@@ -117,6 +118,7 @@ class CourseDetails:
         self.program_only_purchase_notes = ""
         self.price_text = ""
         self.offer_text = ""
+        self.recently_updated = ""
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -188,6 +190,7 @@ class CourseDetails:
         course_details.program_only_purchase_notes = course_descriptor.program_only_purchase_notes
         course_details.price_text = course_descriptor.price_text
         course_details.offer_text = course_descriptor.offer_text
+        course_details.recently_updated = course_descriptor.recently_updated
         course_slug = course_descriptor.course_slug
         if course_slug == "":
             try:

@@ -724,21 +724,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             if field.name == "course_synonyms":
                 course_info["content"]["course_synonyms"] = field.read_json(course)
 
-        if course.is_new:
-            course_info.update(
-                {
-                    "is_new": True,
-                    "is_recent": True,
-                }
-            )
-        else:
-            course_info.update(
-                {
-                    "is_new": False,
-                    "is_recent": False,
-                }
-            )
-
+        course_info.update({"is_new": course.is_new})
         try:
             ebc_course_configuration = EbcCourseConfiguration.objects.get(
                 course__course_key=course.id
@@ -747,6 +733,7 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             course_info.update(
                 {
                     "tags": tags,
+                    "is_recent": ebc_course_configuration.recently_updated,
                 }
             )
             categories = [category.name for category in ebc_course_configuration.categories.all()]

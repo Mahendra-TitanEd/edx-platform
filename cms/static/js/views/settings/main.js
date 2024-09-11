@@ -230,6 +230,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    } else {
                        this.$('#' + this.fieldToSelectorMap.program_only_purchase).removeAttr('checked');
                    }
+                   if ((this.model.get('recently_updated') == 'true')) {
+                       this.$('#' + this.fieldToSelectorMap.recently_updated).attr('checked','checked');
+                   } else {
+                       this.$('#' + this.fieldToSelectorMap.recently_updated).removeAttr('checked');
+                   }
                    return this;
                },
                fieldToSelectorMap: {
@@ -280,6 +285,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    program_only_purchase_notes: 'program_only_purchase_notes',    // Added by Mahendra
                    price_text: 'price_text',    // Added by Mahendra
                    offer_text: 'offer_text',    // Added by Mahendra
+                   recently_updated: 'recently-updated', // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -444,6 +450,14 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                            this.model.set('program_only_purchase', 'true');
                        } else {
                            this.model.set('program_only_purchase', 'false');
+                       }
+                       this.setField(event);
+                       break;
+                   case 'recently-updated':
+                       if ($(event.currentTarget).is(':checked')) {
+                           this.model.set('recently_updated', 'true');
+                       } else {
+                           this.model.set('recently_updated', 'false');
                        }
                        this.setField(event);
                        break;
