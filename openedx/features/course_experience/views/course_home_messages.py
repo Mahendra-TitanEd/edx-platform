@@ -152,18 +152,7 @@ def _register_course_home_messages(request, course, user_access, course_start_da
             )
         elif not course_is_invitation_only(course):
             allow_anonymous = check_public_access(course, [COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE])
-            if allow_anonymous:
-                CourseHomeMessages.register_info_message(
-                    request,
-                    Text(_(
-                        '{open_enroll_link}Enroll now{close_enroll_link} to access the full course.'
-                    )).format(
-                        open_enroll_link=HTML('<button class="enroll-btn btn-link">'),
-                        close_enroll_link=HTML('</button>')
-                    ),
-                    title=title
-                )
-            else:
+            if not allow_anonymous:
                 CourseHomeMessages.register_info_message(
                     request,
                     Text(_(
