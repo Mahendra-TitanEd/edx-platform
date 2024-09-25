@@ -365,6 +365,16 @@ def _has_access_course(user, action, courselike):
             else:
                 return has_not_expired
 
+        # Added by Mahendra
+        from subscription.helpers import _has_access_with_subscription
+        has_subscription_access = _has_access_with_subscription(user, courselike.id)
+        if not has_subscription_access:
+            staff_access = _has_staff_access_to_descriptor(user, courselike, courselike.id)
+            if staff_access:
+                return staff_access
+            else:
+                return ACCESS_DENIED
+        
         return ACCESS_GRANTED
 
     @function_trace('can_enroll')
