@@ -24,6 +24,7 @@ from django.utils.translation import ngettext
 from django.utils.translation import gettext_lazy as _
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
+from rangefilter.filter import DateRangeFilter
 
 from edx_toggles.toggles import WaffleSwitch
 from openedx.core.lib.courses import clean_course_id
@@ -344,6 +345,8 @@ class CourseEnrollmentAdmin(DisableEnrollmentAdminMixin, admin.ModelAdmin):
     list_filter = (
         "mode",
         "is_active",
+        ("purchase_start_date", DateRangeFilter),
+        ("created", DateRangeFilter),
     )
     raw_id_fields = ("user", "course")
     search_fields = (
@@ -458,7 +461,7 @@ class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     actions = ("export_as_csv",)
     list_display = ["username", "email", "first_name", "last_name", "is_staff", "is_active", "date_joined", "last_login"]
-    list_filter = BaseUserAdmin.list_filter + (HasLoggedInFilter,)
+    list_filter = BaseUserAdmin.list_filter + (HasLoggedInFilter, ("date_joined", DateRangeFilter),)
     
     def get_readonly_fields(self, request, obj=None):
         """
