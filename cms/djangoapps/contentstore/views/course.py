@@ -1231,11 +1231,10 @@ def settings_handler(request, course_key_string):  # lint-amnesty, pylint: disab
             programs_data = get_programs(site)
             path_data = []
             for program in programs_data:
-                if program.get("status") == "active":
-                    for course in program.get("courses", list()):
-                        for course_run in course.get("course_runs", list()):
-                            if str(course_key) == course_run.get("key"):
-                                path_data.append({"id": program["uuid"]})
+                for course in program.get("courses", list()):
+                    for course_run in course.get("course_runs", list()):
+                        if str(course_key) == course_run.get("key"):
+                            path_data.append({"id": program["uuid"]})
 
             allow_program_only_purchase = False
             if len(path_data) == 1 or course_config.program_only_purchase:
