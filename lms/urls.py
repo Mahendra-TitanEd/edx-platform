@@ -1059,6 +1059,7 @@ urlpatterns += [
 # to use editor to edit content from admin panel
 urlpatterns += (
     re_path(r'^tinymce/', include('tinymce.urls')),
+    path('captcha/', include('captcha.urls')),
 )
 
 if settings.FEATURES.get('AUTH_USE_CAS'):

@@ -3240,6 +3240,7 @@ INSTALLED_APPS = [
     'import_export',
     'tinymce',
     'rangefilter',
+    'captcha',
 ]
 
 ######################### CSRF #########################################
