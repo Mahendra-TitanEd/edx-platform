@@ -268,73 +268,73 @@ class CourseOverview(TimeStampedModel):
             course_overview.language = course.language
 
         # Added by Mahendra
-        if settings.ENABLE_CUSTOM_COURSE_CONFIG:
-            log.info("ENABLE_CUSTOM_COURSE_CONFIG enabled")
-            from ebc_course.models import EbcCourseConfiguration
-            from course_about.models import CourseAboutCertificate, CourseAboutOverview, CourseAboutQuote
-            course_topic = CourseDetails.fetch_about_attribute(course.id, 'course_topic')
-            course_level = CourseDetails.fetch_about_attribute(course.id, 'course_level')
-            overview_2 = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
-            introduction_video = CourseDetails.fetch_about_attribute(course.id, 'introduction_video')
-            certificate_overview = CourseDetails.fetch_about_attribute(course.id, 'certificate_overview')
-            assignment_due_date = CourseDetails.fetch_about_attribute(course.id, 'assignment_due_date')
-            show_outline = CourseDetails.fetch_about_attribute(course.id, 'show_outline')
-            is_upcoming = CourseDetails.fetch_about_attribute(course.id, 'is_upcoming')
-            in_subscription = CourseDetails.fetch_about_attribute(course.id, 'in_subscription')
-            is_talks = CourseDetails.fetch_about_attribute(course.id, 'is_talks')
-            course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
-            access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
-            course_tags = CourseDetails.fetch_about_attribute(course.id, 'course_tags')
-            course_categories = CourseDetails.fetch_about_attribute(course.id, 'course_categories')
-            program_only_purchase = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase')
-            program_only_purchase_notes = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase_notes')
-            price_text = CourseDetails.fetch_about_attribute(course.id, 'price_text')
-            offer_text = CourseDetails.fetch_about_attribute(course.id, 'offer_text')
-            recently_updated = CourseDetails.fetch_about_attribute(course.id, 'recently_updated')
-            try:
-                course_tags = json.loads(course_tags)
-            except Exception as e:
-                course_tags = []
+        from ebc_course.models import EbcCourseConfiguration
+        from course_about.models import CourseAboutCertificate, CourseAboutOverview, CourseAboutQuote
+        course_topic = CourseDetails.fetch_about_attribute(course.id, 'course_topic')
+        course_level = CourseDetails.fetch_about_attribute(course.id, 'course_level')
+        overview_2 = CourseDetails.fetch_about_attribute(course.id, 'overview_2')
+        introduction_video = CourseDetails.fetch_about_attribute(course.id, 'introduction_video')
+        certificate_overview = CourseDetails.fetch_about_attribute(course.id, 'certificate_overview')
+        assignment_due_date = CourseDetails.fetch_about_attribute(course.id, 'assignment_due_date')
+        show_outline = CourseDetails.fetch_about_attribute(course.id, 'show_outline')
+        is_upcoming = CourseDetails.fetch_about_attribute(course.id, 'is_upcoming')
+        in_subscription = CourseDetails.fetch_about_attribute(course.id, 'in_subscription')
+        is_talks = CourseDetails.fetch_about_attribute(course.id, 'is_talks')
+        course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
+        access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
+        course_tags = CourseDetails.fetch_about_attribute(course.id, 'course_tags')
+        course_categories = CourseDetails.fetch_about_attribute(course.id, 'course_categories')
+        program_only_purchase = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase')
+        program_only_purchase_notes = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase_notes')
+        price_text = CourseDetails.fetch_about_attribute(course.id, 'price_text')
+        offer_text = CourseDetails.fetch_about_attribute(course.id, 'offer_text')
+        recently_updated = CourseDetails.fetch_about_attribute(course.id, 'recently_updated')
+        additional_campaign_info = CourseDetails.fetch_about_attribute(course.id, 'additional_campaign_info')
+        try:
+            course_tags = json.loads(course_tags)
+        except Exception as e:
+            course_tags = []
 
-            try:
-                course_categories = json.loads(course_categories)
-            except Exception as e:
-                course_categories = []
+        try:
+            course_categories = json.loads(course_categories)
+        except Exception as e:
+            course_categories = []
 
-            data_dict = {
-                'topic': course_topic,
-                'level': course_level,
-                'tags' : course_tags,
-                'categories': course_categories,
-                'assignment_due_date': assignment_due_date,
-                'show_outline': show_outline,
-                'is_upcoming': is_upcoming,
-                'in_subscription': in_subscription,
-                'is_talks': is_talks,
-                'course_slug': course_slug or display_name,
-                'introduction_video': introduction_video,
-                'access_duration': access_duration,
-                'program_only_purchase': program_only_purchase,
-                'program_only_purchase_notes': program_only_purchase_notes,
-                'price_text': price_text,
-                'offer_text': offer_text,
-                'recently_updated': recently_updated
-            }
-            course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
-            if certificate_overview:
-                CourseAboutCertificate.create_or_update(course_config, certificate_overview)
-            else:
-                # Remove course about cerificate block
-                CourseAboutCertificate.objects.filter(course_configuration=course_config).delete()
+        data_dict = {
+            'topic': course_topic,
+            'level': course_level,
+            'tags' : course_tags,
+            'categories': course_categories,
+            'assignment_due_date': assignment_due_date,
+            'show_outline': show_outline,
+            'is_upcoming': is_upcoming,
+            'in_subscription': in_subscription,
+            'is_talks': is_talks,
+            'course_slug': course_slug or display_name,
+            'introduction_video': introduction_video,
+            'access_duration': access_duration,
+            'program_only_purchase': program_only_purchase,
+            'program_only_purchase_notes': program_only_purchase_notes,
+            'price_text': price_text,
+            'offer_text': offer_text,
+            'recently_updated': recently_updated,
+            'additional_campaign_info': additional_campaign_info
+        }
+        course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
+        if certificate_overview:
+            CourseAboutCertificate.create_or_update(course_config, certificate_overview)
+        else:
+            # Remove course about cerificate block
+            CourseAboutCertificate.objects.filter(course_configuration=course_config).delete()
 
-            if overview_2:
-                CourseAboutOverview.create_or_update(course_config, overview_2)
-            else:
-                CourseAboutOverview.objects.filter(course_configuration=course_config).delete()
+        if overview_2:
+            CourseAboutOverview.create_or_update(course_config, overview_2)
+        else:
+            CourseAboutOverview.objects.filter(course_configuration=course_config).delete()
 
-            if course.quote_info.get('quotes', list()):
-                for quoto_info in course.quote_info.get('quotes', list()):
-                    CourseAboutQuote.create_or_update(course_config, quoto_info)
+        if course.quote_info.get('quotes', list()):
+            for quoto_info in course.quote_info.get('quotes', list()):
+                CourseAboutQuote.create_or_update(course_config, quoto_info)
         return course_overview
 
     @classmethod

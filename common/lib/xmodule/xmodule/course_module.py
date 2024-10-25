@@ -1168,7 +1168,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default='false',
         scope=Scope.settings,
     )
-
+    additional_campaign_info = String(
+        display_name=_("Additional Campaign information"),
+        help=_("This info will be displayed on the course about page below start date, price, instutiton etc information"),
+        default="",
+        scope=Scope.settings
+    )
 
 
 class CourseBlock(

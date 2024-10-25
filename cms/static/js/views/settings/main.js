@@ -20,6 +20,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    'focus #overview_2': 'codeMirrorize',
                    'focus #introduction_video': 'codeMirrorize',
                    'focus #certificate_overview': 'codeMirrorize',
+                   'focus #additional_campaign_info': 'codeMirrorize',
                    'mouseover .timezone': 'updateTime',
         // would love to move to a general superclass, but event hashes don't inherit in backbone :-(
                    'focus :input': 'inputFocus',
@@ -53,6 +54,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('.set-date').datepicker({ dateFormat: 'm/d/yy' });
                    this.$el.find("#certificates-display-behavior").val(this.model.get("certificates_display_behavior"));
                    this.$el.find('#program_only_purchase_notes').val(this.model.get('program_only_purchase_notes'));
+                   this.$el.find('#additional_campaign_info').val(this.model.get('additional_campaign_info'));
                    this.$el.find('#price_text').val(this.model.get('price_text'));
                    this.$el.find('#offer_text').val(this.model.get('offer_text'));
                    this.updateCertificatesDisplayBehavior();
@@ -202,6 +204,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap.introduction_video).val(this.model.get('introduction_video'));
                    this.codeMirrorize(null, $('#introduction_video')[0]);
                    this.$el.find('#' + this.fieldToSelectorMap['program_only_purchase_notes']).val(this.model.get('program_only_purchase_notes'));
+                   this.$el.find('#' + this.fieldToSelectorMap['additional_campaign_info']).val(this.model.get('additional_campaign_info'));
+                   this.codeMirrorize(null, $('#additional_campaign_info')[0]);
                    this.$el.find('#' + this.fieldToSelectorMap['price_text']).val(this.model.get('price_text'));
                    this.$el.find('#' + this.fieldToSelectorMap['offer_text']).val(this.model.get('offer_text'));
 
@@ -286,6 +290,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    price_text: 'price_text',    // Added by Mahendra
                    offer_text: 'offer_text',    // Added by Mahendra
                    recently_updated: 'recently-updated', // Added by Mahendra
+                   additional_campaign_info: 'additional_campaign_info',    // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -516,6 +521,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'introduction_video':
                    case 'certificate_overview':
                    case 'program_only_purchase_notes':
+                   case 'additional_campaign_info':
                    case 'price_text':
                    case 'offer_text':
                    case 'course-short-description':
