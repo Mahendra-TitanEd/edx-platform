@@ -30,7 +30,6 @@
                     totalCount: response.total,
                     latestCount: courses.length
                 });
-
                 var options = this.facetOptions;
                 _(facets).each(function(obj, key) {
                     _(obj.terms).each(function(count, term) {
@@ -38,7 +37,7 @@
                             facet: key,
                             term: term,
                             count: count
-                        }, {merge: true});
+                        }, {merge: false});
                     });
                 });
             },
