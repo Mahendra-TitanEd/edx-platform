@@ -1,0 +1,37 @@
+<li class="field-group">
+  <div class="field text field-course-review-name">
+    <label for="course-review-name-<%- index %>"><%- gettext("Name") %></label>
+    <input type="text" class="long" id="course-review-name-<%- index %>" value="<%- data['name'] %>" data-index=<%- index %> data-field="name" placeholder="<%- gettext('Name') %>"  />
+    <span class="tip tip-stacked"><%- gettext("Please enter name")%></span>
+  </div>
+
+  <div class="field text field-course-review-sequence">
+    <label for="course-review-sequence-<%- index %>"><%- gettext("Sequence") %></label>
+    <input type="text" class="long" id="course-review-sequence-<%- index %>" value="<%- data['sequence'] %>" data-index=<%- index %> data-field="sequence" placeholder="<%- gettext('Sequence') %>" />
+    <span class="tip tip-stacked"><%- gettext("Please enter sequence 1 or 2.")%></span>
+  </div>
+
+  <div class="field text field-course-review-bio">
+    <label for="course-review-bio-<%- index %>"><%- gettext("Review") %></label>
+    <textarea class="short text" id="course-review-bio-<%- index %>" data-index=<%- index %> data-field="bio" placeholder="<%- gettext('Review') %>" ><%- data['bio'] %></textarea>
+    <span class="tip tip-stacked"><%- gettext("Please enter Review text")%></span>
+  </div>
+
+  <div class="field image field-course-review-image current-review-image">
+  <label for="course-review-image-<%- index %>"><%- gettext("Photo") %></label>
+    <span class="wrapper-review-image">
+        <img id="course-review-image-preview-<%- index %>" class="review-image" src="<%- data['image']%>" alt="<%- gettext('Photo') %>" />
+    </span>
+    <div class="wrapper-input">
+      <div class="input">
+        <input type="text" dir="ltr" class="long new-review-image-url" id="course-review-image-<%- index %>" value="<%- data['image'] %>" data-index="<%- index %>"" data-field="image" placeholder="<%- gettext('Photo URL') %>" autocomplete="off" />
+        <span class="tip tip-stacked"><%- gettext("Please add a photo(Note: only JPEG or PNG format supported)")%></span>
+      </div>
+      <button type="button" class="action action-upload-review-image" data-index=<%- index %>><%- gettext("Upload Photo") %></button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="button delete-button standard remove-item remove-review-data" data-index=<%- index %>><%- gettext("Delete") %></button>
+  </div>
+</li>

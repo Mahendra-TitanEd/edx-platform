@@ -105,6 +105,7 @@ class CourseDetails:
         self.overview_2 = ""
         self.certificate_overview = ""
         self.quote_info = []
+        self.review_info = []
         self.assignment_due_date = None
         self.show_outline = ""
         self.is_upcoming = ""
@@ -179,6 +180,7 @@ class CourseDetails:
         course_details.overview_2 = course_descriptor.overview_2
         course_details.certificate_overview = course_descriptor.certificate_overview
         course_details.quote_info = course_descriptor.quote_info
+        course_details.review_info = course_descriptor.review_info
         course_details.assignment_due_date = course_descriptor.assignment_due_date
         course_details.show_outline = course_descriptor.show_outline
         course_details.is_upcoming = course_descriptor.is_upcoming
@@ -362,6 +364,10 @@ class CourseDetails:
         # Added by Mahendra
         if 'quote_info' in jsondict:
             descriptor.quote_info = jsondict['quote_info']
+            dirty = True
+
+        if 'review_info' in jsondict:
+            descriptor.review_info = jsondict['review_info']
             dirty = True
 
         if 'language' in jsondict and jsondict['language'] != descriptor.language:

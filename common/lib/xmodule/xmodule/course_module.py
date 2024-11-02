@@ -1069,6 +1069,14 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         },
         scope=Scope.settings
     )
+    review_info = Dict(
+        display_name=_("Course Review"),
+        help=_("Enter the details for Course reviews"),
+        default={
+            "reviews": []
+        },
+        scope=Scope.settings
+    )
     assignment_due_date = Date(help=_("Date that the course assignments closed."), scope=Scope.settings)
     show_outline = String(
         display_name=_("Show Course Outline"),

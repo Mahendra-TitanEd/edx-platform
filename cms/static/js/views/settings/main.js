@@ -1,10 +1,10 @@
 define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui', 'js/utils/date_utils',
     'js/models/uploads', 'js/views/uploads', 'js/views/license', 'js/models/license',
     'common/js/components/views/feedback_notification', 'jquery.timepicker', 'date', 'gettext',
-    'js/views/learning_info', 'js/views/instructor_info', 'js/views/quote_info', 'edx-ui-toolkit/js/utils/string-utils'],
+    'js/views/learning_info', 'js/views/instructor_info', 'js/views/quote_info', 'js/views/review_info', 'edx-ui-toolkit/js/utils/string-utils'],
        function(ValidatingView, CodeMirror, _, $, ui, DateUtils, FileUploadModel,
                 FileUploadDialog, LicenseView, LicenseModel, NotificationView,
-                timepicker, date, gettext, LearningInfoView, InstructorInfoView, QuoteInfoView, StringUtils) {
+                timepicker, date, gettext, LearningInfoView, InstructorInfoView, QuoteInfoView, ReviewInfoView, StringUtils) {
            var DetailsView = ValidatingView.extend({
     // Model class is CMS.Models.Settings.CourseDetails
                events: {
@@ -29,6 +29,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    'click .add-course-learning-info': 'addLearningFields',
                    'click .add-course-instructor-info': 'addInstructorFields',
                    'click .add-course-quote-info': 'addQuoteFields',
+                   'click .add-course-review-info': 'addReviewFields',
                    'change select#course_tags': 'addCourseTags',
                    'change select#course_categories': 'addCourseCategories',
                },
@@ -99,6 +100,11 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                    this.quote_info_view = new QuoteInfoView({
                        el: $('.course-quote-details-fields'),
+                       model: this.model
+                   });
+
+                   this.review_info_view = new ReviewInfoView({
+                       el: $('.course-review-details-fields'),
                        model: this.model
                    });
                },
@@ -187,6 +193,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.learning_info_view.render();
                    this.instructor_info_view.render();
                    this.quote_info_view.render();
+                   this.review_info_view.render();
 
                    // Added by Mahendra
                    this.$el.find('#' + this.fieldToSelectorMap['course_topic']).val(this.model.get('course_topic'));
@@ -278,6 +285,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    introduction_video: 'introduction_video', // Added by Mahendra
                    certificate_overview: 'certificate_overview', // Added by Mahendra
                    add_course_quote_info: 'add-course-quote-info', // Added by Mahendra
+                   add_course_review_info: 'add-course-review-info', // Added by Mahendra
                    assignment_due_date: 'assignment-due', // Added by Mahendra
                    show_outline: 'show-outline', // Added by Mahendra
                    is_upcoming: 'is-upcoming', // Added by Mahendra
@@ -329,7 +337,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                addQuoteFields: function() {
         /*
-        * Add new course instructor fields.
+        * Add new course Quote fields.
         * */
                    var quotes = this.model.get('quote_info').quotes.slice(0);
                    quotes.push({
@@ -339,6 +347,20 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        bio: ''
                    });
                    this.model.set('quote_info', {quotes: quotes});
+               },
+
+               addReviewFields: function() {
+                /*
+                * Add new course Review fields.
+                * */
+                   var reviews = this.model.get('review_info').reviews.slice(0);
+                   reviews.push({
+                       name: '',
+                       sequence: '',
+                       image: '',
+                       bio: ''
+                   });
+                   this.model.set('review_info', {reviews: reviews});
                },
 
                updateTime: function(e) {
@@ -400,6 +422,23 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        this.model.set('quote_info', {quotes: quotes});
                        this.showNotificationBar();
                        this.updateImagePreview(event.currentTarget, '#course-quote-image-preview-' + index);
+                       break;
+                   case 'course-review-name-' + index:
+                   case 'course-review-sequence-' + index:
+                   case 'course-review-bio-' + index:
+                       value = $(event.currentTarget).val();
+                       var field = event.currentTarget.getAttribute('data-field'),
+                           reviews = this.model.get('review_info').reviews.slice(0);
+                       reviews[index][field] = value;
+                       this.model.set('review_info', {reviews: reviews});
+                       this.showNotificationBar();
+                       break;
+                   case 'course-review-image-' + index:
+                       reviews = this.model.get('review_info').reviews.slice(0);
+                       reviews[index].image = $(event.currentTarget).val();
+                       this.model.set('review_info', {reviews: reviews});
+                       this.showNotificationBar();
+                       this.updateImagePreview(event.currentTarget, '#course-review-image-preview-' + index);
                        break;
                    case 'course-image-url':
                        this.updateImageField(event, 'course_image_name', '#course-image');
