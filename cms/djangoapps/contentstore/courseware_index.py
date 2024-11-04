@@ -790,7 +790,9 @@ class CourseAboutSearchIndexer(CoursewareSearchIndexer):
             from lms.djangoapps.courseware.access_utils import check_public_access
             from xmodule.course_module import COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE
             allow_anonymous = check_public_access(course, [COURSE_VISIBILITY_PUBLIC, COURSE_VISIBILITY_PUBLIC_OUTLINE])
-            if allow_anonymous:
+            if allow_anonymous and ebc_course_configuration.in_subscription:
+                course_info.update({"price": ["PUBLIC", "IN SUBSCRIPTION"]})
+            elif allow_anonymous:
                 course_info.update({"price": ["PUBLIC"]})
             elif ebc_course_configuration.in_subscription:
                 course_info.update({"price": ["IN SUBSCRIPTION", "INDIVIDUALLY PRICED"]})
