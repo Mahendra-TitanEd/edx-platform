@@ -89,6 +89,7 @@ class CourseMetadata:
         'course_slug',
         'introduction_video',
         'access_duration',
+        'content_activation_window', # added by Yagnesh
         'course_tags',
         'course_categories',
         'program_only_purchase',
