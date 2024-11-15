@@ -273,8 +273,8 @@ WEBPACK_LOADER['DEFAULT']['TIMEOUT'] = 5
 ################ Using LMS SSO for login to Studio ################
 SOCIAL_AUTH_EDX_OAUTH2_KEY = 'studio-sso-key'
 SOCIAL_AUTH_EDX_OAUTH2_SECRET = 'studio-sso-secret'  # in stage, prod would be high-entropy secret
-SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = 'http://192.168.132.249:18000'  # routed internally server-to-server
-SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT = 'http://192.168.132.249:18000'  # used in browser redirect
+SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = 'http://192.168.1.107:18000'  # routed internally server-to-server
+SOCIAL_AUTH_EDX_OAUTH2_PUBLIC_URL_ROOT = 'http://192.168.1.107:18000'  # used in browser redirect
 
 # Don't form the return redirect URL with HTTPS on devstack
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = False

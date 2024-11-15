@@ -282,6 +282,7 @@ class CourseOverview(TimeStampedModel):
         is_talks = CourseDetails.fetch_about_attribute(course.id, 'is_talks')
         course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
         access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
+        content_activation_window = CourseDetails.fetch_about_attribute(course.id, 'content_activation_window')
         course_tags = CourseDetails.fetch_about_attribute(course.id, 'course_tags')
         course_categories = CourseDetails.fetch_about_attribute(course.id, 'course_categories')
         program_only_purchase = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase')
@@ -312,6 +313,7 @@ class CourseOverview(TimeStampedModel):
             'is_talks': is_talks,
             'course_slug': course_slug or display_name,
             'introduction_video': introduction_video,
+            'content_activation_window': content_activation_window,
             'access_duration': access_duration,
             'program_only_purchase': program_only_purchase,
             'program_only_purchase_notes': program_only_purchase_notes,
