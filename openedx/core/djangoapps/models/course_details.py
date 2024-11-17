@@ -44,6 +44,7 @@ ABOUT_ATTRIBUTES = [
     'course_slug',
     'introduction_video',
     'access_duration',
+    'content_activation_window',
     'course_tags',
     'course_categories',
     'program_only_purchase',
@@ -114,6 +115,7 @@ class CourseDetails:
         self.course_slug = ""
         self.introduction_video = ""
         self.access_duration = ""
+        self.content_activation_window = ""
         self.course_tags = ""
         self.course_categories = ""
         self.program_only_purchase = ""
@@ -188,6 +190,7 @@ class CourseDetails:
         course_details.is_talks = course_descriptor.is_talks
         course_details.introduction_video = course_descriptor.introduction_video
         course_details.access_duration = course_descriptor.access_duration
+        course_details.content_activation_window = course_descriptor.content_activation_window
         course_details.course_tags = course_descriptor.course_tags
         course_details.course_categories = course_descriptor.course_categories
         course_details.program_only_purchase = course_descriptor.program_only_purchase
