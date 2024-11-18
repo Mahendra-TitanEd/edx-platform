@@ -44,7 +44,6 @@ ABOUT_ATTRIBUTES = [
     'course_slug',
     'introduction_video',
     'access_duration',
-    'content_activation_window',
     'course_tags',
     'course_categories',
     'program_only_purchase',
@@ -52,7 +51,8 @@ ABOUT_ATTRIBUTES = [
     'price_text',
     'offer_text',
     'recently_updated',
-    'additional_campaign_info'
+    'additional_campaign_info',
+    'content_activation_window',
 ]
 
 
@@ -115,7 +115,6 @@ class CourseDetails:
         self.course_slug = ""
         self.introduction_video = ""
         self.access_duration = ""
-        self.content_activation_window = ""
         self.course_tags = ""
         self.course_categories = ""
         self.program_only_purchase = ""
@@ -124,6 +123,7 @@ class CourseDetails:
         self.offer_text = ""
         self.recently_updated = ""
         self.additional_campaign_info = ""
+        self.content_activation_window = ""
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -190,7 +190,6 @@ class CourseDetails:
         course_details.is_talks = course_descriptor.is_talks
         course_details.introduction_video = course_descriptor.introduction_video
         course_details.access_duration = course_descriptor.access_duration
-        course_details.content_activation_window = course_descriptor.content_activation_window
         course_details.course_tags = course_descriptor.course_tags
         course_details.course_categories = course_descriptor.course_categories
         course_details.program_only_purchase = course_descriptor.program_only_purchase
@@ -199,6 +198,7 @@ class CourseDetails:
         course_details.offer_text = course_descriptor.offer_text
         course_details.recently_updated = course_descriptor.recently_updated
         course_details.additional_campaign_info = course_descriptor.additional_campaign_info
+        course_details.content_activation_window = course_descriptor.content_activation_window
         course_slug = course_descriptor.course_slug
         if course_slug == "":
             try:

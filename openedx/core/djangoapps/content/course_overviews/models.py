@@ -282,7 +282,6 @@ class CourseOverview(TimeStampedModel):
         is_talks = CourseDetails.fetch_about_attribute(course.id, 'is_talks')
         course_slug = CourseDetails.fetch_about_attribute(course.id, 'course_slug')
         access_duration = CourseDetails.fetch_about_attribute(course.id, 'access_duration')
-        content_activation_window = CourseDetails.fetch_about_attribute(course.id, 'content_activation_window')
         course_tags = CourseDetails.fetch_about_attribute(course.id, 'course_tags')
         course_categories = CourseDetails.fetch_about_attribute(course.id, 'course_categories')
         program_only_purchase = CourseDetails.fetch_about_attribute(course.id, 'program_only_purchase')
@@ -291,6 +290,7 @@ class CourseOverview(TimeStampedModel):
         offer_text = CourseDetails.fetch_about_attribute(course.id, 'offer_text')
         recently_updated = CourseDetails.fetch_about_attribute(course.id, 'recently_updated')
         additional_campaign_info = CourseDetails.fetch_about_attribute(course.id, 'additional_campaign_info')
+        content_activation_window = CourseDetails.fetch_about_attribute(course.id, 'content_activation_window')
         try:
             course_tags = json.loads(course_tags)
         except Exception as e:
@@ -313,14 +313,14 @@ class CourseOverview(TimeStampedModel):
             'is_talks': is_talks,
             'course_slug': course_slug or display_name,
             'introduction_video': introduction_video,
-            'content_activation_window': content_activation_window,
             'access_duration': access_duration,
             'program_only_purchase': program_only_purchase,
             'program_only_purchase_notes': program_only_purchase_notes,
             'price_text': price_text,
             'offer_text': offer_text,
             'recently_updated': recently_updated,
-            'additional_campaign_info': additional_campaign_info
+            'additional_campaign_info': additional_campaign_info,
+            'content_activation_window': content_activation_window,
         }
         course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
         if certificate_overview:

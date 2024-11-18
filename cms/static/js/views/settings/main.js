@@ -44,7 +44,6 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#course_level').val(this.model.get('course_level'));
                    this.$el.find('#course_slug').val(this.model.get('course_slug'));
                    this.$el.find('#access_duration').val(this.model.get('access_duration'));
-                   this.$el.find('#content_activation_window').val(this.model.get('content_activation_window'));
                    this.$el.find('#overview_2').val(this.model.get('overview_2'));
                    this.$el.find('#course_tags').val(this.safeJSONParse(this.model.get('course_tags'))).trigger("chosen:updated");
                    this.$el.find('#course_categories').val(this.safeJSONParse(this.model.get('course_categories'))).trigger("chosen:updated");
@@ -57,6 +56,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find("#certificates-display-behavior").val(this.model.get("certificates_display_behavior"));
                    this.$el.find('#program_only_purchase_notes').val(this.model.get('program_only_purchase_notes'));
                    this.$el.find('#additional_campaign_info').val(this.model.get('additional_campaign_info'));
+                   this.$el.find('#content_activation_window').val(this.model.get('content_activation_window'));
                    this.$el.find('#price_text').val(this.model.get('price_text'));
                    this.$el.find('#offer_text').val(this.model.get('offer_text'));
                    this.updateCertificatesDisplayBehavior();
@@ -202,7 +202,6 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['course_level']).val(this.model.get('course_level'));
                    this.$el.find('#' + this.fieldToSelectorMap['course_slug']).val(this.model.get('course_slug'));
                    this.$el.find('#' + this.fieldToSelectorMap['access_duration']).val(this.model.get('access_duration'));
-                   this.$el.find('#' + this.fieldToSelectorMap['content_activation_window']).val(this.model.get('content_activation_window'));
                    this.$el.find('#' + this.fieldToSelectorMap.overview_2).val(this.model.get('overview_2'));
                    this.codeMirrorize(null, $('#overview_2')[0]);
                    this.$el.find('#' + this.fieldToSelectorMap['course_tags']).val(this.safeJSONParse(this.model.get('course_tags'))).trigger("chosen:updated");
@@ -215,6 +214,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['program_only_purchase_notes']).val(this.model.get('program_only_purchase_notes'));
                    this.$el.find('#' + this.fieldToSelectorMap['additional_campaign_info']).val(this.model.get('additional_campaign_info'));
                    this.codeMirrorize(null, $('#additional_campaign_info')[0]);
+                   this.$el.find('#' + this.fieldToSelectorMap['content_activation_window']).val(this.model.get('content_activation_window'));
                    this.$el.find('#' + this.fieldToSelectorMap['price_text']).val(this.model.get('price_text'));
                    this.$el.find('#' + this.fieldToSelectorMap['offer_text']).val(this.model.get('offer_text'));
 
@@ -283,7 +283,6 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    course_level: 'course_level', // Added by Mahendra
                    course_slug: 'course_slug', // Added by Mahendra
                    access_duration: 'access_duration', // Added by Mahendra
-                   content_activation_window: 'content_activation_window',
                    overview_2: 'overview_2', // Added by Mahendra
                    introduction_video: 'introduction_video', // Added by Mahendra
                    certificate_overview: 'certificate_overview', // Added by Mahendra
@@ -302,6 +301,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    offer_text: 'offer_text',    // Added by Mahendra
                    recently_updated: 'recently-updated', // Added by Mahendra
                    additional_campaign_info: 'additional_campaign_info',    // Added by Mahendra
+                   content_activation_window: 'content_activation_window', // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -557,7 +557,6 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'course_level':
                    case 'course_slug':
                    case 'access_duration':
-                   case 'content_activation_window':
                    case 'overview_2':
                    case 'course_tags':
                    case 'course_categories':
@@ -565,6 +564,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'certificate_overview':
                    case 'program_only_purchase_notes':
                    case 'additional_campaign_info':
+                   case 'content_activation_window':
                    case 'price_text':
                    case 'offer_text':
                    case 'course-short-description':

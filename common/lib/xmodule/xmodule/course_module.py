@@ -1124,12 +1124,6 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="365",
         scope=Scope.settings,
     )
-    content_activation_window = String(
-    display_name=_("Content Activation Window"),
-    help=_("Define the content access period (e.g., '3-Year Access')."),
-    default='',
-    scope=Scope.settings,
-    )
     introduction_video = String(
         display_name=_("Brightcove Course Introduction Video"),
         help=_("Enter Brightcove video embed code here."),
@@ -1188,7 +1182,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="",
         scope=Scope.settings
     )
-
+    content_activation_window = String(
+        display_name=_("Content Activation Window"),
+        help=_("Define the content access period (e.g., '3-Year Access')."),
+        default="",
+        scope=Scope.settings,
+    )
 
 class CourseBlock(
     CourseFields,

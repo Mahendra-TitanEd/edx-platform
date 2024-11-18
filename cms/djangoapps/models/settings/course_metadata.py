@@ -89,7 +89,6 @@ class CourseMetadata:
         'course_slug',
         'introduction_video',
         'access_duration',
-        'content_activation_window', # added by Yagnesh
         'course_tags',
         'course_categories',
         'program_only_purchase',
@@ -97,7 +96,8 @@ class CourseMetadata:
         'price_text',
         'offer_text',
         'recently_updated',
-        'additional_campaign_info'
+        'additional_campaign_info',
+        'content_activation_window',
     ]
 
     @classmethod
