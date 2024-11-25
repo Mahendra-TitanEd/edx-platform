@@ -4,7 +4,11 @@
     <input type="text" class="long" id="course-review-name-<%- index %>" value="<%- data['name'] %>" data-index=<%- index %> data-field="name" placeholder="<%- gettext('Name') %>"  />
     <span class="tip tip-stacked"><%- gettext("Please enter name")%></span>
   </div>
-
+  <div class="field text field-course-review-designation">
+    <label for="course-review-designation-<%- index %>"><%- gettext("Designation") %></label>
+    <input type="text" class="long" id="course-review-designation-<%- index %>" value = "<%- data['designation'] %>" data-index=<%- index %> data-field="designation" placeholder="<%- gettext('Designation') %>" />
+    <span class="tip tip-stacked"><%- gettext("Please add the designation")%></span>
+  </div>
   <div class="field text field-course-review-sequence">
     <label for="course-review-sequence-<%- index %>"><%- gettext("Sequence") %></label>
     <input type="text" class="long" id="course-review-sequence-<%- index %>" value="<%- data['sequence'] %>" data-index=<%- index %> data-field="sequence" placeholder="<%- gettext('Sequence') %>" />

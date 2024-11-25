@@ -359,6 +359,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    var reviews = this.model.get('review_info').reviews.slice(0);
                    reviews.push({
                        name: '',
+                       designation: '',
                        sequence: '',
                        image: '',
                        bio: ''
@@ -427,6 +428,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        this.updateImagePreview(event.currentTarget, '#course-quote-image-preview-' + index);
                        break;
                    case 'course-review-name-' + index:
+                   case 'course-review-designation-' + index:
                    case 'course-review-sequence-' + index:
                    case 'course-review-bio-' + index:
                        value = $(event.currentTarget).val();
