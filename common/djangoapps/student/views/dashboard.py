@@ -955,7 +955,6 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
 
     # Added by Mahendra
     from ebc_course.models import EbcCourseConfiguration
-    from course_progress.helpers import get_courses_progress
     from ebc_path_enrollment.models import PathEnrollment
     from path_certificate.models import PathCertificate
     from course_playlist.models import PlaylistStudentEnrollment
@@ -1071,7 +1070,6 @@ def student_dashboard(request):  # lint-amnesty, pylint: disable=too-many-statem
         {
             "course_enrollments": courses_enrollments,
             "talk_enrollments": talk_enrollments,
-            "progress_list": get_courses_progress(user, get_course_progress_ids),
             "programs_data": enrolled_programs,
             "programs_info_dict": programs_info_dict,
             "playlists": unique_playlist,

@@ -337,6 +337,8 @@ class CourseOverview(TimeStampedModel):
         if course.quote_info.get('quotes', list()):
             for quoto_info in course.quote_info.get('quotes', list()):
                 CourseAboutQuote.create_or_update(course_config, quoto_info)
+        else:
+            CourseAboutQuote.objects.filter(course_configuration=course_config).delete()
         return course_overview
 
     @classmethod
