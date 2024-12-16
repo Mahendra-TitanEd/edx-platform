@@ -7,6 +7,7 @@ perform some LMS-specific tab display gymnastics for the Entrance Exams feature
 from django.conf import settings
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_noop
+from django.urls import reverse
 
 from lms.djangoapps.courseware.access import has_access
 from lms.djangoapps.courseware.entrance_exams import user_can_skip_entrance_exam
@@ -33,7 +34,7 @@ class CoursewareTab(EnrolledTab):
     The main courseware view.
     """
     type = 'courseware'
-    title = gettext_noop('Course')
+    title = gettext_noop('Outline')
     priority = 11
     view_name = 'courseware'
     is_movable = False
@@ -146,6 +147,30 @@ class TextbookTabsBase(CourseTab):
         collection of textbooks.
         """
         raise NotImplementedError()
+
+
+class ContentTab(CourseTab):
+    """
+    A tab representing the course outline.
+    """
+    type = 'content'
+    title = gettext_noop('Content')
+    priority = 11
+    view_name = 'outline'
+    is_default = False
+
+    @classmethod
+    def is_enabled(cls, course, user=None):
+        # Define the condition under which this tab is enabled.
+        return True  # For example, always enabled
+
+    def __init__(self, tab_dict):
+
+        tab_dict['link_func'] = self.get_link_func()
+        super().__init__(tab_dict)
+
+    def get_link_func(self):
+        return lambda course, reverse_func: reverse('courseware', args=[str(course.id)])
 
 
 class TextbookTabs(TextbookTabsBase):
@@ -390,6 +415,10 @@ def _get_dynamic_tabs(course, user):
     instead added dynamically based upon the user's role.
     """
     dynamic_tabs = []
+
+    contentTab = ContentTab({'type': 'Content', 'priority': 11})
+    dynamic_tabs.append(contentTab)
+
     for tab_type in CourseTabPluginManager.get_tab_types():
         if getattr(tab_type, "is_dynamic", False):
             tab = tab_type({})
