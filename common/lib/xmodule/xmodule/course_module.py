@@ -1188,6 +1188,18 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="",
         scope=Scope.settings,
     )
+    preview_button_1 = String(
+        display_name=_("Preview Button 1"),
+        help=_("Enter HTML content to be displayed below course title and subtitle on the course about page"),
+        default="",
+        scope=Scope.settings
+    )
+    preview_button_2 = String(
+        display_name=_("Preview Button 2"),
+        help=_("Enter HTML content to be displayed below course title and subtitle on the course about page"),
+        default="",
+        scope=Scope.settings
+    )
 
 class CourseBlock(
     CourseFields,

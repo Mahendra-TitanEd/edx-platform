@@ -57,6 +57,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#program_only_purchase_notes').val(this.model.get('program_only_purchase_notes'));
                    this.$el.find('#additional_campaign_info').val(this.model.get('additional_campaign_info'));
                    this.$el.find('#content_activation_window').val(this.model.get('content_activation_window'));
+                   this.$el.find('#preview_button_1').val(this.model.get('preview_button_1'));
+                   this.$el.find('#preview_button_2').val(this.model.get('preview_button_2'));
                    this.$el.find('#price_text').val(this.model.get('price_text'));
                    this.$el.find('#offer_text').val(this.model.get('offer_text'));
                    this.updateCertificatesDisplayBehavior();
@@ -215,6 +217,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['additional_campaign_info']).val(this.model.get('additional_campaign_info'));
                    this.codeMirrorize(null, $('#additional_campaign_info')[0]);
                    this.$el.find('#' + this.fieldToSelectorMap['content_activation_window']).val(this.model.get('content_activation_window'));
+                   this.$el.find('#' + this.fieldToSelectorMap['preview_button_1']).val(this.model.get('preview_button_1'));
+                   this.$el.find('#' + this.fieldToSelectorMap['preview_button_2']).val(this.model.get('preview_button_2'));
                    this.$el.find('#' + this.fieldToSelectorMap['price_text']).val(this.model.get('price_text'));
                    this.$el.find('#' + this.fieldToSelectorMap['offer_text']).val(this.model.get('offer_text'));
 
@@ -302,6 +306,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    recently_updated: 'recently-updated', // Added by Mahendra
                    additional_campaign_info: 'additional_campaign_info',    // Added by Mahendra
                    content_activation_window: 'content_activation_window', // Added by Mahendra
+                   preview_button_1: 'preview_button_1', // Added by Mahendra
+                   preview_button_2: 'preview_button_2', // Added by Mahendra
                },
 
                addLearningFields: function() {
@@ -567,6 +573,8 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'program_only_purchase_notes':
                    case 'additional_campaign_info':
                    case 'content_activation_window':
+                   case 'preview_button_1':
+                   case 'preview_button_2':
                    case 'price_text':
                    case 'offer_text':
                    case 'course-short-description':

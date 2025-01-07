@@ -291,6 +291,8 @@ class CourseOverview(TimeStampedModel):
         recently_updated = CourseDetails.fetch_about_attribute(course.id, 'recently_updated')
         additional_campaign_info = CourseDetails.fetch_about_attribute(course.id, 'additional_campaign_info')
         content_activation_window = CourseDetails.fetch_about_attribute(course.id, 'content_activation_window')
+        preview_button_1 = CourseDetails.fetch_about_attribute(course.id, 'preview_button_1')
+        preview_button_2 = CourseDetails.fetch_about_attribute(course.id, 'preview_button_2')
         try:
             course_tags = json.loads(course_tags)
         except Exception as e:
@@ -321,6 +323,8 @@ class CourseOverview(TimeStampedModel):
             'recently_updated': recently_updated,
             'additional_campaign_info': additional_campaign_info,
             'content_activation_window': content_activation_window,
+            'preview_button_1': preview_button_1,
+            'preview_button_2': preview_button_2,
         }
         course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
         if certificate_overview:

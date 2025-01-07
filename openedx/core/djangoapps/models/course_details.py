@@ -53,6 +53,8 @@ ABOUT_ATTRIBUTES = [
     'recently_updated',
     'additional_campaign_info',
     'content_activation_window',
+    'preview_button_1',
+    'preview_button_2',
 ]
 
 
@@ -124,6 +126,8 @@ class CourseDetails:
         self.recently_updated = ""
         self.additional_campaign_info = ""
         self.content_activation_window = ""
+        self.preview_button_1 = ""
+        self.preview_button_2 = ""
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):
@@ -199,6 +203,8 @@ class CourseDetails:
         course_details.recently_updated = course_descriptor.recently_updated
         course_details.additional_campaign_info = course_descriptor.additional_campaign_info
         course_details.content_activation_window = course_descriptor.content_activation_window
+        course_details.preview_button_1 = course_descriptor.preview_button_1
+        course_details.preview_button_2 = course_descriptor.preview_button_2
         course_slug = course_descriptor.course_slug
         if course_slug == "":
             try:

@@ -98,6 +98,8 @@ class CourseMetadata:
         'recently_updated',
         'additional_campaign_info',
         'content_activation_window',
+        'preview_button_1',
+        'preview_button_2',
     ]
 
     @classmethod
