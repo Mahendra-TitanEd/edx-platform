@@ -633,7 +633,8 @@ MAKO_TEMPLATE_DIRS_BASE = [
     CMS_ROOT / 'djangoapps' / 'pipeline_js' / 'templates',
 ]
 
-CONTEXT_PROCESSORS = (
+# Updated by Mahendra
+CONTEXT_PROCESSORS = [
     'django.template.context_processors.request',
     'django.template.context_processors.static',
     'django.contrib.messages.context_processors.messages',
@@ -642,7 +643,7 @@ CONTEXT_PROCESSORS = (
     'django.template.context_processors.csrf',
     'help_tokens.context_processor',
     'openedx.core.djangoapps.site_configuration.context_processors.configuration_context',
-)
+]
 
 # Django templating
 TEMPLATES = [
