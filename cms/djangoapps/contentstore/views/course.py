@@ -574,8 +574,27 @@ def course_listing(request):
         'allow_unicode_course_id': settings.FEATURES.get('ALLOW_UNICODE_COURSE_ID', False),
         'allow_course_reruns': settings.FEATURES.get('ALLOW_COURSE_RERUNS', True),
         'optimization_enabled': optimization_enabled,
-        'active_tab': 'courses'
+        'active_tab': 'courses',
+        'can_create_organizations': request.user.is_staff or request.user.is_superuser,
+        'allowed_organizations': get_organizations(request.user)
     })
+
+
+# Added by Mahendra
+def get_organizations(user):
+    """
+    Returns the list of organizations for which the user is allowed to create courses.
+    """
+    from organizations.models import Organization
+    from cms.djangoapps.course_creators.models import CourseCreator
+    course_creator = CourseCreator.objects.filter(user=user).first()
+    if not course_creator or course_creator.state != CourseCreator.GRANTED:
+        return []
+    elif course_creator.all_organizations:
+        organizations = Organization.objects.all().values_list('short_name', flat=True)
+    else:
+        organizations = course_creator.organizations.all().values_list('short_name', flat=True)
+    return organizations
 
 
 @login_required
@@ -985,13 +1004,15 @@ def create_new_course_in_store(store, user, org, number, run, fields):
     return new_course
 
 
-def rerun_course(user, source_course_key, org, number, run, fields, background=True):
+def rerun_course(user, source_course_key, org, number, run, fields, background=True, skip_studio_write_access=False):
     """
     Rerun an existing course.
     """
     # verify user has access to the original course
-    if not has_studio_write_access(user, source_course_key):
-        raise PermissionDenied()
+    # Updated by Mahendra
+    if not skip_studio_write_access:
+        if not has_studio_write_access(user, source_course_key):
+            raise PermissionDenied()
 
     # create destination course key
     store = modulestore()
