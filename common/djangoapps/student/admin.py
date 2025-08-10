@@ -751,6 +751,15 @@ class PendingNameChangeAdmin(admin.ModelAdmin):
         model = PendingNameChange
 
 
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ("country_id", "country_name", "countries_iso_code_2", "countries_iso_code_3", "address_format_id")
+    search_fields = ("country_name", "countries_iso_code_2", "countries_iso_code_3")
+
+class StateAdmin(admin.ModelAdmin):
+    list_display = ("country", "zone_id", "zone_country_id", "zone_code", "zone_name")
+    search_fields = ("zone_name", "country_id")
+    list_filter = ("country",)
+
 admin.site.register(UserTestGroup)
 admin.site.register(Registration)
 admin.site.register(AccountRecoveryConfiguration, ConfigurationModelAdmin)
@@ -758,8 +767,8 @@ admin.site.register(DashboardConfiguration, ConfigurationModelAdmin)
 admin.site.register(RegistrationCookieConfiguration, ConfigurationModelAdmin)
 admin.site.register(BulkUnenrollConfiguration, ConfigurationModelAdmin)
 admin.site.register(BulkChangeEnrollmentConfiguration, ConfigurationModelAdmin)
-admin.site.register(Country)
-admin.site.register(State)
+admin.site.register(Country, CountryAdmin)
+admin.site.register(State, StateAdmin)
 
 # We must first un-register the User model since it may also be registered by the auth app.
 try:
