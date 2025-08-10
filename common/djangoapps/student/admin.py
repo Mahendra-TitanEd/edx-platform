@@ -757,7 +757,7 @@ class CountryAdmin(admin.ModelAdmin):
 
 class StateAdmin(admin.ModelAdmin):
     list_display = ("country", "zone_id", "zone_country_id", "zone_code", "zone_name")
-    search_fields = ("zone_name", "country_id")
+    search_fields = ("zone_name",)
     list_filter = ("country",)
 
 admin.site.register(UserTestGroup)
