@@ -138,10 +138,14 @@ def instructor_dashboard_2(request, course_id):  # lint-amnesty, pylint: disable
     if access['staff']:
         sections_content = [
             _section_course_info(course, access),
-            _section_membership(course, access),
             _section_cohort_management(course, access),
             _section_student_admin(course, access),
         ]
+        if request.user.profile.is_college_admin or request.user.profile.is_college_subadmin:
+            if request.user.is_superuser:
+                sections_content.insert(1, _section_membership(course, access))
+        else:
+            sections_content.insert(1, _section_membership(course, access))
 
         if legacy_discussion_experience_enabled(course_key):
             sections_content.append(_section_discussions_management(course, access))
