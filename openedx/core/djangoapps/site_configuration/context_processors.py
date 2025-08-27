@@ -15,6 +15,6 @@ def configuration_context(request):
     """
     return {
         'platform_name': configuration_helpers.get_value('platform_name', settings.PLATFORM_NAME),
-        'current_url': quote_plus(request.build_absolute_uri(request.path)),
+        'current_url': quote_plus("https://{}/".format(settings.CMS_BASE)),
         'current_site_url': quote_plus(request.build_absolute_uri('/')),
     }

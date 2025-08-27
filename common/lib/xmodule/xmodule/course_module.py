@@ -529,7 +529,7 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
     advanced_modules = List(
         display_name=_("Advanced Module List"),
         help=_("Enter the names of the advanced modules to use in your course."),
-        default=["azure_media_services", "done", "google-document", "google-calendar", "lti_consumer", "poll", "survey", "edx_sga", "vectordraw", "freetextresponse", "launchcontainer", "pdf", "ubcpi", "problem-builder", "word_cloud", "feedback"],
+        default=["bcp_xblock", "azure_media_services", "done", "google-document", "google-calendar", "lti_consumer", "poll", "survey", "edx_sga", "vectordraw", "freetextresponse", "launchcontainer", "pdf", "ubcpi", "problem-builder", "word_cloud", "feedback"],
         scope=Scope.settings
     )
     has_children = True
@@ -1197,6 +1197,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
     preview_button_2 = String(
         display_name=_("Preview Button 2"),
         help=_("Enter HTML content to be displayed below course title and subtitle on the course about page"),
+        default="",
+        scope=Scope.settings
+    )
+    suggested_price = String(
+        display_name=_("Suggested Price"),
+        help=_("Enter the suggested price for the course. This price will be added by college/institute instructor."),
         default="",
         scope=Scope.settings
     )

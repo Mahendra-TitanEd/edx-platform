@@ -293,6 +293,7 @@ class CourseOverview(TimeStampedModel):
         content_activation_window = CourseDetails.fetch_about_attribute(course.id, 'content_activation_window')
         preview_button_1 = CourseDetails.fetch_about_attribute(course.id, 'preview_button_1')
         preview_button_2 = CourseDetails.fetch_about_attribute(course.id, 'preview_button_2')
+        suggested_price = CourseDetails.fetch_about_attribute(course.id, 'suggested_price')
         try:
             course_tags = json.loads(course_tags)
         except Exception as e:
@@ -325,6 +326,7 @@ class CourseOverview(TimeStampedModel):
             'content_activation_window': content_activation_window,
             'preview_button_1': preview_button_1,
             'preview_button_2': preview_button_2,
+            'suggested_price': suggested_price,
         }
         course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)
         if certificate_overview:
