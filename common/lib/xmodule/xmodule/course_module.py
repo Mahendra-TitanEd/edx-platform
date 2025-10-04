@@ -1200,6 +1200,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="",
         scope=Scope.settings
     )
+    enrollment_preview_button = String(
+        display_name=_("Enrollment Preview Button"),
+        help=_("Enter HTML content to be displayed below the enrollment button on the course about page"),
+        default="",
+        scope=Scope.settings
+    )
     suggested_price = String(
         display_name=_("Suggested Price"),
         help=_("Enter the suggested price for the course. This price will be added by college/institute instructor."),

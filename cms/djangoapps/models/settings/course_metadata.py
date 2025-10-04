@@ -100,6 +100,7 @@ class CourseMetadata:
         'content_activation_window',
         'preview_button_1',
         'preview_button_2',
+        'enrollment_preview_button',
         'suggested_price',
     ]
 

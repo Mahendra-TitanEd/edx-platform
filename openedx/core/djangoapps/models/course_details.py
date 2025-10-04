@@ -55,6 +55,7 @@ ABOUT_ATTRIBUTES = [
     'content_activation_window',
     'preview_button_1',
     'preview_button_2',
+    'enrollment_preview_button',
     'suggested_price',
 ]
 
@@ -129,6 +130,7 @@ class CourseDetails:
         self.content_activation_window = ""
         self.preview_button_1 = ""
         self.preview_button_2 = ""
+        self.enrollment_preview_button = ""
         self.suggested_price = ""
 
     @classmethod
@@ -207,6 +209,7 @@ class CourseDetails:
         course_details.content_activation_window = course_descriptor.content_activation_window
         course_details.preview_button_1 = course_descriptor.preview_button_1
         course_details.preview_button_2 = course_descriptor.preview_button_2
+        course_details.enrollment_preview_button = course_descriptor.enrollment_preview_button
         course_details.suggested_price = course_descriptor.suggested_price
         course_slug = course_descriptor.course_slug
         if course_slug == "":

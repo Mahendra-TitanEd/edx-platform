@@ -59,6 +59,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#content_activation_window').val(this.model.get('content_activation_window'));
                    this.$el.find('#preview_button_1').val(this.model.get('preview_button_1'));
                    this.$el.find('#preview_button_2').val(this.model.get('preview_button_2'));
+                   this.$el.find('#enrollment_preview_button').val(this.model.get('enrollment_preview_button'));
                    this.$el.find('#price_text').val(this.model.get('price_text'));
                    this.$el.find('#offer_text').val(this.model.get('offer_text'));
                    this.$el.find('#suggested_price').val(this.model.get('suggested_price'));
@@ -220,6 +221,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['content_activation_window']).val(this.model.get('content_activation_window'));
                    this.$el.find('#' + this.fieldToSelectorMap['preview_button_1']).val(this.model.get('preview_button_1'));
                    this.$el.find('#' + this.fieldToSelectorMap['preview_button_2']).val(this.model.get('preview_button_2'));
+                   this.$el.find('#' + this.fieldToSelectorMap['enrollment_preview_button']).val(this.model.get('enrollment_preview_button'));
                    this.$el.find('#' + this.fieldToSelectorMap['price_text']).val(this.model.get('price_text'));
                    this.$el.find('#' + this.fieldToSelectorMap['offer_text']).val(this.model.get('offer_text'));
                    this.$el.find('#' + this.fieldToSelectorMap['suggested_price']).val(this.model.get('suggested_price'));
@@ -309,6 +311,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    content_activation_window: 'content_activation_window', // Added by Mahendra
                    preview_button_1: 'preview_button_1', // Added by Mahendra
                    preview_button_2: 'preview_button_2', // Added by Mahendra
+                   enrollment_preview_button: 'enrollment_preview_button', // Added by Mahendra
                    suggested_price: 'suggested_price', // Added by Mahendra
                },
 
@@ -577,6 +580,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'content_activation_window':
                    case 'preview_button_1':
                    case 'preview_button_2':
+                   case 'enrollment_preview_button':
                    case 'suggested_price':
                    case 'price_text':
                    case 'offer_text':
