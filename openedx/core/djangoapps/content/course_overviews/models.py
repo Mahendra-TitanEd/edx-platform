@@ -294,6 +294,7 @@ class CourseOverview(TimeStampedModel):
         preview_button_1 = CourseDetails.fetch_about_attribute(course.id, 'preview_button_1')
         preview_button_2 = CourseDetails.fetch_about_attribute(course.id, 'preview_button_2')
         enrollment_preview_button = CourseDetails.fetch_about_attribute(course.id, 'enrollment_preview_button')
+        course_overview_color = CourseDetails.fetch_about_attribute(course.id, 'course_overview_color')
         suggested_price = CourseDetails.fetch_about_attribute(course.id, 'suggested_price')
         try:
             course_tags = json.loads(course_tags)
@@ -328,6 +329,7 @@ class CourseOverview(TimeStampedModel):
             'preview_button_1': preview_button_1,
             'preview_button_2': preview_button_2,
             'enrollment_preview_button': enrollment_preview_button,
+            'course_overview_color': course_overview_color,
             'suggested_price': suggested_price,
         }
         course_config = EbcCourseConfiguration.create_or_update(course_overview.id, data_dict)

@@ -1206,6 +1206,12 @@ class CourseFields:  # lint-amnesty, pylint: disable=missing-class-docstring
         default="",
         scope=Scope.settings
     )
+    course_overview_color = String(
+        display_name=_("Course Overview Color"),
+        help=_("Enter the color for the course overview content text"),
+        default="",
+        scope=Scope.settings
+    )
     suggested_price = String(
         display_name=_("Suggested Price"),
         help=_("Enter the suggested price for the course. This price will be added by college/institute instructor."),

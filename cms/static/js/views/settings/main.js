@@ -60,6 +60,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#preview_button_1').val(this.model.get('preview_button_1'));
                    this.$el.find('#preview_button_2').val(this.model.get('preview_button_2'));
                    this.$el.find('#enrollment_preview_button').val(this.model.get('enrollment_preview_button'));
+                   this.$el.find('#course_overview_color').val(this.model.get('course_overview_color'));
                    this.$el.find('#price_text').val(this.model.get('price_text'));
                    this.$el.find('#offer_text').val(this.model.get('offer_text'));
                    this.$el.find('#suggested_price').val(this.model.get('suggested_price'));
@@ -222,6 +223,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    this.$el.find('#' + this.fieldToSelectorMap['preview_button_1']).val(this.model.get('preview_button_1'));
                    this.$el.find('#' + this.fieldToSelectorMap['preview_button_2']).val(this.model.get('preview_button_2'));
                    this.$el.find('#' + this.fieldToSelectorMap['enrollment_preview_button']).val(this.model.get('enrollment_preview_button'));
+                   this.$el.find('#' + this.fieldToSelectorMap['course_overview_color']).val(this.model.get('course_overview_color'));
                    this.$el.find('#' + this.fieldToSelectorMap['price_text']).val(this.model.get('price_text'));
                    this.$el.find('#' + this.fieldToSelectorMap['offer_text']).val(this.model.get('offer_text'));
                    this.$el.find('#' + this.fieldToSelectorMap['suggested_price']).val(this.model.get('suggested_price'));
@@ -312,6 +314,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    preview_button_1: 'preview_button_1', // Added by Mahendra
                    preview_button_2: 'preview_button_2', // Added by Mahendra
                    enrollment_preview_button: 'enrollment_preview_button', // Added by Mahendra
+                   course_overview_color: 'course_overview_color', // Added by Mahendra
                    suggested_price: 'suggested_price', // Added by Mahendra
                },
 
@@ -583,6 +586,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    case 'preview_button_1':
                    case 'preview_button_2':
                    case 'enrollment_preview_button':
+                   case 'course_overview_color':
                    case 'suggested_price':
                    case 'price_text':
                    case 'offer_text':

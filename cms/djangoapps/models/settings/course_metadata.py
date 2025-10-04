@@ -101,6 +101,7 @@ class CourseMetadata:
         'preview_button_1',
         'preview_button_2',
         'enrollment_preview_button',
+        'course_overview_color',
         'suggested_price',
     ]
 
