@@ -18,6 +18,12 @@
     <span class="tip tip-stacked"><%- gettext("Please add the instructor's designation")%></span>
   </div>
 
+  <div class="field text field-course-instructor-linkedin linkedin-url">
+    <label for="course-instructor-linkedin-<%- index %>"><%- gettext("LinkedIn URL") %></label>
+    <input type="text" class="long" id="course-instructor-linkedin-<%- index %>" value = "<%- data['linkedin'] %>" data-index=<%- index %> data-field="linkedin" placeholder="<%- gettext('LinkedIn URL') %>" />
+    <span class="tip tip-stacked"><%- gettext("Please add the instructor's LinkedIn URL")%></span>
+  </div>
+
   <div class="field text field-course-instructor-bio">
     <label for="course-instructor-bio-<%- index %>"><%- gettext("Biography") %></label>
     <textarea class="short text" id="course-instructor-bio-<%- index %>" data-index=<%- index %> data-field="bio" placeholder="<%- gettext('Instructor Biography') %>" ><%- data['bio'] %></textarea>

@@ -333,6 +333,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        name: '',
                        title: '',
                        organization: '',
+                       linkedin: '',
                        image: '',
                        bio: ''
                    });
@@ -404,6 +405,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                        break;
                    case 'course-instructor-name-' + index:
                    case 'course-instructor-title-' + index:
+                   case 'course-instructor-linkedin-' + index:
                    case 'course-instructor-organization-' + index:
                    case 'course-instructor-bio-' + index:
                        value = $(event.currentTarget).val();
