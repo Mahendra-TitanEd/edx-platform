@@ -65,8 +65,7 @@ def create_lti_user(lti_user_id, lti_consumer):
                 # A profile is required if PREVENT_CONCURRENT_LOGINS flag is set.
                 # TODO: We could populate user information from the LTI launch here,
                 # but it's not necessary for our current uses.
-                edx_user_profile = UserProfile(user=edx_user)
-                edx_user_profile.save()
+                edx_user_profile, _ = UserProfile.objects.get_or_create(user=edx_user)
             created = True
         except IntegrityError:
             # The random edx_user_id wasn't unique. Since 'created' is still
