@@ -773,7 +773,13 @@ def get_courses_accessible_to_user(request, org=None):
         courses, in_process_course_actions = _accessible_courses_summary_iter(request, org)
     else:
         try:
+            # For University admin show only their university courses, even user is team member of other university courses. Other courses should not be shown to them.
+            from college.models import CollegeStudent
+            college = CollegeStudent.get_college(user=request.user)
+            university = college.organization.short_name
             courses, in_process_course_actions = _accessible_courses_list_from_groups(request)
+            if request.user.profile.is_college_admin or request.user.profile.is_college_subadmin:
+                courses = courses.filter(org=university)
         except AccessListFallback:
             # user have some old groups or there was some error getting courses from django groups
             # so fallback to iterating through all courses
