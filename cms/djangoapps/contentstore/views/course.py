@@ -526,6 +526,10 @@ def course_listing(request):
         LegacyWaffleSwitchNamespace(name=WAFFLE_NAMESPACE).is_enabled('enable_global_staff_optimization')
 
     org = request.GET.get('org', '') if optimization_enabled else None
+    # EBC: when the LMS embeds Studio for a college-scoped admin, it passes ?org=<short_name>.
+    # Honour it even without the optimization flag so GlobalStaff users are also scoped.
+    if org is None and request.GET.get('org'):
+        org = request.GET.get('org')
     courses_iter, in_process_course_actions = get_courses_accessible_to_user(request, org)
     user = request.user
     libraries = []
