@@ -1060,6 +1060,8 @@ urlpatterns += [
 urlpatterns += (
     re_path(r'^tinymce/', include('tinymce.urls')),
     path('captcha/', include('captcha.urls')),
+    # Platform Admin URLs
+    path('platform-admin/', include('lms.djangoapps.platform_admin.urls')),
 )
 
 if settings.FEATURES.get('AUTH_USE_CAS'):
