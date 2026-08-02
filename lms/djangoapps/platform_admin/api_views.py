@@ -21,6 +21,8 @@ from lms.djangoapps.university_programme.models import (
 
 logger = logging.getLogger(__name__)
 
+from lms.djangoapps.platform_admin.activity import record_platform_activity, bold as activity_bold
+
 
 def get_user_college(user):
     """Get the college/university associated with the authenticated user"""
@@ -236,6 +238,17 @@ def create_programme(request):
                             name=section_name.strip()
                         )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='PROGRAMME_CREATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'created programme {activity_bold(programme.short_name)}'
+            ),
+            metadata={'programme_id': programme.id, 'short_name': programme.short_name},
+            dedupe_key=f'programme_created:{programme.id}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Programme created successfully',
@@ -339,6 +352,17 @@ def update_programme(request, programme_id):
                             name=section_name.strip()
                         )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='PROGRAMME_UPDATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'updated programme {activity_bold(programme.short_name)}'
+            ),
+            metadata={'programme_id': programme.id, 'short_name': programme.short_name},
+            dedupe_key=f'programme_updated:{programme.id}:{programme.modified}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Programme updated successfully'
@@ -369,8 +393,20 @@ def delete_programme(request, programme_id):
                 university=college
             )
             programme_name = programme.short_name
+            programme_pk = programme.id
             programme.delete()
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='PROGRAMME_DELETED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'deleted programme {activity_bold(programme_name)}'
+            ),
+            metadata={'programme_id': programme_pk, 'short_name': programme_name},
+            dedupe_key=f'programme_deleted:{programme_pk}',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Programme "{programme_name}" deleted successfully'
@@ -427,6 +463,17 @@ def add_section(request, programme_id):
             name=section_name
         )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='SECTION_CREATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'added section {activity_bold(section_name)} to {activity_bold(year_name)}'
+            ),
+            metadata={'programme_id': programme_id, 'year': year_name, 'section': section_name},
+            dedupe_key=f'section_created:{programme_id}:{year_name}:{section_name}',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Section "{section_name}" added to {year_name}'
@@ -492,6 +539,17 @@ def rename_section(request, programme_id):
         section.name = new_name
         section.save()
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='SECTION_UPDATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'renamed section {activity_bold(old_name)} to {activity_bold(new_name)}'
+            ),
+            metadata={'programme_id': programme_id, 'old_name': old_name, 'new_name': new_name},
+            dedupe_key=f'section_renamed:{programme_id}:{old_name}:{new_name}',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Section renamed from "{old_name}" to "{new_name}"'
@@ -546,6 +604,17 @@ def delete_section(request, programme_id):
         )
         section.delete()
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='SECTION_DELETED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'deleted section {activity_bold(section_name)} from {activity_bold(year_name)}'
+            ),
+            metadata={'programme_id': programme_id, 'year': year_name, 'section': section_name},
+            dedupe_key=f'section_deleted:{programme_id}:{year_name}:{section_name}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Section deleted successfully'
@@ -680,6 +749,17 @@ def create_group(request):
             colour=data.get('colour', '#1f4d3a')
         )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='GROUP_CREATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'created group {activity_bold(group.name)}'
+            ),
+            metadata={'group_id': group.id},
+            dedupe_key=f'group_created:{group.id}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Group created successfully',
@@ -766,6 +846,17 @@ def update_group(request, group_id):
             group.colour = data.get('colour', group.colour)
             group.save()
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='GROUP_UPDATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'updated group {activity_bold(group.name)}'
+            ),
+            metadata={'group_id': group.id},
+            dedupe_key=f'group_updated:{group.id}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Group updated successfully'
@@ -798,8 +889,20 @@ def delete_group(request, group_id):
                 college=college
             )
             group_name = group.name
+            group_pk = group.id
             group.delete()
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='GROUP_DELETED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'deleted group {activity_bold(group_name)}'
+            ),
+            metadata={'group_id': group_pk},
+            dedupe_key=f'group_deleted:{group_pk}',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Group "{group_name}" deleted successfully'
@@ -918,14 +1021,17 @@ def list_students(request):
             # Get metadata status
             status = user.metadata.status if hasattr(user, 'metadata') else 'inactive'
 
+            programme = enrolment.programme if enrolment else None
             students_data.append({
                 'id': user.id,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'name': user.get_full_name() or user.username,
                 'email': user.email,
-                'programme_name': enrolment.programme.name if enrolment and enrolment.programme else None,
-                'programme_id': enrolment.programme.id if enrolment and enrolment.programme else None,
+                'programme_name': programme.name if programme else None,
+                'programme_short_name': programme.short_name if programme else None,
+                'programme_color': (programme.color or '#1f4d3a') if programme else None,
+                'programme_id': programme.id if programme else None,
                 'year_name': enrolment.programme_year.number_of_year if enrolment and enrolment.programme_year else None,
                 'year_id': enrolment.programme_year.id if enrolment and enrolment.programme_year else None,
                 'section_name': enrolment.programme_section.name if enrolment and enrolment.programme_section else None,
@@ -952,6 +1058,7 @@ def list_students(request):
 def create_student(request):
     """Create a new student with User, Profile, Metadata, and Enrolment"""
     from lms.djangoapps.platform_admin.student_service import StudentService, StudentValidationError
+    from lms.djangoapps.platform_admin.sync_log_service import record_sync_event
 
     college = get_user_college(request.user)
     if not college:
@@ -968,6 +1075,18 @@ def create_student(request):
         year_name = data.get('year_name', '')
         section_name = data.get('section_name', '')
 
+        # Resolve programme label early for sync-log blocked events
+        programme_label = ''
+        try:
+            if programme_id:
+                prog = UniversityProgrammes.objects.filter(
+                    id=programme_id, university=college
+                ).first()
+                if prog:
+                    programme_label = prog.short_name or prog.name
+        except Exception:
+            programme_label = ''
+
         # Use service to create student
         result = StudentService.create_student(
             college=college,
@@ -979,6 +1098,32 @@ def create_student(request):
             section_name=section_name
         )
 
+        student_label = f'{first_name} {last_name}'.strip() or email
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='STUDENT_CREATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'added student {activity_bold(student_label)}'
+            ),
+            metadata={'student_id': result['user_id'], 'email': email},
+            dedupe_key=f'student_created:{result["user_id"]}',
+        )
+        from django.contrib.auth.models import User as AuthUser
+        created_user = AuthUser.objects.filter(id=result['user_id']).first()
+        record_sync_event(
+            college=college,
+            user=created_user,
+            student_name=student_label,
+            student_email=email,
+            auth_method='Direct',
+            programme_name=programme_label,
+            year_name=year_name or '',
+            section_name=section_name or '',
+            account_status='created',
+            result='granted',
+        )
         return JsonResponse({
             'success': True,
             'message': result['message'],
@@ -986,7 +1131,29 @@ def create_student(request):
         })
 
     except StudentValidationError as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        err = str(e)
+        # Seat ceiling / capacity → blocked sync event
+        if 'capacity' in err.lower() or 'seat' in err.lower():
+            try:
+                data = json.loads(request.body) if request.body else {}
+            except Exception:
+                data = {}
+            record_sync_event(
+                college=college,
+                student_name=(
+                    f"{data.get('first_name', '')} {data.get('last_name', '')}".strip()
+                    or data.get('email', 'Unknown')
+                ),
+                student_email=data.get('email', ''),
+                auth_method='Direct',
+                programme_name=programme_label if 'programme_label' in locals() else '',
+                year_name=data.get('year_name', '') or '',
+                section_name=data.get('section_name', '') or '',
+                account_status='created',
+                result='blocked',
+                block_reason=err,
+            )
+        return JsonResponse({'error': err}, status=400)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
@@ -1154,6 +1321,17 @@ def update_student(request, student_id):
                 is_active=True
             )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='STUDENT_UPDATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'updated student {activity_bold(user.get_full_name() or user.email)}'
+            ),
+            metadata={'student_id': student_id},
+            dedupe_key=f'student_updated:{student_id}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Student updated successfully'
@@ -1208,6 +1386,17 @@ def delete_student(request, student_id):
                 is_active=True
             ).update(is_active=False)
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='STUDENT_DELETED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'deleted student {activity_bold(user.get_full_name() or user.email)}'
+            ),
+            metadata={'student_id': student_id},
+            dedupe_key=f'student_deleted:{student_id}',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Student {user.get_full_name()} deleted successfully'
@@ -1248,6 +1437,17 @@ def suspend_student(request, student_id):
                     status='suspended'
                 )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='STUDENT_STATUS',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'suspended {activity_bold(user.get_full_name() or user.email)}'
+            ),
+            metadata={'student_id': student_id, 'status': 'suspended'},
+            dedupe_key=f'student_status:{student_id}:suspended',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Student {user.get_full_name()} suspended successfully'
@@ -1292,6 +1492,17 @@ def reactivate_student(request, student_id):
                     status='active'
                 )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='STUDENT_STATUS',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'reactivated {activity_bold(user.get_full_name() or user.email)}'
+            ),
+            metadata={'student_id': student_id, 'status': 'active'},
+            dedupe_key=f'student_status:{student_id}:active',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Student {user.get_full_name()} reactivated successfully'
@@ -1332,6 +1543,17 @@ def archive_student(request, student_id):
                     status='archived'
                 )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='STUDENT_STATUS',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'archived {activity_bold(user.get_full_name() or user.email)}'
+            ),
+            metadata={'student_id': student_id, 'status': 'archived'},
+            dedupe_key=f'student_status:{student_id}:archived',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Student {user.get_full_name()} archived successfully'
@@ -1437,6 +1659,18 @@ def bulk_move_section(request):
                     failed_count += 1
                     errors.append(f'Student ID {student_id}: {str(e)}')
 
+        if success_count:
+            record_platform_activity(
+                actor=request.user,
+                college=college,
+                activity_type='STUDENT_MOVED',
+                description=(
+                    f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                    f'moved {activity_bold(success_count)} student(s) to a new section'
+                ),
+                metadata={'success_count': success_count, 'programme_id': programme_id},
+                dedupe_key=f'student_moved:{college.id}:{success_count}:{programme_id}',
+            )
         return JsonResponse({
             'success': True,
             'message': f'Successfully moved {success_count} student(s)',
@@ -1449,6 +1683,221 @@ def bulk_move_section(request):
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         logger.error(f"Error in bulk move section: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def bulk_advance_year(request):
+    """
+    Advance selected students to the next academic year, and archive completing students.
+
+    Body:
+      {
+        "advance_ids": [1, 2, 3],
+        "archive_ids": [4, 5]
+      }
+    """
+    import re
+    from lms.djangoapps.user_metadata.models import UserMetaData
+
+    college = get_user_college(request.user)
+    if not college:
+        return JsonResponse({'error': 'User not associated with any university'}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        advance_ids = data.get('advance_ids', []) or []
+        archive_ids = data.get('archive_ids', []) or []
+
+        # Normalize to ints and de-dupe
+        try:
+            advance_ids = list({int(x) for x in advance_ids})
+            archive_ids = list({int(x) for x in archive_ids})
+        except (TypeError, ValueError):
+            return JsonResponse({'error': 'Invalid student ids'}, status=400)
+
+        # Prefer archive if listed in both
+        advance_set = set(archive_ids)
+        advance_ids = [sid for sid in advance_ids if sid not in advance_set]
+
+        if not advance_ids and not archive_ids:
+            return JsonResponse({'error': 'No students selected'}, status=400)
+
+        advanced_count = 0
+        archived_count = 0
+        failed_count = 0
+        errors = []
+        group_summary = {}
+
+        year_re = re.compile(r'^Year\s+(\d+)$', re.IGNORECASE)
+
+        def next_year_name(current_year_name, programme=None):
+            match = year_re.match((current_year_name or '').strip())
+            if match:
+                return f"Year {int(match.group(1)) + 1}"
+            # Fallback: next year in programme year list order
+            if programme is not None:
+                year_names = list(
+                    programme.programme_years.order_by('id').values_list('number_of_year', flat=True)
+                )
+                try:
+                    idx = year_names.index(current_year_name)
+                except ValueError:
+                    return None
+                if idx + 1 < len(year_names):
+                    return year_names[idx + 1]
+            return None
+
+        def set_archived_status(user):
+            try:
+                meta = user.metadata
+                meta.status = 'archived'
+                meta.save()
+            except UserMetaData.DoesNotExist:
+                UserMetaData.objects.create(user=user, status='archived')
+
+        # Archive completing students (savepoint per student)
+        for student_id in archive_ids:
+            try:
+                with transaction.atomic():
+                    college_student = CollegeStudent.objects.select_related('user').get(
+                        user_id=student_id, college=college
+                    )
+                    user = college_student.user
+                    enrolment = UniversityProgrammesEnrolment.objects.filter(
+                        user=user, is_active=True
+                    ).select_related('programme_year').first()
+                    year_label = (
+                        enrolment.programme_year.number_of_year
+                        if enrolment and enrolment.programme_year else 'Unknown'
+                    )
+                    key = f"{year_label} → Archive"
+                    group_summary[key] = group_summary.get(key, 0) + 1
+                    set_archived_status(user)
+                    archived_count += 1
+            except CollegeStudent.DoesNotExist:
+                failed_count += 1
+                errors.append(f'Student ID {student_id} not found')
+            except Exception as e:
+                failed_count += 1
+                errors.append(f'Student ID {student_id}: {str(e)}')
+                logger.exception('Advance-year archive failed for student %s', student_id)
+
+        # Advance students to next year (same programme; keep section if it exists)
+        for student_id in advance_ids:
+            try:
+                with transaction.atomic():
+                    college_student = CollegeStudent.objects.select_related('user').get(
+                        user_id=student_id, college=college
+                    )
+                    user = college_student.user
+                    enrolment = UniversityProgrammesEnrolment.objects.filter(
+                        user=user, is_active=True
+                    ).select_related(
+                        'programme', 'programme_year', 'programme_section'
+                    ).first()
+
+                    if not enrolment or not enrolment.programme or not enrolment.programme_year:
+                        raise ValueError('no active enrolment')
+
+                    current_year = enrolment.programme_year.number_of_year
+                    target_year = next_year_name(current_year, enrolment.programme)
+                    if not target_year:
+                        raise ValueError(f'cannot determine next year after "{current_year}"')
+
+                    try:
+                        next_year = UniversityProgrammesYear.objects.get(
+                            programme=enrolment.programme,
+                            number_of_year=target_year
+                        )
+                    except UniversityProgrammesYear.DoesNotExist as exc:
+                        raise ValueError(
+                            f'{target_year} not found for programme'
+                        ) from exc
+
+                    next_section = None
+                    current_section_name = (
+                        enrolment.programme_section.name
+                        if enrolment.programme_section else None
+                    )
+                    if current_section_name:
+                        next_section = UniversityProgrammesYearSection.objects.filter(
+                            programme_year=next_year,
+                            name=current_section_name
+                        ).first()
+                        if not next_section:
+                            # Section is required on enrolment — create matching section
+                            # on the destination year so advance can complete.
+                            next_section = UniversityProgrammesYearSection.objects.create(
+                                programme_year=next_year,
+                                name=current_section_name
+                            )
+                    if not next_section:
+                        next_section = UniversityProgrammesYearSection.objects.filter(
+                            programme_year=next_year
+                        ).order_by('id').first()
+                    if not next_section:
+                        next_section = UniversityProgrammesYearSection.objects.create(
+                            programme_year=next_year,
+                            name='General'
+                        )
+
+                    enrolment.programme_year = next_year
+                    enrolment.programme_section = next_section
+                    enrolment.save()
+
+                    key = f"{current_year} → {target_year}"
+                    group_summary[key] = group_summary.get(key, 0) + 1
+                    advanced_count += 1
+            except CollegeStudent.DoesNotExist:
+                failed_count += 1
+                errors.append(f'Student ID {student_id} not found')
+            except Exception as e:
+                failed_count += 1
+                errors.append(f'Student ID {student_id}: {str(e)}')
+                logger.exception('Advance-year move failed for student %s', student_id)
+
+        if advanced_count or archived_count:
+            record_platform_activity(
+                actor=request.user,
+                college=college,
+                activity_type='STUDENT_MOVED',
+                description=(
+                    f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                    f'advanced academic year: '
+                    f'{activity_bold(advanced_count)} advanced, '
+                    f'{activity_bold(archived_count)} archived'
+                ),
+                metadata={
+                    'advanced_count': advanced_count,
+                    'archived_count': archived_count,
+                    'groups': group_summary,
+                },
+                dedupe_key=(
+                    f'advance_year:{college.id}:{advanced_count}:'
+                    f'{archived_count}:{len(advance_ids)+len(archive_ids)}'
+                ),
+            )
+
+        return JsonResponse({
+            'success': True,
+            'message': (
+                f'Advanced {advanced_count} student(s) · archived {archived_count} '
+                f'student(s)'
+            ),
+            'advanced_count': advanced_count,
+            'archived_count': archived_count,
+            'failed_count': failed_count,
+            'groups': group_summary,
+            'errors': errors,
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in bulk advance year: {e}", exc_info=True)
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -1503,6 +1952,18 @@ def bulk_update_status(request):
             'inactive': 'deactivated'
         }.get(new_status, 'updated')
 
+        if success_count:
+            record_platform_activity(
+                actor=request.user,
+                college=college,
+                activity_type='STUDENT_STATUS',
+                description=(
+                    f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                    f'{status_action} {activity_bold(success_count)} student(s)'
+                ),
+                metadata={'success_count': success_count, 'status': new_status},
+                dedupe_key=f'student_bulk_status:{college.id}:{new_status}:{success_count}',
+            )
         return JsonResponse({
             'success': True,
             'message': f'Successfully {status_action} {success_count} student(s)',
@@ -1633,6 +2094,18 @@ def bulk_delete_students(request):
                 except Exception:
                     failed_count += 1
 
+        if success_count:
+            record_platform_activity(
+                actor=request.user,
+                college=college,
+                activity_type='STUDENT_DELETED',
+                description=(
+                    f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                    f'deleted {activity_bold(success_count)} student(s)'
+                ),
+                metadata={'success_count': success_count},
+                dedupe_key=f'student_bulk_deleted:{college.id}:{success_count}',
+            )
         return JsonResponse({
             'success': True,
             'message': f'Successfully deleted {success_count} student(s)',
@@ -1908,6 +2381,18 @@ def import_students_csv(request):
                 })
 
         # Return detailed results
+        if success_count:
+            record_platform_activity(
+                actor=request.user,
+                college=college,
+                activity_type='STUDENT_IMPORTED',
+                description=(
+                    f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                    f'imported {activity_bold(success_count)} student(s) via CSV'
+                ),
+                metadata={'success_count': success_count, 'failed_count': len(failed_rows)},
+                dedupe_key=f'student_imported:{college.id}:{success_count}:{total_rows}',
+            )
         return JsonResponse({
             'success': True,
             'total_rows': total_rows,
@@ -2160,7 +2645,18 @@ def import_faculty_csv(request):
                 })
                 logger.error(f"Unexpected error processing row {row_num}: {e}", exc_info=True)
 
-        # Return detailed results
+        if success_count:
+            record_platform_activity(
+                actor=request.user,
+                college=college,
+                activity_type='FACULTY_IMPORTED',
+                description=(
+                    f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                    f'imported {activity_bold(success_count)} faculty admin(s) via CSV'
+                ),
+                metadata={'success_count': success_count, 'failed_count': len(failed_rows)},
+                dedupe_key=f'faculty_imported:{college.id}:{success_count}:{total_rows}',
+            )
         return JsonResponse({
             'success': True,
             'total_rows': total_rows,
@@ -2252,6 +2748,18 @@ def create_faculty_admin(request):
             f"(created={result['was_created']})"
         )
 
+        faculty_label = f'{first_name} {last_name}'.strip() or email
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='FACULTY_CREATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'assigned faculty admin {activity_bold(faculty_label)}'
+            ),
+            metadata={'user_id': result['user_id'], 'faculty_id': result['faculty_id']},
+            dedupe_key=f'faculty_created:{result["faculty_id"]}',
+        )
         return JsonResponse({
             'success': True,
             'message': result['message'],
@@ -2392,6 +2900,17 @@ def update_faculty_admin(request, faculty_id):
                 faculty.programmes.clear()
                 faculty.programmes.add(*programme_ids)
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='FACULTY_UPDATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'updated faculty admin {activity_bold(faculty.user.get_full_name() or faculty.user.email)}'
+            ),
+            metadata={'faculty_id': faculty_id},
+            dedupe_key=f'faculty_updated:{faculty_id}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Faculty admin updated successfully'
@@ -2494,6 +3013,17 @@ def promote_faculty_to_admin(request, faculty_id):
             f"Admin seats: {current_admin_count + 1}/{max_admins}"
         )
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='FACULTY_PROMOTED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'promoted {activity_bold(user.get_full_name() or user.email)} to Institution Admin'
+            ),
+            metadata={'user_id': user.id},
+            dedupe_key=f'faculty_promoted:{user.id}',
+        )
         return JsonResponse({
             'success': True,
             'message': f'{user.get_full_name()} promoted to Institution Admin successfully',
@@ -2549,6 +3079,18 @@ def create_institution_admin(request):
             f"(created={result['was_created']})"
         )
 
+        admin_label = f'{first_name} {last_name}'.strip() or email
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='INSTITUTION_ADMIN_CREATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'created institution admin {activity_bold(admin_label)}'
+            ),
+            metadata={'user_id': result['user_id']},
+            dedupe_key=f'institution_admin_created:{result["user_id"]}',
+        )
         return JsonResponse({
             'success': True,
             'message': result['message'],
@@ -2693,6 +3235,17 @@ def update_institution_admin(request, admin_id):
 
         logger.info(f"Institution admin updated: {admin_user.email} by {request.user.username}")
 
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='INSTITUTION_ADMIN_UPDATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'updated institution admin {activity_bold(admin_user.get_full_name() or admin_user.email)}'
+            ),
+            metadata={'admin_id': admin_id},
+            dedupe_key=f'institution_admin_updated:{admin_id}',
+        )
         return JsonResponse({
             'success': True,
             'message': 'Institution Admin updated successfully'
@@ -2945,6 +3498,27 @@ def update_programme_seat_allocations(request):
                 programme.allocated_seats = item['allocated_seats']
                 programme.save()
 
+        seat_summary = ', '.join(
+            f"{item['programme'].short_name}: {item['allocated_seats']}"
+            for item in programmes_to_update[:6]
+        )
+        record_platform_activity(
+            actor=request.user,
+            college=college,
+            activity_type='SEAT_ALLOCATION_UPDATED',
+            description=(
+                f'{activity_bold(request.user.get_full_name() or request.user.username)} '
+                f'updated seat allocation — {activity_bold(seat_summary)}'
+            ),
+            metadata={
+                'updated_count': len(programmes_to_update),
+                'allocations': [
+                    {'programme_id': item['programme'].id, 'allocated_seats': item['allocated_seats']}
+                    for item in programmes_to_update
+                ],
+            },
+            dedupe_key=f'seat_allocation:{college.id}:{total_allocated}',
+        )
         return JsonResponse({
             'success': True,
             'message': f'Successfully updated seat allocations for {len(programmes_to_update)} programme(s)',
@@ -3096,6 +3670,15 @@ def get_platform_overview(request):
         if careers_enabled_programmes > 0:
             active_apps.append('Careers App')
 
+        # Recent activity (latest 5, college-scoped)
+        recent_activities = []
+        try:
+            from recent_activities.services import ActivityService
+            activities = ActivityService.get_for_college(college, limit=5)
+            recent_activities = ActivityService.serialize(activities)
+        except Exception as activity_exc:
+            logger.warning(f"Could not load recent activities: {activity_exc}", exc_info=True)
+
         return JsonResponse({
             'success': True,
             'university': university_data,
@@ -3122,7 +3705,8 @@ def get_platform_overview(request):
                     'enabled': careers_enabled_programmes > 0,
                     'programme_count': careers_enabled_programmes
                 }
-            }
+            },
+            'recent_activities': recent_activities,
         })
 
     except Exception as e:
@@ -3254,4 +3838,115 @@ def get_staff_overview(request):
 
     except Exception as e:
         logger.error(f"Error getting staff overview: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def list_sync_log(request):
+    """List sync log events with filters, stats, and pagination."""
+    from lms.djangoapps.platform_admin.sync_log_service import (
+        programme_filter_options,
+        query_sync_events,
+        serialize_event,
+        sync_log_stats,
+    )
+
+    college = get_user_college(request.user)
+    if not college:
+        return JsonResponse({'error': 'User not associated with any university'}, status=403)
+
+    try:
+        result = request.GET.get('result', 'all').strip() or 'all'
+        auth = request.GET.get('auth', 'all').strip() or 'all'
+        programme = request.GET.get('programme', 'all').strip() or 'all'
+        search = request.GET.get('search', '').strip()
+        try:
+            page = max(1, int(request.GET.get('page', 1)))
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            page_size = min(100, max(1, int(request.GET.get('page_size', 10))))
+        except (TypeError, ValueError):
+            page_size = 10
+
+        qs = query_sync_events(
+            college,
+            result=result,
+            auth=auth,
+            programme=programme,
+            search=search,
+            days=90,
+        )
+        total = qs.count()
+        start = (page - 1) * page_size
+        events = [serialize_event(e) for e in qs[start:start + page_size]]
+        stats = sync_log_stats(college, days=30)
+
+        return JsonResponse({
+            'success': True,
+            'events': events,
+            'stats': stats,
+            'programmes': programme_filter_options(college),
+            'pagination': {
+                'page': page,
+                'page_size': page_size,
+                'total': total,
+                'total_pages': max(1, (total + page_size - 1) // page_size) if total else 1,
+            },
+            'filters': {
+                'result': result,
+                'auth': auth,
+                'programme': programme,
+                'search': search,
+            },
+        })
+    except Exception as e:
+        logger.error(f"Error listing sync log: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def export_sync_log(request):
+    """Export filtered sync log events as CSV."""
+    import csv
+    from django.http import HttpResponse
+    from lms.djangoapps.platform_admin.sync_log_service import query_sync_events, serialize_event
+
+    college = get_user_college(request.user)
+    if not college:
+        return JsonResponse({'error': 'User not associated with any university'}, status=403)
+
+    try:
+        result = request.GET.get('result', 'all').strip() or 'all'
+        auth = request.GET.get('auth', 'all').strip() or 'all'
+        programme = request.GET.get('programme', 'all').strip() or 'all'
+        search = request.GET.get('search', '').strip()
+
+        qs = query_sync_events(
+            college,
+            result=result,
+            auth=auth,
+            programme=programme,
+            search=search,
+            days=90,
+        )
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="praxis-sync-log.csv"'
+        writer = csv.writer(response)
+        writer.writerow([
+            'Timestamp', 'Name', 'Email', 'Auth Method', 'Programme',
+            'Year', 'Section', 'Account', 'Result', 'Block Reason',
+        ])
+        for event in qs.iterator(chunk_size=200):
+            row = serialize_event(event)
+            writer.writerow([
+                row['ts'], row['name'], row['email'], row['auth'], row['programme'],
+                row['year'], row['section'], row['account'], row['result'], row['blockReason'],
+            ])
+        return response
+    except Exception as e:
+        logger.error(f"Error exporting sync log: {e}", exc_info=True)
         return JsonResponse({'error': str(e)}, status=500)

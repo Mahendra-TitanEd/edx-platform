@@ -38,6 +38,7 @@ urlpatterns = [
     path('programmes/', views.pa_programmes, name='programmes'),
     path('branding/', views.pa_branding, name='branding'),
     path('billing/', views.billing_overview, name='billing'),
+    path('sync-log/', views.pa_sync_log, name='sync_log'),
 
     # Programme API endpoints
     path('api/programmes/', api_views.list_programmes, name='api_list_programmes'),
@@ -73,6 +74,7 @@ urlpatterns = [
     path('api/students/bulk/update-status/', api_views.bulk_update_status, name='api_bulk_update_status'),
     path('api/students/bulk/export-csv/', api_views.bulk_export_csv, name='api_bulk_export_csv'),
     path('api/students/bulk/delete/', api_views.bulk_delete_students, name='api_bulk_delete_students'),
+    path('api/students/bulk/advance-year/', api_views.bulk_advance_year, name='api_bulk_advance_year'),
 
     # Overview stats
     path('api/students/overview-stats/', api_views.get_student_overview_stats, name='api_student_overview_stats'),
@@ -104,4 +106,8 @@ urlpatterns = [
     # Platform Admin Overview/Dashboard API endpoint
     path('api/overview/', api_views.get_platform_overview, name='api_get_platform_overview'),
     path('api/staff-overview/', api_views.get_staff_overview, name='api_get_staff_overview'),
+
+    # Sync Log API
+    path('api/sync-log/', api_views.list_sync_log, name='api_list_sync_log'),
+    path('api/sync-log/export/', api_views.export_sync_log, name='api_export_sync_log'),
 ]

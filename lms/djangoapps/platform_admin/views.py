@@ -222,3 +222,18 @@ def pa_import_faculty(request):
         'platform_admin/pa_import_faculty.html',
         context
     )
+
+
+@login_required
+@require_http_methods(["GET"])
+def pa_sync_log(request):
+    """
+    Sync Log view — SSO / enrolment access events
+    """
+    context = {
+        'current_page': 'sync_log',
+    }
+    return render_to_response(
+        'platform_admin/pa_sync_log.html',
+        context
+    )
