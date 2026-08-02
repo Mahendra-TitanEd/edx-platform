@@ -2651,3 +2651,4 @@ CUSTOM_PAGES_HELP_URL = "https://edx.readthedocs.io/projects/open-edx-building-a
 
 # Added by Mahendra
 ENABLE_CUSTOM_COURSE_CONFIG = False
+INTERNAL_API_JWT_KEY = ""

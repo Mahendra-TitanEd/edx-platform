@@ -107,6 +107,10 @@ def rerun_course(source_course_key_string, destination_course_key_string, user_i
     """
     # import here, at top level this import prevents the celery workers from starting up correctly
     from edxval.api import copy_course_videos
+    # Added by Mahendra
+    from django.db import transaction
+    from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+    from ebc_course.helpers import clone_course_config
 
     source_course_key = CourseKey.from_string(source_course_key_string)
     destination_course_key = CourseKey.from_string(destination_course_key_string)
@@ -122,6 +126,17 @@ def rerun_course(source_course_key_string, destination_course_key_string, user_i
 
         # set initial permissions for the user to access the course.
         initialize_permissions(destination_course_key, User.objects.get(id=user_id))
+
+        # Added by Mahendra
+        try:
+            with transaction.atomic():
+                CourseOverview.load_from_module_store(destination_course_key)
+                clone_course_config(source_course_key, destination_course_key)
+        except Exception:
+            LOGGER.exception(
+                "Failed to sync EBC course config while rerunning %s -> %s.",
+                source_course_key, destination_course_key,
+            )
 
         # update state: Succeeded
         CourseRerunState.objects.succeeded(course_key=destination_course_key)
