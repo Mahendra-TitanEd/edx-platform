@@ -1,3 +1,0 @@
-"""
-Platform Admin Migrations
-"""
