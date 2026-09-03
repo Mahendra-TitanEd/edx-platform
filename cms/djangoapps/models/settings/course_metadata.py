@@ -77,6 +77,9 @@ class CourseMetadata:
         'is_onboarding_exam',
         'discussions_settings',
         # Added by Mahendra
+        # Moved from Advanced Settings to the Schedule & Details page (below "Course Title").
+        # See openedx/core/djangoapps/models/course_details.py for the Schedule & Details wiring.
+        'display_name',
         'course_topic',
         'course_level',
         'overview_2',

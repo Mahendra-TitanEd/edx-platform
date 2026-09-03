@@ -106,6 +106,10 @@ class CourseDetails:
         self.learning_info = []
         self.instructor_info = []
         # Added by Mahendra
+        # Course Display Name, moved here from Advanced Settings. Unlike the other
+        # "Added by Mahendra" attributes below, this is not an 'about' xblock item -
+        # it maps directly to the course descriptor's own 'display_name' field.
+        self.display_name = ""
         self.course_topic = ""
         self.course_level = ""
         self.overview_2 = ""
@@ -187,6 +191,7 @@ class CourseDetails:
         course_details.learning_info = course_descriptor.learning_info
         course_details.instructor_info = course_descriptor.instructor_info
         # Added by Mahendra
+        course_details.display_name = course_descriptor.display_name
         course_details.course_topic = course_descriptor.course_topic
         course_details.course_level = course_descriptor.course_level
         course_details.overview_2 = course_descriptor.overview_2
@@ -390,6 +395,11 @@ class CourseDetails:
 
         if 'language' in jsondict and jsondict['language'] != descriptor.language:
             descriptor.language = jsondict['language']
+            dirty = True
+
+        # Added by Mahendra: Course Display Name, moved here from Advanced Settings.
+        if 'display_name' in jsondict and jsondict['display_name'] != descriptor.display_name:
+            descriptor.display_name = jsondict['display_name']
             dirty = True
 
         if (descriptor.can_toggle_course_pacing

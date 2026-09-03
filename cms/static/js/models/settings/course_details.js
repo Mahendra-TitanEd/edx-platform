@@ -17,6 +17,7 @@ define(['backbone', 'underscore', 'gettext', 'js/models/validation_helpers', 'js
                 enrollment_start: null,
                 enrollment_end: null,
                 syllabus: null,
+                display_name: '', // Added by Mahendra - Course Display Name, moved from Advanced Settings
                 title: '',
                 subtitle: '',
                 duration: '',
@@ -58,6 +59,11 @@ define(['backbone', 'underscore', 'gettext', 'js/models/validation_helpers', 'js
 
                 if (newattrs.start_date === null) {
                     errors.start_date = gettext('The course must have an assigned start date.');
+                }
+
+                // Added by Mahendra - Course Display Name is required, same as it was in Advanced Settings.
+                if (!newattrs.display_name || !$.trim(newattrs.display_name)) {
+                    errors.display_name = gettext('The course must have a display name.');
                 }
 
                 if (newattrs.start_date && newattrs.end_date && newattrs.start_date >= newattrs.end_date) {
